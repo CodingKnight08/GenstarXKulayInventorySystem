@@ -1,4 +1,5 @@
 ﻿using GenstarXKulayInventorySystem.Server.Model;
+using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,50 +9,24 @@ namespace GenstarXKulayInventorySystem.Server.Controllers;
 [Route("api/[controller]")]
 public class AuthenticationController : ControllerBase
 {
-    private readonly UserManager<User> _userManager;
-    private readonly SignInManager<User> _signInManager;
+    private readonly IAuthenticationService _authService;
 
-
-    public AuthenticationController(UserManager<User> userManager, SignInManager<User> signInManager)
+    public AuthenticationController(IAuthenticationService authService)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
+        _authService = authService;
     }
-
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegistrationDto dto)
+    public async Task<IActionResult> Register(RegistrationDto registerDto)
     {
-        if (dto.Password != dto.ConfirmPassword)
-            return BadRequest("Passwords do not match.");
-
-        var user = new User
-        {
-            UserName = dto.Username,
-            Email = dto.Email,
-            Role = dto.Role
-        };
-
-        var result = await _userManager.CreateAsync(user, dto.Password);
-
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
-
-        return Ok();
+        var result = await _authService.RegisterAsync(registerDto);
+        return result ? Ok("Registration successful.") : BadRequest("Registration failed.");
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto dto)
+    public async Task<IActionResult> Login(LoginDto loginDto)
     {
-        var user = await _userManager.FindByNameAsync(dto.Username);
-        if (user == null)
-            return Unauthorized("Invalid username or password.");
-
-        var valid = await _userManager.CheckPasswordAsync(user, dto.Password);
-        if (!valid)
-            return Unauthorized("Invalid username or password.");
-
-        // Return JWT or user info
-        return Ok(new { user.UserName, user.Email, user.Role });
+        var token = await _authService.LoginAsync(loginDto);
+        return token != null ? Ok(token) : Unauthorized("Invalid credentials.");
     }
 
 }
