@@ -1,6 +1,7 @@
 ﻿using GenstarXKulayInventorySystem.Server;
 using GenstarXKulayInventorySystem.Server.Mapper;
 using GenstarXKulayInventorySystem.Server.Model;
+using GenstarXKulayInventorySystem.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -14,7 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>
-        policy.WithOrigins("https://localhost:44332")
+        policy.WithOrigins("https://localhost:7035")
               .AllowAnyMethod()
               .AllowAnyHeader());
 });
@@ -48,6 +49,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireLowercase = false;
 });
 
+
 // Register DbContextFactory (with retry on failure)
 builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 {
@@ -58,6 +60,10 @@ builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
             sqlOptions.EnableRetryOnFailure();
         });
 }, ServiceLifetime.Scoped);
+
+
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
 
 var app = builder.Build(); // Build must happen BEFORE using app.Services
 
