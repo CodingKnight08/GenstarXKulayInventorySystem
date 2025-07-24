@@ -21,5 +21,8 @@ public class AutoMapperProfile: Profile
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
         _ = CreateMap<BaseEntity, BaseEntityDto>()
             .ReverseMap();
+
+        _ = CreateMap<ProductBrand, ProductBrandDto>().ReverseMap();
+
     }
 }
