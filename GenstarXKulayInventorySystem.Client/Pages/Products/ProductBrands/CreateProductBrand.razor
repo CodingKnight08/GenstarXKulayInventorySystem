@@ -1,0 +1,13 @@
+﻿
+<MudDialog>
+    <DialogContent>
+
+        <MudTextField @bind-Value="ProductBrand.BrandName" Label="Brand Name" Required="true" Margin="Margin.Dense" />
+        <MudTextField @bind-Value="ProductBrand.Description" Label="Description" Margin="Margin.Dense" Lines="3" />
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="Submit" Disabled="@string.IsNullOrWhiteSpace(ProductBrand.BrandName)">Save</MudButton>
+    </DialogActions>
+</MudDialog>
