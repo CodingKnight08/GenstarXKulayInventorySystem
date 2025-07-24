@@ -34,6 +34,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
+builder.Services.AddHttpContextAccessor();
+
+
 // AutoMapper profile
 builder.Services.AddAutoMapper(cfg =>
 {
@@ -62,7 +65,11 @@ builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 }, ServiceLifetime.Scoped);
 
 
+
+
+//Register Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 
 var app = builder.Build(); // Build must happen BEFORE using app.Services
