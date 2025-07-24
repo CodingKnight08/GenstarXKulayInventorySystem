@@ -9,4 +9,5 @@ public class ProductBrand:BaseEntity
     [Required]
     public string BrandName { get; set; } = string.Empty;
     public string? Description { get; set; } = string.Empty;
+    public ICollection<Product> Products { get; set; } = new List<Product>();
 }
