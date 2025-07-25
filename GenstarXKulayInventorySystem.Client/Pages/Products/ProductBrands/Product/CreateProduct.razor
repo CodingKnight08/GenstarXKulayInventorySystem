@@ -1,0 +1,154 @@
+﻿@using System.Globalization
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="2">
+            <!-- Product Name -->
+            <MudItem xl="12">
+                <MudTextField @bind-Value="NewProduct.ProductName"
+                              Label="Product Name"
+                              Required="true"
+                              Margin="Margin.Dense"
+                              FullWidth="true" 
+                              RequiredError="Product Name Required" 
+                             
+                              />
+            </MudItem>
+
+            <!-- Description -->
+            <MudItem xs="12" sm="12">
+                <MudTextField @bind-Value="NewProduct.Description"
+                              Label="Description"
+                              Margin="Margin.Dense"
+                              Lines="3"
+                              FullWidth="true" />
+            </MudItem>
+
+            <!-- Size -->
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="NewProduct.Size"
+                              Label="Size"
+                              Margin="Margin.Dense"
+                              FullWidth="true"
+                              Required=true
+                              RequiredError="Input Size"/>
+            </MudItem>
+            <MudItem xs="12" sm="6" lg="6">
+                <MudSelect T="ProductMesurementOption?"
+                           Label="Unit"
+                           @bind-Value="NewProduct.ProductMesurementOption"
+                           Margin="Margin.Dense"
+                           FullWidth="true"
+                           Required=true
+                           RequiredError="Select Unit Option"
+                >
+
+                    <MudSelectItem T="ProductMesurementOption?" Value="null" Disabled="true">
+                        -- Select Unit --
+                    </MudSelectItem>
+
+                    @foreach (var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
+                    {
+                        <MudSelectItem T="ProductMesurementOption?" Value="@unit">
+                            @unit.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+
+
+
+            </MudItem>
+            <!-- Category Dropdown -->
+            <MudItem xs="12" sm="6">
+                <MudSelect T="int" 
+                    Label="Category" 
+                    @bind-Value="NewProduct.ProductCategoryId" 
+                    Margin="Margin.Dense" 
+                    FullWidth="true"
+                    RequiredError="Select Category"
+                >
+                    @foreach (var category in Categories)
+                    {
+                        <MudSelectItem T="int" Value="@category.Id">@category.Name</MudSelectItem>
+                    }
+                </MudSelect>
+
+            </MudItem>
+            <MudItem xs="12" sm="6" lg="6">
+                <MudTextField @bind-Value="NewProduct.Color"
+                              Label="Color"
+                              Margin="Margin.Dense"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" lg="6" sm="6">
+                <MudNumericField @bind-Value="NewProduct.Quantity"
+                              Label="Quantity"
+                              Margin="Margin.Dense"
+                              FullWidth="true"
+                              />
+            </MudItem>
+            <MudItem xs="12" sm="6" lg="6">
+                <MudNumericField T="decimal"
+                                 @bind-Value="@NewProduct.CostPrice"
+                                 Label="Cost Price"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 HideSpinButtons="true"
+                                 Format="N2"
+                                 Culture="@_en"
+                                 Margin="Margin.Dense"
+                                 FullWidth="true"
+                                 RequiredError="Add Cost"
+                                 />
+            </MudItem>
+
+            <MudItem xs="12" sm="6" lg="6">
+                <MudNumericField T="decimal?"
+                                 @bind-Value="@NewProduct.RetailPrice"
+                                 Label="Retail Price"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 HideSpinButtons="true"
+                                 Format="N2"
+                                 Culture="@_en"
+                                 Margin="Margin.Dense"
+                                 FullWidth="true" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6" lg="6">
+                <MudNumericField T="decimal?"
+                                 @bind-Value="@NewProduct.WholesalePrice"
+                                 Label="Wholesale Price"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 HideSpinButtons="true"
+                                 Format="N2"
+                                 Culture="@_en"
+                                 Margin="Margin.Dense"
+                                 FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6" lg="6">
+                <MudSelect T="BranchOption" @bind-Value="NewProduct.Branch" Label="Branch">
+                    @foreach (var branch in Enum.GetValues<BranchOption>())
+                    {
+                        <MudSelectItem Value="@branch">@branch</MudSelectItem>
+                    }
+                </MudSelect>
+
+
+
+
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="Submit" Disabled=@IsDisabled>Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code{
+    private CultureInfo _en = new("en-US");
+
+}
