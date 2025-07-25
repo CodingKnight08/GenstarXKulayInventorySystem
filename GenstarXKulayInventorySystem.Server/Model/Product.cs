@@ -17,7 +17,7 @@ public class Product:BaseEntity
     public string ProductName { get; set; } = string.Empty;
     public string? Description { get; set; }
     public decimal CostPrice { get; set; } = 0;
-    public decimal RetailPrice { get; set; } = 0;
+    public decimal? RetailPrice { get; set; } = 0;
     public decimal? WholesalePrice { get; set; }
 
     public string? Size { get; set; }

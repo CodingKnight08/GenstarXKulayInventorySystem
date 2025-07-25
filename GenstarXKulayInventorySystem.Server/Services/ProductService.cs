@@ -25,11 +25,12 @@ public class ProductService:IProductService
         return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
     }
     //Product Methods
-    public async Task<List<ProductDto>> GetAllAsync()
+    public async Task<List<ProductDto>> GetAllAsync(int brandId)
     {
-        var products = await _context.Products
+        var products = await _context.Products.AsNoTracking().AsSplitQuery()
             .Include(p => p.ProductBrand)
             .Include(p => p.ProductCategory)
+            .Where(p => p.BrandId == brandId)
             .ToListAsync() ?? new List<Product>(); ;
 
         
@@ -48,21 +49,28 @@ public class ProductService:IProductService
 
     public async Task<bool> AddAsync(ProductDto productDto)
     {
-        Product? existingProduct = await _context.Products.AsNoTracking().AsSplitQuery()
-            .FirstOrDefaultAsync(x => x.ProductName == productDto.ProductName &&
-                                      x.BrandId == productDto.BrandId
-                                      );
-        if (existingProduct != null)
+        try
         {
-            return false;
-        }
-        productDto.CreatedBy = GetCurrentUsername();
-        productDto.CreatedAt = UtilitiesHelper.GetPhilippineTime();
-        var product = _mapper.Map<Product>(productDto);
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+            var existingProduct = await _context.Products.AsNoTracking().AsSplitQuery()
+                .FirstOrDefaultAsync(x => x.ProductName == productDto.ProductName &&
+                                          x.BrandId == productDto.BrandId);
+            if (existingProduct != null)
+                return false;
 
-        return true;
+            productDto.CreatedBy = GetCurrentUsername();
+            productDto.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+
+            var product = _mapper.Map<Product>(productDto);
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // Use logging here if available
+            throw new Exception($"Error adding product: {ex.InnerException?.Message ?? ex.Message}");
+        }
     }
 
     public async Task<bool> UpdateAsync(ProductDto productDto)
@@ -204,7 +212,7 @@ public class ProductService:IProductService
 }
 public interface IProductService
 {
-    Task<List<ProductDto>> GetAllAsync();
+    Task<List<ProductDto>> GetAllAsync(int brandId);
     Task<ProductDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(ProductDto productDto);
     Task<bool> UpdateAsync(ProductDto productDto);

@@ -20,6 +20,8 @@ public class ProductsEnumHelpers
         Gram,
         Centimeter,
         Gallon,
+        Bottle,
+        Sachet
 
     }
 
