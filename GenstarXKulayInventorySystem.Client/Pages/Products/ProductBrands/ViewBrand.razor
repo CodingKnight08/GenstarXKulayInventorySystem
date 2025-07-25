@@ -1,0 +1,91 @@
+﻿@page "/productbrand/{brandId:int}"
+
+
+<PageTitle>View Product Brand</PageTitle>
+
+
+<MudMainContent>
+    <MudBreadcrumbs Items="items" Class="mt-3" />
+
+
+     @if (IsLoading)
+    {
+        <div class="d-flex justify-center align-center" style="height: 300px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+        </div>
+    }
+    else
+    {
+     
+    
+     <MudCard Class="mb-4" Elevation="0">
+        <MudCardHeader>
+            <MudText Typo="Typo.h6">Brand Details</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" sm="6" lg="3">
+                    <MudText Typo="Typo.subtitle2">Brand Name:</MudText>
+                    <MudText Typo="Typo.body1">@Brand?.BrandName</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="3">
+                    <MudText Typo="Typo.subtitle2">Description:</MudText>
+                    <MudText Typo="Typo.body1">@Brand?.Description</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+    </MudCard>
+    <MudText Typo="Typo.h4" Align="Align.Center">Products</MudText>
+        <div class="d-flex justify-content-end mb-3 me-3">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="AddProduct"
+            >
+                Add Product
+            </MudButton>
+        </div>
+    <!-- Product Table -->
+    <MudCard Elevation="0">
+       
+        <MudCardContent>
+            <MudTable Items="@Products" Hover="true" Bordered="true" Dense="true" HorizontalScrollbar=true >
+                <HeaderContent>
+                    <MudTh>Product Name</MudTh>
+                    <MudTh>Size</MudTh>
+                    <MudTh>Unit</MudTh>
+                    <MudTh>Quantity</MudTh>
+                    <MudTh>Color</MudTh>
+                    <MudTh>Retail Price</MudTh>
+                    <MudTh>Capital</MudTh>
+                    <MudTh>Wholesale Price</MudTh>
+                    <MudTh>Branch</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd Style="position:sticky;" DataLabel="Product Name">@context.ProductName</MudTd>
+                    <MudTd DataLabel="Size">@context.Size</MudTd>
+                    <MudTd DataLabel="Unit">@context.ProductMesurementOption.ToString()</MudTd>
+                    <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
+                    <MudTd DataLabel="Color">@context.Color</MudTd>
+                    <MudTd DataLabel="Capital"> ₱ @context.CostPrice</MudTd>
+                    <MudTd DataLabel="RetailPrice"> ₱@context.RetailPrice</MudTd>
+                    <MudTd DataLabel="Wholesale"> ₱@context.WholesalePrice</MudTd>
+                    <MudTd DataLabel="Branch">@context.Branch.ToString()</MudTd>
+                    <MudTd DataLabel="Action">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Success"
+                                           Variant="Variant.Text" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           Variant="Variant.Text" />
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                   <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudCardContent>
+    </MudCard> 
+    }
+</MudMainContent>
