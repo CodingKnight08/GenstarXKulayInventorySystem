@@ -24,7 +24,7 @@ public class AutoMapperProfile: Profile
 
         _ = CreateMap<ProductBrand, ProductBrandDto>().ReverseMap();
         _ = CreateMap<ProductCategory, ProductCategoryDto>().ReverseMap();
-        _ = CreateMap<ProductCategory, ProductCategoryDto>().ReverseMap();
+        _ = CreateMap<Product, ProductDto>().ReverseMap();
 
     }
 }
