@@ -16,10 +16,10 @@ public class ProductController : ControllerBase
     }
 
     // GET: api/products
-    [HttpGet]
-    public async Task<ActionResult<List<ProductDto>>> GetAll()
+    [HttpGet("all/{brandId}")]
+    public async Task<ActionResult<List<ProductDto>>> GetAll(int brandId)
     {
-        var products = await _productService.GetAllAsync();
+        var products = await _productService.GetAllAsync(brandId);
         return Ok(products);
     }
 
@@ -36,12 +36,21 @@ public class ProductController : ControllerBase
 
     // POST: api/products
     [HttpPost]
-    public async Task<ActionResult> Create(ProductDto dto)
+    public async Task<IActionResult> Create(ProductDto dto)
     {
-        var result = await _productService.AddAsync(dto);
-        if (!result)
-            return BadRequest("Product already exists.");
-        return Ok();
+        try
+        {
+            var result = await _productService.AddAsync(dto);
+            if (!result)
+                return BadRequest("Product already exists.");
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+           
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
     }
 
     // PUT: api/products/5
