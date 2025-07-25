@@ -17,9 +17,12 @@
     <MudDrawer @bind-Open="@_drawerOpen">
         <NavMenu/>
     </MudDrawer>
-    <MudMainContent>
+    <div class="w-100 vh-100">
         @Body
-    </MudMainContent>
+
+    </div>
+        
+    
 </MudLayout>
 @code {
     bool _drawerOpen = true;
