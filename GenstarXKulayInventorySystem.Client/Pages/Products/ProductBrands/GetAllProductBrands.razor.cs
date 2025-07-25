@@ -9,7 +9,7 @@ public partial class GetAllProductBrands
 {
     [Inject] public HttpClient HttpClient { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
-
+    [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     protected List<ProductBrandDto> ProductBrands { get; set; } = new();
     protected bool IsLoading { get; set; } = true;
     protected string? ErrorMessage { get; set; }
@@ -62,10 +62,10 @@ public partial class GetAllProductBrands
 
 
 
-    //protected async Task ViewProducts(int brandId)
-    //{
-    //    // TODO: Implement view logic (e.g., navigate or open dialog with brand's products)
-    //    Console.WriteLine($"View products for BrandId: {brandId}");
-    //}
+    protected void ViewBrands(int brandId)
+    {
+        NavigationManager.NavigateTo($"/productbrand/{brandId}");
+        
+    }
 }
 
