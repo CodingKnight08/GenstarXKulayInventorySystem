@@ -40,7 +40,7 @@ public class ProductBrandController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ProductBrandDto>> Update(int id, ProductBrandDto dto)
+    public async Task<IActionResult> Update(int id, ProductBrandDto dto)
     {
         if (id != dto.Id)
             return BadRequest("Brand ID mismatch.");
@@ -49,7 +49,7 @@ public class ProductBrandController : ControllerBase
         if (!updatedBrand)
             return NotFound("Brand not found or already exists.");
 
-        return Ok(updatedBrand);
+        return Ok();
     }
 
     [HttpDelete("{id}")]
