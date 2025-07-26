@@ -15,17 +15,17 @@ public partial class ViewBrand
     protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
     protected List<ProductCategoryDto> Categories { get; set; } = new List<ProductCategoryDto>();
 
-    
+
     protected bool IsLoading = false;
     protected string? ErrorMessage { get; set; }
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
-      
+
         await LoadBrandAsync();
         await LoadProductsAsync();
         await LoadCategoriesAsync();
-        await Task.Delay(1000); 
+        await Task.Delay(1000);
 
         IsLoading = false;
     }
@@ -79,11 +79,11 @@ public partial class ViewBrand
             ErrorMessage = "Failed to load categories. Please try again later.";
         }
     }
-   
-    
+
+
     protected async Task AddProduct()
     {
-       var dialogRef = await DialogService.ShowAsync<CreateProduct>("Add Product", new DialogParameters { ["BrandId"] = BrandId });
+        var dialogRef = await DialogService.ShowAsync<CreateProduct>("Add Product", new DialogParameters { ["BrandId"] = BrandId });
         if (dialogRef is not null)
         {
             var result = await dialogRef.Result;
@@ -95,4 +95,32 @@ public partial class ViewBrand
         }
     }
 
+    protected async Task UpdateProduct(int productId)
+    {
+        var dialogRef = await DialogService.ShowAsync<EditProduct>("Update Product", new DialogParameters { ["ProductId"] = productId });
+        if (dialogRef is not null)
+        {
+            var result = await dialogRef.Result;
+            if (result is not null && !result.Canceled)
+            {
+                await LoadProductsAsync();
+                StateHasChanged();
+            }
+        }
+    }
+
+    protected async Task DeleteProduct(int productId)
+    {
+        var dialogRef = await DialogService.ShowAsync<DeleteProduct>("Delete Product", new DialogParameters { ["ProductId"] = productId });
+        if (dialogRef is not null)
+        {
+            var result = await dialogRef.Result;
+            if (result is not null && !result.Canceled)
+            {
+                await LoadProductsAsync();
+                StateHasChanged();
+            }
+        }
+
+    }
 }

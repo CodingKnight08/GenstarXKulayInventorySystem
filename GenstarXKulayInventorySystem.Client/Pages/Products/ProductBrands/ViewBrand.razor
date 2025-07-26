@@ -75,10 +75,12 @@
                     <MudTd DataLabel="Action">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Color="Color.Success"
-                                           Variant="Variant.Text" />
+                                           Variant="Variant.Text" 
+                                           OnClick="()=>UpdateProduct(context.Id)"/>
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                            Color="Color.Error"
-                                           Variant="Variant.Text" />
+                                           Variant="Variant.Text" 
+                                           OnClick="() => DeleteProduct(context.Id)"/>
                     </MudTd>
                 </RowTemplate>
                 <PagerContent>
