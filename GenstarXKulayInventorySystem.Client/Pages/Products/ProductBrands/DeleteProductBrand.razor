@@ -1,0 +1,27 @@
+﻿@if(!IsLoading)
+{<MudDialog>
+  
+    <DialogContent>
+
+        <MudText Align="Align.Center" Class="text-danger">Are you sure you want to delete the brand <strong>@DeletedProductBrand.BrandName</strong>?</MudText>
+        <MudText Align="Align.Justify">All products associated with this brand will also be deleted.</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteProductBrandAsync">Delete</MudButton>
+    </DialogActions>
+    
+</MudDialog>
+}
+else
+{
+    <MudDialog>
+        <DialogContent>
+            <MudItem Class="d-flex flex-column align-items-center justify-content-center" xs="12" lg="12">
+                <MudProgressCircular Size="Size.Medium" Indeterminate="true" Color="Color.Warning">
+                    <ChildContent>Saving</ChildContent>
+                </MudProgressCircular>
+            </MudItem>
+        </DialogContent>
+    </MudDialog>
+}
