@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -30,7 +31,7 @@ public class ProductService:IProductService
         var products = await _context.Products.AsNoTracking().AsSplitQuery()
             .Include(p => p.ProductBrand)
             .Include(p => p.ProductCategory)
-            .Where(p => p.BrandId == brandId)
+            .Where(p => p.BrandId == brandId && !p.IsDeleted)
             .ToListAsync() ?? new List<Product>(); ;
 
         
@@ -94,8 +95,9 @@ public class ProductService:IProductService
         var product = await _context.Products.FindAsync(id);
         if (product == null)
             return false;
-
-        _context.Products.Remove(product);
+        product.IsDeleted = true;
+        product.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+        _context.Products.Update(product);
         await _context.SaveChangesAsync();
         return true;
     }
@@ -104,7 +106,7 @@ public class ProductService:IProductService
 
     public async Task<List<ProductBrandDto>> GetAllBrandsAsync()
     {
-        var brands = await _context.ProductBrands.ToListAsync() ?? new List<ProductBrand>();
+        var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted ).ToListAsync() ?? new List<ProductBrand>();
         return brands.Select(brand => _mapper.Map<ProductBrandDto>(brand)).ToList();
     }
 
@@ -151,7 +153,19 @@ public class ProductService:IProductService
 
         
         brand.DeletedAt = UtilitiesHelper.GetPhilippineTime();
-        _context.ProductBrands.Remove(brand);
+        brand.IsDeleted = true;
+
+        var associatedProducts = await _context.Products
+        .Where(p => p.BrandId == id && !p.IsDeleted)
+        .ToListAsync();
+
+        foreach (var product in associatedProducts)
+        {
+            product.IsDeleted = true;
+            product.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+        }
+        _context.Products.UpdateRange(associatedProducts);
+        _context.ProductBrands.Update(brand);
         await _context.SaveChangesAsync();
         return true;
     }
@@ -160,7 +174,7 @@ public class ProductService:IProductService
 
     public async Task<List<ProductCategoryDto>> GetAllCategoriesAsync()
     {
-        var categories = await _context.ProductCategories.ToListAsync() ?? new List<ProductCategory>();
+        var categories = await _context.ProductCategories.AsNoTracking().ToListAsync() ?? new List<ProductCategory>();
         return categories.Select(category => _mapper.Map<ProductCategoryDto>(category)).ToList();
     }
 
@@ -205,7 +219,9 @@ public class ProductService:IProductService
         var category = await _context.ProductCategories.FindAsync(id);
         if (category == null)
             return false;
-        _context.ProductCategories.Remove(category);
+        category.IsDeleted = true;
+        category.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+        _context.ProductCategories.Update(category);
         await _context.SaveChangesAsync();
         return true;
     }
