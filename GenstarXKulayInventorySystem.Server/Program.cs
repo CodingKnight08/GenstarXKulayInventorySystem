@@ -92,7 +92,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-
+app.UseDeveloperExceptionPage();
 app.UseHttpsRedirection();
 
 app.UseCors("AllowClient");

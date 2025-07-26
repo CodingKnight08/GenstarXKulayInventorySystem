@@ -29,7 +29,7 @@ public class InventoryDbContext: DbContext
             entity.HasOne(p => p.ProductCategory)
                 .WithMany(c => c.Products) 
                 .HasForeignKey(p => p.ProductCategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 
 
             // Decimal precision
