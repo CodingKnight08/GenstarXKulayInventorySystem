@@ -1,0 +1,12 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudItem xs="12" lg="12">
+            <MudTextField @bind-Value="UpdatedCategory.Name" Label="Product Category" Required="true" Margin="Margin.Dense" />
+            <MudTextField @bind-Value="UpdatedCategory.Description" Label="Description" Margin="Margin.Dense" Lines="3" />
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Filled"  OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" OnClick="UpdateProductCategoryAsync" Disabled="@string.IsNullOrWhiteSpace(UpdatedCategory.Name)">Update</MudButton>
+    </DialogActions>
+</MudDialog>

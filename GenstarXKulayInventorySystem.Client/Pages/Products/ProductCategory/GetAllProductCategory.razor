@@ -1,0 +1,61 @@
+﻿@layout MainLayout
+
+<MudCard Elevation="0">
+    <MudText Typo="Typo.h5" Align="Align.Left">Categories</MudText>
+</MudCard>
+<div class="d-flex justify-content-end mb-3">
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="CreateCategories"
+               >
+        Add Product Category
+    </MudButton>
+</div>
+
+<MudPaper Class="d-flex flex-column flex-grow-1" Style="height: 100%;">
+    
+    @if (IsLoading)
+    {
+        <div class="d-flex flex-column h-100 align-items-center justify-content-center">
+            
+                <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+            
+        </div>
+        
+    }
+    else
+    {
+        <MudTable Items="Categories"
+        Dense="true"
+              Hover="true"
+              Bordered="true"
+              Class="flex-grow-1">
+        
+        <HeaderContent>
+            <MudTh>Category Name</MudTh>
+            <MudTh>Description</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Class="fw-bold fs-5">@context.Name</MudTd>
+            <MudTd>@context.Description</MudTd>
+            <MudTd>
+                
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Success"
+                               Variant="Variant.Text"
+                               OnClick="() => UpdateCategory(context.Id)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Variant="Variant.Text"
+                               OnClick="() => DeleteCategory(context.Id)"
+                               />
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager/>
+        </PagerContent>
+    </MudTable>
+    }
+</MudPaper>
