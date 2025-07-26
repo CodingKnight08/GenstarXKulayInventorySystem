@@ -9,9 +9,11 @@ public class Product:BaseEntity
     public int Id { get; set; }
     public int BrandId { get; set; }
     public ProductBrand ProductBrand { get; set; } = default!;
-    public int ProductCategoryId { get; set; }
+    public int? ProductCategoryId { get; set; }
+
     [ForeignKey(nameof(ProductCategoryId))]
-    public ProductCategory ProductCategory { get; set; } = default!;
+    public ProductCategory? ProductCategory { get; set; }
+
 
     [Required]
     public string ProductName { get; set; } = string.Empty;
