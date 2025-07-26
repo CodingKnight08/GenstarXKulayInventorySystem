@@ -25,12 +25,17 @@ public partial class CreateProductCategory
         {
             var response = await HttpClient.PostAsJsonAsync("api/productcategory", NewCategory);
             response.EnsureSuccessStatusCode();
-            var createdCategory = await response.Content.ReadFromJsonAsync<ProductCategoryDto>();
-            if (createdCategory != null)
+            if(response.IsSuccessStatusCode)
             {
-                Snackbar.Add("Product category created successfully.", Severity.Success);
+                Snackbar.Add("Product category created successfully!", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(NewCategory));
             }
+            else
+            {
+                ErrorMessage = "Failed to create product category. Please try again later.";
+                return;
+            }
+           
         }
         catch (Exception ex)
         {
