@@ -11,17 +11,36 @@ public class ProductsEnumHelpers
 
     public enum  ProductMesurementOption
     {
-        Piece,
-        Kilogram,
+        Milliliter,
+        FluidOunce,
         Liter,
-        Box,
-        Yard,
-        Meter,
-        Gram,
-        Centimeter,
+        Quart,
+        Pint,
         Gallon,
         Bottle,
-        Sachet
+        Can,
+        Sachet,
+
+        Gram,
+        Kilogram,
+
+        Millimeter,
+        Centimeter,
+        Meter,
+        Yard,
+        Feet,
+
+        Piece,
+        Dozen,
+        Pack,
+        Bag,
+        Roll,
+        Box,
+        Pallet,
+        Sheet,
+
+        SquareMeter,
+        CubicMeter
 
     }
 

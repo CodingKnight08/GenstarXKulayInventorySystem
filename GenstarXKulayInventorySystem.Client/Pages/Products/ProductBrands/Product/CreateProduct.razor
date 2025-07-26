@@ -27,11 +27,13 @@
 
             <!-- Size -->
             <MudItem xs="12" sm="6">
-                <MudTextField @bind-Value="NewProduct.Size"
+                <MudNumericField @bind-Value="NewProduct.Size"
                               Label="Size"
                               Margin="Margin.Dense"
                               FullWidth="true"
                               Required=true
+                              Format="F1"
+                              HideSpinButtons=true
                               RequiredError="Input Size"/>
             </MudItem>
             <MudItem xs="12" sm="6" lg="6">

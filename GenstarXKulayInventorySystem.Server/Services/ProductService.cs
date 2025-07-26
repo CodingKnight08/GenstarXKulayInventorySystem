@@ -60,7 +60,7 @@ public class ProductService:IProductService
 
             productDto.CreatedBy = GetCurrentUsername();
             productDto.CreatedAt = UtilitiesHelper.GetPhilippineTime();
-
+            productDto.ActualQuantity = (productDto.Size ?? 0) * productDto.Quantity;
             var product = _mapper.Map<Product>(productDto);
             _context.Products.Add(product);
             await _context.SaveChangesAsync();

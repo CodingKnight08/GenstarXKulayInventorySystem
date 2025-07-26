@@ -22,10 +22,11 @@ public class Product:BaseEntity
     public decimal? RetailPrice { get; set; } = 0;
     public decimal? WholesalePrice { get; set; }
 
-    public string? Size { get; set; }
+    public decimal? Size { get; set; }
     public string? Color { get; set; }
     public int Quantity { get; set; } = 0; 
     public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
     public ProductMesurementOption? ProductMesurementOption { get; set; } 
-    
+    public decimal ActualQuantity { get; set; } = 0;
+
 }

@@ -1,9 +1,10 @@
 ﻿using GenstarXKulayInventorySystem.Server.Model;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace GenstarXKulayInventorySystem.Server;
 
-public class InventoryDbContext: DbContext
+public class InventoryDbContext: IdentityDbContext<User>
 {
     public InventoryDbContext(DbContextOptions<InventoryDbContext> options)
        : base(options)
@@ -33,15 +34,17 @@ public class InventoryDbContext: DbContext
 
 
             // Decimal precision
+            entity.Property(p => p.Size).HasPrecision(18, 2);
             entity.Property(p => p.CostPrice).HasPrecision(18, 2);
             entity.Property(p => p.RetailPrice).HasPrecision(18, 2);
             entity.Property(p => p.WholesalePrice).HasPrecision(18, 2);
+            entity.Property(p => p.ActualQuantity).HasPrecision(18, 4);
         });
         base.OnModelCreating(modelBuilder);
     }
 
 
-    public DbSet<User> Users { get; set; }
+
     public DbSet<ProductBrand> ProductBrands { get; set; }
     public DbSet<ProductCategory> ProductCategories { get; set; }
     public DbSet<Product> Products { get; set; }

@@ -20,7 +20,7 @@ public partial class CreateProduct
     protected List<ProductCategoryDto> Categories { get; set; } = new List<ProductCategoryDto>();
     protected bool IsLoading = false;
     protected bool IsDisabled => string.IsNullOrWhiteSpace(NewProduct.ProductName)
-                               || string.IsNullOrWhiteSpace(NewProduct.Size)
+                                || NewProduct.Size.Equals(0)
                                 || NewProduct.CostPrice.Equals(0)
                                 || NewProduct.ProductMesurementOption == null;
 
