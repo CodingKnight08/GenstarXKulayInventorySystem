@@ -55,7 +55,7 @@ public class ProductController : ControllerBase
 
     // PUT: api/products/5
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, ProductDto dto)
+    public async Task<IActionResult> Update(int id, ProductDto dto)
     {
         if (id != dto.Id)
             return BadRequest();
@@ -64,7 +64,7 @@ public class ProductController : ControllerBase
         if (!result)
             return NotFound();
 
-        return NoContent();
+        return Ok();
     }
 
     // DELETE: api/products/5

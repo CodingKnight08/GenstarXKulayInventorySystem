@@ -81,9 +81,9 @@ public class ProductService:IProductService
             .Include(p => p.ProductCategory)
             .FirstOrDefaultAsync(p => p.Id == productDto.Id);
 
-        if (existingProduct != null)
+        if (existingProduct == null)
             return false;
-
+        existingProduct.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
         _mapper.Map(productDto, existingProduct);
         await _context.SaveChangesAsync();
 
@@ -174,7 +174,7 @@ public class ProductService:IProductService
 
     public async Task<List<ProductCategoryDto>> GetAllCategoriesAsync()
     {
-        var categories = await _context.ProductCategories.AsNoTracking().ToListAsync() ?? new List<ProductCategory>();
+        var categories = await _context.ProductCategories.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted).ToListAsync() ?? new List<ProductCategory>();
         return categories.Select(category => _mapper.Map<ProductCategoryDto>(category)).ToList();
     }
 
@@ -219,12 +219,31 @@ public class ProductService:IProductService
         var category = await _context.ProductCategories.FindAsync(id);
         if (category == null)
             return false;
+
+       
         category.IsDeleted = true;
         category.DeletedAt = UtilitiesHelper.GetPhilippineTime();
         _context.ProductCategories.Update(category);
+
+        // Find products that reference this category
+        var affectedProducts = await _context.Products
+            .Where(p => p.ProductCategoryId == id)
+            .ToListAsync();
+
+        // Update their CategoryId to 0 (unassigned)
+        foreach (var product in affectedProducts)
+        {
+            product.ProductCategoryId = null;
+        }
+
+        _context.Products.UpdateRange(affectedProducts);
+
+        // Save changes
         await _context.SaveChangesAsync();
+
         return true;
     }
+
 }
 public interface IProductService
 {
