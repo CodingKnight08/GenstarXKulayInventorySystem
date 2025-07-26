@@ -22,6 +22,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<InventoryDbContext>()
     .AddDefaultTokenProviders();
+
 // Swagger/OpenAPI configuration  
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
