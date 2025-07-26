@@ -20,7 +20,7 @@ public partial class EditProduct
     protected CultureInfo _en = new("en-US");
     protected bool IsUpdating { get; set; } = false;
     protected bool IsDisabled => string.IsNullOrWhiteSpace(UpdatedProduct.ProductName)
-                               || string.IsNullOrWhiteSpace(UpdatedProduct.Size)
+                               || UpdatedProduct.Size.Equals(0)
                                 || UpdatedProduct.CostPrice.Equals(0)
                                 || UpdatedProduct.ProductMesurementOption == null;
     protected override async Task OnInitializedAsync()
