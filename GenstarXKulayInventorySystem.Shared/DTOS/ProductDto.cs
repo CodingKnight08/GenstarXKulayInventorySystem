@@ -14,10 +14,11 @@ public class ProductDto:BaseEntityDto
     public decimal CostPrice { get; set; } = 0;
     public decimal? RetailPrice { get; set; } = 0;
     public decimal? WholesalePrice { get; set; }
-    public string? Size { get; set; }
+    public decimal? Size { get; set; }
     public string? Color { get; set; }
     public int Quantity { get; set; } = 0;
     public ProductMesurementOption? ProductMesurementOption { get; set; }
     public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
-   
+    public decimal ActualQuantity { get; set; }
+
 }
