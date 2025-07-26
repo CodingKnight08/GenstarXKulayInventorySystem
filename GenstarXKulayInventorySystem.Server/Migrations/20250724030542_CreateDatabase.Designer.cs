@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250724030542_CreateDatabase")]
+    partial class CreateDatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,7 +61,10 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("ProductCategoryId")
+                    b.Property<int>("ProductCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductCategoryId1")
                         .HasColumnType("int");
 
                     b.Property<int?>("ProductMesurementOption")
@@ -71,7 +77,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("RetailPrice")
+                    b.Property<decimal>("RetailPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -93,6 +99,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("ProductCategoryId");
+
+                    b.HasIndex("ProductCategoryId1");
 
                     b.ToTable("Products");
                 });
@@ -143,29 +151,11 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -256,9 +246,14 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .IsRequired();
 
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductCategory", "ProductCategory")
-                        .WithMany("Products")
+                        .WithMany()
                         .HasForeignKey("ProductCategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductCategory", null)
+                        .WithMany("Products")
+                        .HasForeignKey("ProductCategoryId1");
 
                     b.Navigation("ProductBrand");
 

@@ -1,0 +1,12 @@
+﻿<MudDialog Class="p-4">
+    <DialogContent>
+
+        <MudTextField @bind-Value="UpdatedBrand.BrandName" Label="Brand Name" Required="true" Margin="Margin.Dense" />
+        <MudTextField @bind-Value="UpdatedBrand.Description" Label="Description" Margin="Margin.Dense" Lines="3" />
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" OnClick="UpdateProductBrandAsync" Disabled="@string.IsNullOrWhiteSpace(UpdatedBrand.BrandName)">Update Brand</MudButton>
+    </DialogActions>
+</MudDialog>

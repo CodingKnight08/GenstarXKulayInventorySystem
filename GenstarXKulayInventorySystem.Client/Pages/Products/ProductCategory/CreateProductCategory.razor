@@ -1,0 +1,13 @@
+﻿
+<MudDialog>
+    <DialogContent>
+        <MudItem xs="12" lg="12">
+            <MudTextField @bind-Value="NewCategory.Name" Label="Product Category" Required="true" Margin="Margin.Dense" />
+            <MudTextField @bind-Value="NewCategory.Description" Label="Description" Margin="Margin.Dense" Lines="3" />
+        </MudItem>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="CreateCategory" Disabled="@string.IsNullOrWhiteSpace(NewCategory.Name)">Save</MudButton>
+    </DialogActions>
+</MudDialog>
