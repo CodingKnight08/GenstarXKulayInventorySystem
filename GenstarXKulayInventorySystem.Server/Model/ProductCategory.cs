@@ -2,7 +2,7 @@
 
 namespace GenstarXKulayInventorySystem.Server.Model;
 
-public class ProductCategory
+public class ProductCategory:BaseEntity
 {
    public int Id { get; set; }
    [Required]
