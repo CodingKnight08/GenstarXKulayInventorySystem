@@ -1,35 +1,104 @@
+﻿using GenstarXKulayInventorySystem.Server;
+using GenstarXKulayInventorySystem.Server.Mapper;
+using GenstarXKulayInventorySystem.Server.Model;
+using GenstarXKulayInventorySystem.Server.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to the container  
 builder.Services.AddControllers();
 
-// Enable CORS
+// Enable CORS to allow calls from your Blazor WebAssembly client  
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>
-        policy.WithOrigins("https://localhost:44332") // <-- Update to match your Blazor WASM client URL
-        //policy.WithOrigins("https://app.mysite.com") // Production client domain example
+        policy.WithOrigins("https://localhost:7035")
               .AllowAnyMethod()
               .AllowAnyHeader());
 });
-
-// Swagger config
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<InventoryDbContext>()
+    .AddDefaultTokenProviders();
+// Swagger/OpenAPI configuration  
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Your API Title",
+        Version = "v1"
+    });
+});
 
-var app = builder.Build();
 
-// Use Swagger in development
+builder.Services.AddHttpContextAccessor();
+
+
+// AutoMapper profile
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<AutoMapperProfile>();
+});
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+});
+
+
+// Register DbContextFactory (with retry on failure)
+builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
+{
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure();
+        });
+}, ServiceLifetime.Scoped);
+
+
+
+
+//Register Services
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+
+
+var app = builder.Build(); // Build must happen BEFORE using app.Services
+
+// Apply migrations to create/update database automatically
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+    dbContext.Database.Migrate();
+}
+
+// Middleware pipeline  
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API Title v1");
+        c.RoutePrefix = "swagger"; 
+    });
 }
 
+app.UseDeveloperExceptionPage();
 app.UseHttpsRedirection();
 
-// Use CORS
 app.UseCors("AllowClient");
+
+// 🔑 Add this line
+app.UseAuthentication();
 
 app.UseAuthorization();
 

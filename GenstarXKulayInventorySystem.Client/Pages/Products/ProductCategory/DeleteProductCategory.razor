@@ -1,0 +1,29 @@
+﻿@if (!IsLoading)
+{
+    <MudDialog>
+
+        <DialogContent>
+
+            <MudText Align="Align.Center" Class="text-danger p-2 mb-2">Are you sure you want to remove <strong>@DeletedCategory.Name</strong>?</MudText>
+            <MudText Align="Align.Justify">All products associated with this category will be change.</MudText>
+
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Default" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteCategoryAsync">Delete</MudButton>
+        </DialogActions>
+
+    </MudDialog>
+}
+else
+{
+    <MudDialog>
+        <DialogContent>
+            <MudItem Class="d-flex flex-column align-items-center justify-content-center" xs="12" lg="12">
+                <MudProgressCircular Size="Size.Medium" Indeterminate="true" Color="Color.Success">
+                    <ChildContent>Saving</ChildContent>
+                </MudProgressCircular>
+            </MudItem>
+        </DialogContent>
+    </MudDialog>
+}

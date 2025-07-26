@@ -101,3 +101,23 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+.nav-item-hover {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+    .nav-item-hover:hover {
+        background-color: #7f8c8d;
+        transform: translateX(5px);
+    }
+
+    .nav-item-hover .material-icons {
+        transition: transform 0.2s ease;
+    }
+
+    .nav-item-hover:hover .material-icons {
+        transform: scale(1.2);
+    }
