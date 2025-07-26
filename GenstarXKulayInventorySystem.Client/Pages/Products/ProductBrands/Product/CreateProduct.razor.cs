@@ -22,7 +22,6 @@ public partial class CreateProduct
     protected bool IsDisabled => string.IsNullOrWhiteSpace(NewProduct.ProductName)
                                || string.IsNullOrWhiteSpace(NewProduct.Size)
                                 || NewProduct.CostPrice.Equals(0)
-                                || NewProduct.ProductCategoryId <= 0
                                 || NewProduct.ProductMesurementOption == null;
 
 
@@ -58,7 +57,7 @@ public partial class CreateProduct
 
     protected async Task Submit()
     {
-        if (!string.IsNullOrWhiteSpace(NewProduct.ProductName) && BrandId > 0 && NewProduct.ProductCategoryId > 0)
+        if (!string.IsNullOrWhiteSpace(NewProduct.ProductName) && BrandId > 0)
         {
             try
             {

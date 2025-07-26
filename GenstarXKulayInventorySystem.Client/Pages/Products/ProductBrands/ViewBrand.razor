@@ -54,10 +54,11 @@
                     <MudTh>Product Name</MudTh>
                     <MudTh>Size</MudTh>
                     <MudTh>Unit</MudTh>
+                    <MudTh>Category</MudTh>
                     <MudTh>Quantity</MudTh>
                     <MudTh>Color</MudTh>
+                    <MudTh>Capital Price</MudTh>
                     <MudTh>Retail Price</MudTh>
-                    <MudTh>Capital</MudTh>
                     <MudTh>Wholesale Price</MudTh>
                     <MudTh>Branch</MudTh>
                     <MudTh>Actions</MudTh>
@@ -66,6 +67,17 @@
                     <MudTd Style="position:sticky;" DataLabel="Product Name">@context.ProductName</MudTd>
                     <MudTd DataLabel="Size">@context.Size</MudTd>
                     <MudTd DataLabel="Unit">@context.ProductMesurementOption.ToString()</MudTd>
+                   <MudTd DataLabel="Category">
+                        @(
+                            context.ProductCategoryId != null
+                                ? Categories.FirstOrDefault(c => c.Id == context.ProductCategoryId)?.Name ?? "None"
+                                : "None"
+                        )
+                    </MudTd>
+
+
+
+
                     <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
                     <MudTd DataLabel="Color">@context.Color</MudTd>
                     <MudTd DataLabel="Capital"> ₱ @context.CostPrice</MudTd>

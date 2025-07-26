@@ -1,5 +1,6 @@
 ﻿@page "/products"
 @using GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands
+@using GenstarXKulayInventorySystem.Client.Pages.Products.ProductCategory
 @layout MainLayout
 
 
@@ -12,8 +13,8 @@
         <MudTabPanel Text="Product Status">
             
         </MudTabPanel>
-        <MudTabPanel Text="Tab Three">
-            
+        <MudTabPanel Text="Product Category">
+            <GetAllProductCategory/>
         </MudTabPanel>
        
     </MudTabs>

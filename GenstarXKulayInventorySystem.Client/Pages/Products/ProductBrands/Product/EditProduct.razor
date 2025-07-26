@@ -1,6 +1,6 @@
 ﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @if(IsLoading){
-    <MudDialog Class="p-2">
+    <MudDialog Class="p-2 overflow-hidden">
         <DialogContent>
             <MudItem xs="12" lg="12" Class="d-flex align-items-center justify-content-center">
                 <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Medium" />
@@ -78,15 +78,13 @@ else
                 </MudItem>
                 <!-- Category Dropdown -->
                 <MudItem xs="12" sm="6">
-                    <MudSelect T="int"
+                    <MudSelect T="int?"
                                Label="Category"
-                               @bind-Value="UpdatedProduct.ProductCategoryId"
-                               Margin="Margin.Dense"
-                               FullWidth="true"
-                               RequiredError="Select Category">
+                               @bind-Value="UpdatedProduct.ProductCategoryId">
+                        <MudSelectItem T="int?" Value="null">None</MudSelectItem>
                         @foreach (var category in Categories)
                         {
-                            <MudSelectItem T="int" Value="@category.Id">@category.Name</MudSelectItem>
+                            <MudSelectItem T="int?" Value="@category.Id">@category.Name</MudSelectItem>
                         }
                     </MudSelect>
 

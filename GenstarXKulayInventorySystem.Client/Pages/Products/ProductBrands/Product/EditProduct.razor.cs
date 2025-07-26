@@ -22,7 +22,6 @@ public partial class EditProduct
     protected bool IsDisabled => string.IsNullOrWhiteSpace(UpdatedProduct.ProductName)
                                || string.IsNullOrWhiteSpace(UpdatedProduct.Size)
                                 || UpdatedProduct.CostPrice.Equals(0)
-                                || UpdatedProduct.ProductCategoryId <= 0
                                 || UpdatedProduct.ProductMesurementOption == null;
     protected override async Task OnInitializedAsync()
     {
