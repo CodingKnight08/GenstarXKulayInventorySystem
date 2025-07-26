@@ -38,12 +38,12 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                Color="Color.Success"
                                Variant="Variant.Text"
-                              
+                               OnClick="() => UpdateProductBrand(context.Id)"
                                 />  
                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                Color="Color.Error"
                                Variant="Variant.Text"
-                               
+                               OnClick="() => DeleteProductBrand(context.Id)"
                                />
             </MudTd>
         </RowTemplate>

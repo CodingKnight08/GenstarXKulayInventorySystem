@@ -59,9 +59,43 @@ public partial class GetAllProductBrands
         }
     }
 
+    protected async Task UpdateProductBrand(int brandId)
+    {
+        var parameters = new DialogParameters
+    {
+        { "ProductBrandId", brandId }
+    };
+        var dialogRef = await DialogService.ShowAsync<EditProductBrand>("Update Product Brand",parameters);
 
+        if (dialogRef is not null)
+        {
+            var result = await dialogRef.Result;
 
+            if (result is not null && !result.Canceled)
+            {
+                await LoadProductBrandsAsync();
+                StateHasChanged();
+            }
+        }
+    }
 
+    protected async Task DeleteProductBrand(int brandId)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ProductBrandId", brandId }
+        };
+        var dialogRef = await DialogService.ShowAsync<DeleteProductBrand>("Delete Product Brand", parameters);
+        if (dialogRef is not null)
+        {
+            var result = await dialogRef.Result;
+            if (result is not null && !result.Canceled)
+            {
+                await LoadProductBrandsAsync();
+                StateHasChanged();
+            }
+        }
+    }
     protected void ViewBrands(int brandId)
     {
         NavigationManager.NavigateTo($"/productbrand/{brandId}");
