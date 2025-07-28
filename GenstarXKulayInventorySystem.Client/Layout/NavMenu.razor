@@ -4,11 +4,16 @@
 
     </MudCard>
     <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
-    <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart">Products</MudNavLink>
-    <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale">Sales</MudNavLink>
-    <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney">Billings</MudNavLink>
+    <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Products</MudNavLink>
+    <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
+    <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
     <MudNavLink Href="/orders" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCartCheckout">Orders</MudNavLink>
-    <MudNavLink Href="/reports" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks">Reports</MudNavLink>
+    <MudNavLink Href="/reports" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="@Color.Secondary">Reports</MudNavLink>
+    <MudNavGroup Icon="@Icons.Material.Filled.Groups" IconColor="@Color.Tertiary" Title="Group">
+        <MudNavLink Href="/suppliers" Match="NavLinkMatch.Prefix">Suppliers</MudNavLink>
+        <MudNavLink Href="/clients" Match="NavLinkMatch.Prefix">Clients</MudNavLink>
+
+    </MudNavGroup>
 
     <MudNavGroup Icon="@Icons.Material.Filled.Settings" IconColor="@Color.Info" Title="Settings" >
         <MudNavLink Href="/users" Match="NavLinkMatch.Prefix">Users</MudNavLink>

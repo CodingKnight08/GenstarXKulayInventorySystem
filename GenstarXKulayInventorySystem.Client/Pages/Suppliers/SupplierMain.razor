@@ -1,0 +1,12 @@
+﻿@page "/suppliers"
+@layout MainLayout
+<MudMainContent Class="d-flex flex-column align-items-center justify-content-center w-auto gap-2" Style="height:100%">
+   <MudCard Square=true Elevation="0" Class="bg-transparent"> 
+       <MudText Typo="Typo.h4" Align="Align.Center">
+           Suppliers Section
+       </MudText>
+   </MudCard>
+   <MudCard Elevation="0" Class="h-75 w-100">
+      <GetAllSuppliers />
+   </MudCard>
+</MudMainContent>
