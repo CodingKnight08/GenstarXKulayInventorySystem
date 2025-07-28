@@ -71,6 +71,7 @@ builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 //Register Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ISupplierService, SupplierService>();
 
 
 var app = builder.Build(); // Build must happen BEFORE using app.Services
