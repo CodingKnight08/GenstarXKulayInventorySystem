@@ -1,0 +1,27 @@
+﻿<MudDialog Class="p-3">
+    <DialogContent>
+        <MudGrid Spacing="2">
+            <MudItem xl="12" xs="12">
+                <MudTextField
+                    Label="Supplier Name"
+                    @bind-Value="NewSupplier.SupplierName" 
+                    Required=true
+                    />
+            </MudItem>
+            <MudItem xl="12" xs="12">
+                <MudTextField AdornmentIcon="@Icons.Material.Filled.LocationOn" Adornment="Adornment.Start" Label="Address" @bind-Value="NewSupplier.Address" />
+            </MudItem>
+            <MudItem xl="6" xs="12">
+                <MudTextField  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" Label="Email" @bind-Value="NewSupplier.Email" />
+            </MudItem>
+            <MudItem xl="6" xs="12">
+                <MudTextField Mask="@(new PatternMask("0000-000-0000"))" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Call" Label="Contact Number" @bind-Value="NewSupplier.ContactNumber" />
+            </MudItem>
+        </MudGrid>
+      
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="CreateSupplierAsync" Disabled=@(string.IsNullOrWhiteSpace(NewSupplier.SupplierName))>Save</MudButton>
+    </DialogActions>
+</MudDialog>
