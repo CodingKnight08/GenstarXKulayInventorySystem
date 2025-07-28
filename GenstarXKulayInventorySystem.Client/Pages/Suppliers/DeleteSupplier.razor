@@ -1,0 +1,29 @@
+﻿@if (!IsLoading)
+{
+    <MudDialog>
+
+        <DialogContent>
+
+            <MudText Align="Align.Center" Class="text-danger p-2 mb-2">Are you sure you want to remove <strong>@DeletedSupplier.SupplierName</strong>?</MudText>
+           
+
+        </DialogContent>
+        <DialogActions>
+            <MudButton Color="Color.Default" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeleteSupplierAsync">Delete</MudButton>
+        </DialogActions>
+
+    </MudDialog>
+}
+else
+{
+    <MudDialog>
+        <DialogContent>
+            <MudItem Class="d-flex flex-column align-items-center justify-content-center py-2 px-5" xs="12" lg="12" xl="12">
+                <MudProgressCircular Size="Size.Medium" Indeterminate="true" Color="Color.Error">
+                    <ChildContent>Deleting</ChildContent>
+                </MudProgressCircular>
+            </MudItem>
+        </DialogContent>
+    </MudDialog>
+}
