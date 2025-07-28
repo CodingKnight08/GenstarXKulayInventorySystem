@@ -1,0 +1,49 @@
+﻿<MudCard Elevation="0" Class="w-100 d-flex flex-row align-items-center justify-content-end">
+    <MudButton StartIcon="@Icons.Material.Filled.AddCircle"
+               Variant="Variant.Filled"
+               Color="Color.Info"
+               Class="float-end py-1 px-2 mb-3 me-3" 
+               OnClick="AddSupplier"
+    >Add Supplier</MudButton>
+</MudCard>
+<MudTable 
+    Items="Suppliers"
+          Dense="true"
+          Hover="true"
+          Bordered="true"
+          Class="flex-grow-1 p-2"
+>
+    <HeaderContent>
+        <MudTh>Supplier Name</MudTh>
+        <MudTh>Address</MudTh>
+        <MudTh>Contact Number</MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd Class="fw-normal fs-6">@context.SupplierName</MudTd>
+        <MudTd Class="text-truncate text-body" Style="max-width: 200px;">
+            @(string.IsNullOrWhiteSpace(context.Address) ? "None" : context.Address)
+        </MudTd>
+        <MudTd Class="text-truncate text-body">@(string.IsNullOrWhiteSpace(context.ContactNumber) ? "None": context.ContactNumber)</MudTd>
+        <MudTd Class="text-truncate text-body">@(string.IsNullOrWhiteSpace(context.Email) ? "None" : context.Email)</MudTd>
+
+        <MudTd>
+            
+            <MudIconButton 
+                Icon="@Icons.Material.Filled.Edit"
+                Color="Color.Success"
+                Variant="Variant.Text"
+                OnClick="() => EditSupplier(context.Id)" />
+           <MudIconButton 
+                Icon="@Icons.Material.Filled.Delete"
+                Color="Color.Error"
+                 Variant="Variant.Text"
+                 OnClick="() => DeleteSupplier(context.Id)"
+                 />
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>

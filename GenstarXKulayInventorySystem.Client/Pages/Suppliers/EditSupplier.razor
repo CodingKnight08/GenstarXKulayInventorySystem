@@ -1,0 +1,50 @@
+﻿@if (IsLoading)
+{
+    <MudDialog Class="p-2 overflow-hidden">
+        <DialogContent>
+            <MudItem xs="12" lg="12" Class="d-flex align-items-center justify-content-center">
+                <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Medium" />
+            </MudItem>
+            <MudItem xs="12" lg="12">
+                @if (IsUpdating)
+                {
+                    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="text-black">Updating Data..</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.subtitle1" Class="text-black" Align="Align.Center">Loading Data..</MudText>
+                }
+            </MudItem>
+
+        </DialogContent>
+    </MudDialog>
+
+}
+else
+{
+    <MudDialog Class="p-3">
+        <DialogContent>
+            <MudGrid Spacing="2">
+                <MudItem xl="12" xs="12">
+                    <MudTextField Label="Supplier Name"
+                                  @bind-Value="UpdatedSupplier.SupplierName"
+                                  Required=true />
+                </MudItem>
+                <MudItem xl="12" xs="12">
+                    <MudTextField AdornmentIcon="@Icons.Material.Filled.LocationOn" Adornment="Adornment.Start" Label="Address" @bind-Value="UpdatedSupplier.Address" />
+                </MudItem>
+                <MudItem xl="6" xs="12">
+                    <MudTextField Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" Label="Email" @bind-Value="UpdatedSupplier.Email" />
+                </MudItem>
+                <MudItem xl="6" xs="12">
+                    <MudTextField Mask="@(new PatternMask("0000-000-0000"))" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Call" Label="Contact Number" @bind-Value="UpdatedSupplier.ContactNumber" />
+                </MudItem>
+            </MudGrid>
+
+        </DialogContent>
+        <DialogActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="UpdateSupplierAsync" Disabled=@(string.IsNullOrWhiteSpace(UpdatedSupplier.SupplierName))>Update</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
