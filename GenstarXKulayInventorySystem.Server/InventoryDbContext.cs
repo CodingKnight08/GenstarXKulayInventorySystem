@@ -40,6 +40,25 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(p => p.WholesalePrice).HasPrecision(18, 2);
             entity.Property(p => p.ActualQuantity).HasPrecision(18, 4);
         });
+
+        modelBuilder.Entity<PurchaseOrder>(entity =>
+        {
+            entity.HasOne(po => po.Supplier)
+                .WithMany()
+                .HasForeignKey(po => po.SupplierId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.Property(po => po.AssumeTotalAmount).HasPrecision(18, 2);
+
+            entity.Property(po => po.PurchaseShipToOption)
+                .HasConversion<int>();
+
+            entity.Property(po => po.PurchaseRecieptOption)
+                .HasConversion<int>();
+
+            entity.Property(po => po.PurchaseRecieveOption)
+                .HasConversion<int>();
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -49,4 +68,5 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<ProductCategory> ProductCategories { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
+    public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
 }
