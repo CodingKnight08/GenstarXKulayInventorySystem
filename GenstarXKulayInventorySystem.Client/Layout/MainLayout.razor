@@ -1,6 +1,6 @@
 ﻿@using MudBlazor
 @inherits LayoutComponentBase
-<MudThemeProvider />
+<MudThemeProvider Theme="@MyCustomTheme"/>
 <MudPopoverProvider />
 
 
@@ -9,13 +9,13 @@
 @* Needed for snackbars *@
 <MudSnackbarProvider />
 
-<MudLayout>
+<MudLayout >
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         Inventory System
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen">
-        <NavMenu/>
+        <NavMenu />
     </MudDrawer>
     <div class="w-100 vh-100">
         @Body
@@ -31,4 +31,23 @@
     {
         _drawerOpen = !_drawerOpen;
     }
+    MudTheme MyCustomTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = Colors.Blue.Default,
+            Secondary = Colors.Green.Accent4,
+            AppbarBackground = Colors.Blue.Lighten2,
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = Colors.Blue.Lighten1
+        },
+
+        LayoutProperties = new LayoutProperties()
+        {
+            DrawerWidthLeft = "260px",
+            DrawerWidthRight = "300px"
+        }
+    };
 }
