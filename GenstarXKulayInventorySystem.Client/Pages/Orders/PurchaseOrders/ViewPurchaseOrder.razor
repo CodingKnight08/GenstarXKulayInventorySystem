@@ -1,0 +1,92 @@
+﻿@page "/purchase-order/view/{Id:int}"
+@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+
+@layout MainLayout
+
+<MudMainContent Style="height:100%" Class="w-auto d-flex flex-column align-items-center justify-content-start gap-3">
+  
+    <MudCard Elevation="0" Class="w-100 d-flex justify-content-start align-items-start">
+        <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+    </MudCard>
+    <MudText Typo="Typo.h5" Align="Align.Left">Purchase Order Information </MudText>
+    @if (IsLoading)
+    {
+        <MudCard Elevation="0" Class="bg-transparent w-100 d-flex align-items-center justify-content-center gap-1">
+            <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Medium">
+                <ChildContent>
+                    <MudText Align="Align.Center">Loading</MudText>
+                </ChildContent>
+            </MudProgressCircular>
+        </MudCard>
+    }
+    else
+    {
+         @if(!IsEdit){
+        <MudCard Elevation="0" Class="w-100 d-flex flex-row justify-content-end align-items-center gap-2 mb-3">
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Success" OnClick="ToggleEdit" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="me-3" OnClick="DeletePurchaseOrder" />
+        </MudCard>
+         }
+        <MudCard Elevation="0" style="width:90%;">
+            @if(!IsEdit){
+            <MudGrid Spacing="3">
+                <MudItem xl="4">
+                    <MudTextField Label="Supplier"
+                                  Value="@(PurchaseOrder.Supplier?.SupplierName ?? string.Empty)"
+                                  ReadOnly="true" />
+
+                </MudItem>
+                <MudItem xl="2">
+                    <MudSelect T="PurchaseRecieptOption"
+                               Label="Receipt Type"
+                               ReadOnly=true
+                               @bind-Value="PurchaseOrder.PurchaseRecieptOption">
+                        @foreach (var val in Enum.GetValues<PurchaseRecieptOption>())
+                        {
+                            <MudSelectItem Value="@val">@val.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xl="2">
+                    <MudSelect T="PurchaseRecieveOption"
+                               Label="Receive Option"
+                               ReadOnly=true
+                               @bind-Value="PurchaseOrder.PurchaseRecieveOption">
+                        @foreach (var val in Enum.GetValues<PurchaseRecieveOption>())
+                        {
+                            <MudSelectItem Value="@val">@val.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xl="2">
+                    <MudSelect T="PurchaseShipToOption"
+                               Label="Ship To"
+                               ReadOnly=true
+                               @bind-Value="PurchaseOrder.PurchaseShipToOption">
+                        @foreach (var val in Enum.GetValues<PurchaseShipToOption>())
+                        {
+                            <MudSelectItem Value="@val">@val.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xl="2">
+                    <MudTextField Label="Purchase Order No." @bind-Value="PurchaseOrder.PurchaseOrderNumber" ReadOnly="true" />
+                </MudItem>
+                <MudItem xl="3">
+                    <MudDatePicker Label="Date Ordered" Date="PurchaseOrder.PurchaseOrderDate" ReadOnly=true />
+                </MudItem>
+                <MudItem xl="3">
+                    <MudDatePicker Label="Date to Recieve" Date="PurchaseOrder.ExpectedDeliveryDate" ReadOnly=true />
+                </MudItem>
+                <MudItem xl="6">
+                    <MudTextField Label="Remarks" @bind-Value="PurchaseOrder.Remarks" ReadOnly=true />
+                </MudItem>
+                </MudGrid>
+            }
+            else
+            {
+                <EditPurchaseOrders PurchaseOrder="PurchaseOrder" OnUpdate="UpdatePurchaseOrderData"/>
+            }
+        </MudCard>
+    }
+</MudMainContent>
