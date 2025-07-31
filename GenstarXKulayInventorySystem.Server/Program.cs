@@ -72,6 +72,7 @@ builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 
 
 var app = builder.Build(); // Build must happen BEFORE using app.Services

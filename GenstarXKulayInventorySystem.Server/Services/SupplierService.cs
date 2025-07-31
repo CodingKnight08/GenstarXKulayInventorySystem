@@ -69,6 +69,38 @@ public class SupplierService:ISupplierService
             return false;
         }
     }
+    public async Task<SupplierDto?> CreateAndReturnAsync(SupplierDto supplierDto)
+    {
+        try
+        {
+            var existingSupplier = await _context.Suppliers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.SupplierName == supplierDto.SupplierName);
+
+            if (existingSupplier != null)
+                return null;
+
+            var supplier = _mapper.Map<Supplier>(supplierDto);
+            supplier.CreatedBy = GetCurrentUsername();
+            supplier.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+
+            await _context.Suppliers.AddAsync(supplier);
+            int result = await _context.SaveChangesAsync();
+
+            if (result > 0)
+            {
+                return _mapper.Map<SupplierDto>(supplier);
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding supplier: {SupplierName}", supplierDto.SupplierName);
+            return null;
+        }
+    }
+
 
     public async Task<bool> UpdateAsync(SupplierDto supplierDto)
     {
@@ -125,6 +157,7 @@ public interface ISupplierService
     Task<List<SupplierDto>> GetAllAsync();
     Task<SupplierDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(SupplierDto supplierDto);
+    Task<SupplierDto?> CreateAndReturnAsync(SupplierDto supplierDto);
     Task<bool> UpdateAsync(SupplierDto supplierDto);
     Task<bool> DeleteAsync(int id);
 }

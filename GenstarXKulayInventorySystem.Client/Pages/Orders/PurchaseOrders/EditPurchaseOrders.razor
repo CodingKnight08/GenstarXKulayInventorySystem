@@ -1,0 +1,70 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+<MudGrid Spacing="3">
+    <MudItem xl="4">
+        <MudAutocomplete Label="Supplier Name"
+                         T="string"
+                         CoerceText=true
+                         CoerceValue="true"
+                         Value="SupplierName"
+                         SearchFunc="SearchSupplier"
+                         ValueChanged="@(async (string value) => await OnSupplierChanged(value))"
+                         Required=true />
+
+    </MudItem>
+    <MudItem xl="1" Class="d-flex align-items-end justify-content-start">
+        @if (IsNewSupplier)
+        {
+            <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Success" StartIcon="@Icons.Material.Filled.AddCircle" OnClick="ConfirmAddSupplier">Add</MudButton>
+
+        }
+    </MudItem>
+    <MudItem xl="2">
+        <MudSelect T="PurchaseRecieptOption"
+                   Label="Receipt Type"
+                   
+                   @bind-Value="PurchaseOrder.PurchaseRecieptOption">
+            @foreach (var val in Enum.GetValues<PurchaseRecieptOption>())
+            {
+                <MudSelectItem Value="@val">@val.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xl="2">
+        <MudSelect T="PurchaseRecieveOption"
+                   Label="Receive Option"
+                   
+                   @bind-Value="PurchaseOrder.PurchaseRecieveOption">
+            @foreach (var val in Enum.GetValues<PurchaseRecieveOption>())
+            {
+                <MudSelectItem Value="@val">@val.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xl="2">
+        <MudSelect T="PurchaseShipToOption"
+                   Label="Ship To"
+                   ReadOnly=true
+                   @bind-Value="PurchaseOrder.PurchaseShipToOption">
+            @foreach (var val in Enum.GetValues<PurchaseShipToOption>())
+            {
+                <MudSelectItem Value="@val">@val.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+    <MudItem xl="2">
+        <MudTextField Label="Purchase Order No." @bind-Value="PurchaseOrder.PurchaseOrderNumber" Required=true />
+    </MudItem>
+    <MudItem xl="3">
+        <MudDatePicker Label="Date Ordered" Date="PurchaseOrder.PurchaseOrderDate" DateChanged="@(newDate => OnDateChanged(newDate))" />
+    </MudItem>
+    <MudItem xl="3">
+        <MudDatePicker Label="Date to Recieve" MinDate="PurchaseOrder.PurchaseOrderDate" Date="PurchaseOrder.ExpectedDeliveryDate" DateChanged="@(newDate => OnExpectedDateChanged(newDate))" />
+    </MudItem>
+    <MudItem xl="6">
+        <MudTextField Label="Remarks" @bind-Value="PurchaseOrder.Remarks" />
+    </MudItem>
+</MudGrid>
+<MudCard Elevation="0" Class="d-flex flex-row align-content-center justify-content-end gap-2" Style="width:100%;">
+    <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="CancelEdit">Cancel</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="UpdatePurchaseOrder">Update</MudButton>
+</MudCard>

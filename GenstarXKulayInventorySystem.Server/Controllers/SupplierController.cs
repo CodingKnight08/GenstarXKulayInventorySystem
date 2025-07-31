@@ -44,6 +44,23 @@ public class SupplierController : ControllerBase
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
+    [HttpPost("create-with-return")]
+    public async Task<IActionResult> CreateWithReturn(SupplierDto dto)
+    {
+        try
+        {
+            var created = await _supplierService.CreateAndReturnAsync(dto);
+            if (created is null)
+                return BadRequest("Supplier already exists.");
+
+            return Ok(created);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, SupplierDto dto)

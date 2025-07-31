@@ -7,7 +7,11 @@
     <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Products</MudNavLink>
     <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
     <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
-    <MudNavLink Href="/orders" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCartCheckout">Orders</MudNavLink>
+    <MudNavGroup Icon="@Icons.Material.Filled.Inventory" IconColor="@Color.Default" Title="Orders">
+        <MudNavLink Href="/purchase-order" Match="NavLinkMatch.Prefix">Purchase Orders</MudNavLink>
+        <MudNavLink Href="/recieved-order" Match="NavLinkMatch.Prefix">Recieve Orders</MudNavLink>
+    </MudNavGroup>
+  
     <MudNavLink Href="/reports" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="@Color.Secondary">Reports</MudNavLink>
     <MudNavGroup Icon="@Icons.Material.Filled.Groups" IconColor="@Color.Tertiary" Title="Group">
         <MudNavLink Href="/suppliers" Match="NavLinkMatch.Prefix">Suppliers</MudNavLink>

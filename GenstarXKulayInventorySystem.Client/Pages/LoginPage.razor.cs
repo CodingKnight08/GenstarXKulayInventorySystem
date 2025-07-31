@@ -20,7 +20,9 @@ public partial class LoginPage
     protected bool IsPasswordInvalid => string.IsNullOrWhiteSpace(User.Password);
     protected override async Task OnInitializedAsync()
     {
-     
+
+        User.Username = "admin";
+        User.Password = "admin123";
         await Task.CompletedTask;
     }
     protected private async Task Login()
