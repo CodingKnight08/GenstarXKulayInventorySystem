@@ -7,7 +7,6 @@ public class PurchaseOrder:BaseEntity
 {
     public int Id { get; set; }
     public int? SupplierId { get; set; }
-    [ForeignKey(nameof(SupplierId))]
     public Supplier? Supplier { get; set; }
     public string PurchaseOrderNumber { get; set; } = string.Empty;
     public PurchaseShipToOption PurchaseShipToOption { get; set; } = PurchaseShipToOption.GeneralSantosCity;

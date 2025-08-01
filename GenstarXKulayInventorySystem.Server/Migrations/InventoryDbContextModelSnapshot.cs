@@ -285,9 +285,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int?>("PurchaseItemMeasurementOption")
                         .HasColumnType("int");
 
-                    b.Property<int?>("PurchaseOrderId")
+                    b.Property<int>("PurchaseOrderId")
                         .HasColumnType("int");
-
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -591,7 +590,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrder", b =>
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.Supplier", "Supplier")
-                        .WithMany()
+                        .WithMany("PurchaseOrders")
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.SetNull);
 
@@ -611,9 +610,10 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.PurchaseOrder", "PurchaseOrder")
-                        .WithMany()
+                        .WithMany("PurchaseOrderItems")
                         .HasForeignKey("PurchaseOrderId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
 
@@ -686,6 +686,11 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrder", b =>
                 {
                     b.Navigation("PurchaseOrderItems");
+                });
+
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Supplier", b =>
+                {
+                    b.Navigation("PurchaseOrders");
                 });
 #pragma warning restore 612, 618
         }
