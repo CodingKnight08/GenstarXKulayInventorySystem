@@ -59,6 +59,32 @@ public class InventoryDbContext: IdentityDbContext<User>
                 .HasConversion<int>();
         });
 
+        modelBuilder.Entity<PurchaseOrderItem>(entity =>
+        {
+            // Relationships with restricted deletes
+            entity.HasOne(poi => poi.PurchaseOrder)
+                .WithMany()
+                .HasForeignKey(poi => poi.PurchaseOrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(poi => poi.Product)
+                .WithMany()
+                .HasForeignKey(poi => poi.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(poi => poi.ProductBrand)
+                .WithMany()
+                .HasForeignKey(poi => poi.ProductBrandId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Decimal precision
+            entity.Property(poi => poi.ItemAmount)
+                .HasPrecision(18, 2);
+            entity.Property(poi => poi.PurchaseItemMeasurementOption)
+                    .HasConversion<int>();
+        });
+
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -69,4 +95,5 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<Product> Products { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
 }

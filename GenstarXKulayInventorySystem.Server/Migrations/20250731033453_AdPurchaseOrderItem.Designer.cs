@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250731033453_AdPurchaseOrderItem")]
+    partial class AdPurchaseOrderItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -288,6 +291,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int?>("PurchaseOrderId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PurchaseOrderId1")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -302,6 +307,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.HasIndex("ProductId");
 
                     b.HasIndex("PurchaseOrderId");
+
+                    b.HasIndex("PurchaseOrderId1");
 
                     b.ToTable("PurchaseOrderItems");
                 });
@@ -614,6 +621,10 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .WithMany()
                         .HasForeignKey("PurchaseOrderId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.PurchaseOrder", null)
+                        .WithMany("PurchaseOrderItems")
+                        .HasForeignKey("PurchaseOrderId1");
 
                     b.Navigation("Product");
 

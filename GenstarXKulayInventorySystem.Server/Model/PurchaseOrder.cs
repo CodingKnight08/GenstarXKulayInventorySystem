@@ -18,4 +18,6 @@ public class PurchaseOrder:BaseEntity
     public bool IsRecieved { get; set; } = false;
     public PurchaseRecieveOption PurchaseRecieveOption { get; set; } = PurchaseRecieveOption.Pending;
     public decimal AssumeTotalAmount { get; set; } = 0;
+
+    public ICollection<PurchaseOrderItem> PurchaseOrderItems { get; set; } = new List<PurchaseOrderItem>();
 }
