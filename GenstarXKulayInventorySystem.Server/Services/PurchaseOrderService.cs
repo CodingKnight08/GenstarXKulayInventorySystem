@@ -60,6 +60,14 @@ public class PurchaseOrderService:IPurchaseOrderService
             var purchaseOrder = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
             purchaseOrder.CreatedBy = GetCurrentUsername();
             purchaseOrder.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            foreach (var item in purchaseOrder.PurchaseOrderItems)
+            {
+                item.PurchaseOrder = null;
+                item.ProductBrand = null;
+                item.Product = null;
+                item.CreatedBy = purchaseOrder.CreatedBy;
+                item.CreatedAt = purchaseOrder.PurchaseOrderDate;
+            }
             await _context.PurchaseOrders.AddAsync(purchaseOrder);
             await _context.SaveChangesAsync();
             return true;
@@ -74,20 +82,25 @@ public class PurchaseOrderService:IPurchaseOrderService
     public async Task<bool> UpdateAsync(PurchaseOrderDto purchaseOrderDto)
     {
         var existingPurchaseOrder = await _context.PurchaseOrders
-            .AsNoTracking()
+            .Include(po => po.PurchaseOrderItems)
             .FirstOrDefaultAsync(x => x.Id == purchaseOrderDto.Id && !x.IsDeleted && !x.IsRecieved);
+
         if (existingPurchaseOrder == null)
             return false;
 
         try
         {
-            var purchaseOrder = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
-            purchaseOrder.UpdatedBy = GetCurrentUsername();
-            purchaseOrder.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
-            purchaseOrder.SupplierId = purchaseOrderDto.SupplierId;
-            _context.PurchaseOrders.Update(purchaseOrder);
-            int result = await _context.SaveChangesAsync();
-            return result > 0;
+            // Update purchase order basic fields
+            existingPurchaseOrder.UpdatedBy = GetCurrentUsername();
+            existingPurchaseOrder.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            existingPurchaseOrder.SupplierId = purchaseOrderDto.SupplierId;
+            existingPurchaseOrder.PurchaseOrderNumber = purchaseOrderDto.PurchaseOrderNumber;
+            existingPurchaseOrder.PurchaseOrderDate = purchaseOrderDto.PurchaseOrderDate;
+            existingPurchaseOrder.ExpectedDeliveryDate = purchaseOrderDto.ExpectedDeliveryDate;
+
+
+            await _context.SaveChangesAsync();
+            return true;
         }
         catch (Exception ex)
         {
@@ -99,14 +112,27 @@ public class PurchaseOrderService:IPurchaseOrderService
     public async Task<bool> DeleteAsync(int id)
     {
         var purchaseOrder = await _context.PurchaseOrders
+            .Include(po => po.PurchaseOrderItems) // Include related items
             .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted && !x.IsRecieved);
+
         if (purchaseOrder == null)
             return false;
+
         try
         {
+            // Soft delete the purchase order
             purchaseOrder.IsDeleted = true;
             purchaseOrder.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+
+            // Soft delete each associated purchase order item
+            foreach (var item in purchaseOrder.PurchaseOrderItems.Where(i => !i.IsDeleted))
+            {
+                item.IsDeleted = true;
+                item.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+            }
+
             _context.PurchaseOrders.Update(purchaseOrder);
+
             int result = await _context.SaveChangesAsync();
             return result > 0;
         }
@@ -116,6 +142,7 @@ public class PurchaseOrderService:IPurchaseOrderService
             return false;
         }
     }
+
 }
 public interface IPurchaseOrderService
 {
