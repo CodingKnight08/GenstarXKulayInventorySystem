@@ -1,0 +1,78 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+
+@if (!IsLoading)
+{
+    
+
+<MudTable 
+    Class="my-5"
+    Items="PurchaseOrderItems"
+    Dense="true"
+    Hover="true"
+    Bordered="true"
+    Striped="true"
+>
+    <HeaderContent>
+        <MudTh>Brand Name</MudTh>
+        <MudTh>Product</MudTh>
+        <MudTh>Unit</MudTh>
+        <MudTh>Quantity</MudTh>
+        <MudTh>Item Amount</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Action</MudTh>
+
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@(context.ProductBrand?.BrandName ?? "None")</MudTd>
+        <MudTd>@(context.Product?.ProductName ?? "None")</MudTd>
+        <MudTd>
+           <MudSelect 
+                    T="ProductMesurementOption?"
+                   @bind-Value="context.PurchaseItemMeasurementOption"
+                   Margin="Margin.Dense"
+                   FullWidth="true"
+                   Required="true"
+                   RequiredError="Select Unit Option"
+                >
+                <MudSelectItem T="ProductMesurementOption?" Value="null" Disabled="true">
+                    -- Select Unit --
+                </MudSelectItem>
+                    @foreach (var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
+                    {
+                        <MudSelectItem T="ProductMesurementOption?" Value="@unit">
+                            @unit.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+        </MudTd>
+        <MudTd>
+            <MudNumericField T="int" HideSpinButtons="true" @bind-Value="context.ItemQuantity"/>
+        </MudTd>
+
+        <MudTd>
+                <MudNumericField Adornment="Adornment.Start" AdornmentText="₱" @bind-Value="context.ItemAmount"  HideSpinButtons=true Format="N2" />
+        </MudTd>
+            <MudSelect T="bool" @bind-Value="context.IsRecieved" Label="Received">
+                <MudSelectItem Value="true">Received</MudSelectItem>
+                <MudSelectItem Value="false">Unreceived</MudSelectItem>
+            </MudSelect>
+
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => RemovePurchaseOrderItem(context)" />
+        </MudTd>
+
+    </RowTemplate>
+
+    </MudTable>
+
+}
+else
+{
+    <MudCard Elevation="0" Class="w-100 py-4 d-flex flex-column align-items-center justify-content-center">
+        <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Medium">
+            <ChildContent>
+                <MudText Align="Align.Center">Loading...</MudText>
+            </ChildContent>
+         </MudProgressCircular>
+    </MudCard>
+}
