@@ -35,7 +35,10 @@ public partial class ViewPurchaseOrder
 
     }
 
-
+    protected void DisplayEstimateAmount(decimal total)
+    {
+        PurchaseOrder.AssumeTotalAmount = total;
+    }
     protected async Task LoadPurchaseOrder()
     {
         try

@@ -1,4 +1,5 @@
-﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+﻿using GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrderItems;
+using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
@@ -15,7 +16,9 @@ public partial class CreatePurchaseOrders
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected ILogger<CreatePurchaseOrders> Logger { get; set; } = default!;
 
+    protected GetAllToBeAddedPurchaseOrderItems PurchaseOrderItemComponent { get; set; } = default!;
     protected List<SupplierDto> Suppliers { get; set; } = new List<SupplierDto>();
+    protected List<PurchaseOrderItemDto> PurchaseOrderItems { get; set; } = new List<PurchaseOrderItemDto>();
     protected SupplierDto NewSupplier { get; set; } = new SupplierDto();
     protected DateTime MinDate { get; set; } = new DateTime(DateTime.Now.Year, 1, 1);
     protected PurchaseOrderDto NewPurchaseOrder { get; set; } = new();
@@ -24,7 +27,7 @@ public partial class CreatePurchaseOrders
     protected bool IsNewSupplier { get; set; } = false;
     protected MudForm _form { get; set; } = default!;
 
-    protected bool IsPurchaseOrderValid => !string.IsNullOrWhiteSpace(SupplierName) && !string.IsNullOrWhiteSpace(NewPurchaseOrder.PurchaseOrderNumber) /*&& NewPurchaseOrder.PurchaseOrderDate >= new DateTime(DateTime.Now.Year, 1, 1)*/;
+    protected bool IsPurchaseOrderValid => !string.IsNullOrWhiteSpace(SupplierName) && !string.IsNullOrWhiteSpace(NewPurchaseOrder.PurchaseOrderNumber) && NewPurchaseOrder.PurchaseOrderItems.Count !=0;
     protected override  async Task OnInitializedAsync()
     {
         IsLoading = true;
@@ -105,7 +108,7 @@ public partial class CreatePurchaseOrders
             NewPurchaseOrder.PurchaseOrderDate = NewPurchaseOrder.PurchaseOrderDate == default
                 ? DateTime.Now
                 : NewPurchaseOrder.PurchaseOrderDate;
-
+            NewPurchaseOrder.PurchaseOrderItems = PurchaseOrderItems;
             var response = await HttpClient.PostAsJsonAsync("api/purchaseorder", NewPurchaseOrder);
 
             if (response.IsSuccessStatusCode)
@@ -188,4 +191,10 @@ public partial class CreatePurchaseOrders
         }
     }
 
+    protected Task HandlePurchaseOrderItemsChanged(List<PurchaseOrderItemDto> items)
+    {
+        PurchaseOrderItems = items;
+        NewPurchaseOrder.PurchaseOrderItems = PurchaseOrderItems;
+        return Task.CompletedTask;
+    }
 }

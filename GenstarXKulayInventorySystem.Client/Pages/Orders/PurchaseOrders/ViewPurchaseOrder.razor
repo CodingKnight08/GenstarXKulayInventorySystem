@@ -1,4 +1,5 @@
 ﻿@page "/purchase-order/view/{Id:int}"
+@using GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrderItems
 @using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
 
 @layout MainLayout
@@ -82,10 +83,22 @@
                     <MudTextField Label="Remarks" @bind-Value="PurchaseOrder.Remarks" ReadOnly=true />
                 </MudItem>
                 </MudGrid>
+
+                <MudCard Elevation="0" Class="w-100 mt-4">
+                    <GetAllPurchaseOrderItems PurchaseOrderId="PurchaseOrder.Id" IsRecieved=false  OnTotalCalculated="DisplayEstimateAmount"/>
+                </MudCard>
+                <MudCard Elevation="0" Class="w-100 mt-4 py-3 d-flex flex-row align-items-center justify-content-end">
+                    <MudText>
+                        Total Estimate: <u>@PurchaseOrder.AssumeTotalAmount.ToString("C", new System.Globalization.CultureInfo("en-PH"))</u>
+                    </MudText>
+
+
+                </MudCard>
             }
             else
             {
                 <EditPurchaseOrders PurchaseOrder="PurchaseOrder" OnUpdate="UpdatePurchaseOrderData"/>
+                
             }
         </MudCard>
     }

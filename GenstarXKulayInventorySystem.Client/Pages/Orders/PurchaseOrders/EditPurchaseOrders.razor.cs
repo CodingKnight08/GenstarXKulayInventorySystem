@@ -49,11 +49,27 @@ public partial class EditPurchaseOrders
             }
             PurchaseOrder.SupplierId = selectedSupplier.Id;
             PurchaseOrder.Supplier = selectedSupplier;
+
+           
             var response = await HttpClient.PutAsJsonAsync($"api/purchaseorder/{PurchaseOrder.Id}", PurchaseOrder);
             if (response.IsSuccessStatusCode)
             {
                 Snackbar.Add("Purchase order updated successfully.", Severity.Success);
-                await OnUpdate.InvokeAsync(PurchaseOrder);
+                
+                if (PurchaseOrder.PurchaseOrderItems == null || !PurchaseOrder.PurchaseOrderItems.Any())
+                {
+                    Snackbar.Add("No items in the purchase order to update.", Severity.Warning);
+                    return;
+                }
+                else
+                {
+                    var updatedOrderItems = await HttpClient.PutAsJsonAsync($"api/purchaseorderitem/update-items", PurchaseOrder.PurchaseOrderItems);
+                    if (updatedOrderItems.IsSuccessStatusCode)
+                    {
+                        Snackbar.Add("Purchase order items updated successfully.", Severity.Success);
+                        await OnUpdate.InvokeAsync(PurchaseOrder);
+                    }
+                }
             }
             else
             {
@@ -177,5 +193,11 @@ public partial class EditPurchaseOrders
         {
             PurchaseOrder.ExpectedDeliveryDate = expectedDate.Value;
         }
+    }
+
+    protected void HandleUpdatedPurchaseOrderItems(List<PurchaseOrderItemDto> updatedPurchaseORderItems)
+    {
+        PurchaseOrder.PurchaseOrderItems = updatedPurchaseORderItems;
+        StateHasChanged();
     }
 }

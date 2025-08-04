@@ -1,4 +1,5 @@
-﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+﻿@using GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrderItems
+@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
 <MudGrid Spacing="3">
     <MudItem xl="4">
         <MudAutocomplete Label="Supplier Name"
@@ -64,6 +65,10 @@
         <MudTextField Label="Remarks" @bind-Value="PurchaseOrder.Remarks" />
     </MudItem>
 </MudGrid>
+
+<MudCard Elevation="0" Class="w-100">
+    <EditPurchaseOrderItems PurchaseOrderId=PurchaseOrder.Id OnUpdatePurchaseOrderItems="HandleUpdatedPurchaseOrderItems" />
+</MudCard>
 <MudCard Elevation="0" Class="d-flex flex-row align-content-center justify-content-end gap-2" Style="width:100%;">
     <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="CancelEdit">Cancel</MudButton>
     <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="UpdatePurchaseOrder">Update</MudButton>

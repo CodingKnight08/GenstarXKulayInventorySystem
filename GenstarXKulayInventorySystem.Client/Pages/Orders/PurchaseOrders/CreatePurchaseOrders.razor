@@ -1,8 +1,9 @@
-﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+﻿@using GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrderItems
+@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
 @if(IsLoading){
     <MudDialog>
         <DialogContent>
-            <MudCard Elevation="0" Class="bg-transparent w-100 d-flex align-items-center justify-content-center gap-1">
+            <MudCard Elevation="0" Class="bg-transparent w-100 h-100 d-flex flex-column align-items-center justify-content-center gap-1">
                 <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Medium">
                     <ChildContent>
                         <MudText Align="Align.Center">Loading</MudText>
@@ -88,6 +89,12 @@ else
                       <MudTextField Label="Remarks" @bind-Value="NewPurchaseOrder.Remarks" />
                   </MudItem>
               </MudGrid>
+              
+             
+              <MudCard Class="w-100 mt-4" Elevation="0">
+                  <GetAllToBeAddedPurchaseOrderItems @ref="PurchaseOrderItemComponent" OnPurchaseOrderItemsChanged="HandlePurchaseOrderItemsChanged" />
+              </MudCard>
+
           </MudForm>
               
         </DialogContent>
