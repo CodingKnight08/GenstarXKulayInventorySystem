@@ -27,6 +27,10 @@ public class AutoMapperProfile: Profile
         _ = CreateMap<Product, ProductDto>().ReverseMap();
         _ = CreateMap<Supplier,SupplierDto>().ReverseMap();
         _ = CreateMap<PurchaseOrder, PurchaseOrderDto>().ReverseMap();
-           
+        _ = CreateMap<PurchaseOrderItem, PurchaseOrderItemDto>()
+                .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product))
+                .ForMember(dest => dest.ProductBrand, opt => opt.MapFrom(src => src.ProductBrand))
+                .ForMember(dest => dest.PurchaseOrder, opt => opt.Ignore()).ReverseMap();
+
     }
 }

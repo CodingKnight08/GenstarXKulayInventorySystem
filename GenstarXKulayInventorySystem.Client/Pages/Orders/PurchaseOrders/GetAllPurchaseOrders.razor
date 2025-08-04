@@ -32,7 +32,7 @@
                 <MudTh>Purchase Date</MudTh>
                 <MudTh>Expected Date</MudTh>
                 <MudTh>Supplier</MudTh>
-                <MudTh>Amount</MudTh>
+               
                 <MudTh>Shipped To</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
@@ -41,7 +41,7 @@
                 <MudTd>@context.PurchaseOrderDate.ToString("MMM dd, yyyy")</MudTd>
                 <MudTd>@(context.ExpectedDeliveryDate?.ToString("MMM dd, yyyy") ?? "")</MudTd>
                 <MudTd>@context.Supplier?.SupplierName</MudTd>
-                <MudTd>@context.AssumeTotalAmount</MudTd>
+                
                 <MudTd>@context.PurchaseShipToOption.ToString()</MudTd>
                 <MudTd>
                     <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="@Color.Info" OnClick="() =>ViewPurchaseOrder(context.Id)"/>

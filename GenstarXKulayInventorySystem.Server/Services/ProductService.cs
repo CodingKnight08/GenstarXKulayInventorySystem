@@ -54,7 +54,7 @@ public class ProductService:IProductService
         {
             var existingProduct = await _context.Products.AsNoTracking().AsSplitQuery()
                 .FirstOrDefaultAsync(x => x.ProductName == productDto.ProductName &&
-                                          x.BrandId == productDto.BrandId);
+                                          x.BrandId == productDto.BrandId && x.Size == productDto.Size && x.ProductMesurementOption == productDto.ProductMesurementOption);
             if (existingProduct != null)
                 return false;
 
@@ -107,6 +107,17 @@ public class ProductService:IProductService
     public async Task<List<ProductBrandDto>> GetAllBrandsAsync()
     {
         var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted ).ToListAsync() ?? new List<ProductBrand>();
+        return brands.Select(brand => _mapper.Map<ProductBrandDto>(brand)).ToList();
+    }
+
+    public async Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync()
+    {
+        var brands = await _context.ProductBrands
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(b => b.Products.Where(p => !p.IsDeleted))
+            .Where(b => !b.IsDeleted)
+            .ToListAsync();
         return brands.Select(brand => _mapper.Map<ProductBrandDto>(brand)).ToList();
     }
 
@@ -255,6 +266,7 @@ public interface IProductService
 
 
     Task<List<ProductBrandDto>> GetAllBrandsAsync();
+    Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync();
     Task<ProductBrandDto?> GetBrandByIdAsync(int id);
     Task<bool> AddBrandAsync(ProductBrandDto brandDto);
     Task<bool> UpdateBrandAsync(ProductBrandDto brandDto);

@@ -1,0 +1,10 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText Align="Align.Center" Class="text-danger">Are you sure you want to delete the Purchase Order Item?</MudText>
+        <MudText Align="Align.Justify">Deletion cannot be reverted.</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="DeletePurchaseOrderItemAsync" StartIcon="@Icons.Material.Filled.Delete">Delete</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,35 @@
+﻿<MudPaper Elevation="0" Class="w-100 my-3 d-flex flex-row align-items-center justify-content-end">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AddCircle" Class="mb-3" OnClick="AddPurchaseOrderItem">Add Item</MudButton>
+</MudPaper>
+<MudTable 
+    Items="PurchaseOrderItems"
+    Dense="true"
+    Hover="true"
+    Elevation="5"
+    Bordered="true"
+>
+    <HeaderContent>
+        <MudTh>Brand</MudTh>
+        <MudTh>Product Name</MudTh>
+        <MudTh>Unit</MudTh>
+        <MudTh>Quantity</MudTh>
+        <MudTh>Item Amount</MudTh>
+        <MudTh>Action</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@(context.ProductBrand?.BrandName ?? "None")</MudTd>
+        <MudTd>@(context.Product?.ProductName ?? "None")</MudTd>
+        <MudTd>@(context.PurchaseItemMeasurementOption?.ToString() ?? "None")</MudTd>
+        <MudTd>@context.ItemQuantity</MudTd>
+        <MudTd>@($"₱{context.ItemAmount.ToString("N2")}")</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                           Color="Color.Error"
+                           Size="Size.Small"
+                           Disabled="@(context.ProductBrandId == null || context.ProductId == null)"
+                           OnClick="() => RemovePurchaseItem(context.ProductBrandId!.Value, context.ProductId!.Value)" />
+
+        </MudTd>
+
+    </RowTemplate>
+</MudTable>

@@ -1,0 +1,33 @@
+﻿<MudTable
+     Items="PurchaseOrderItems"
+     Dense="true"
+     Hover="true"
+     Bordered="true"
+     Striped="true"
+     RowsPerPage="6"
+
+>
+    <HeaderContent>
+        <MudTh>BrandName</MudTh>
+        <MudTh>Product</MudTh>
+        <MudTh>Unit</MudTh>
+        <MudTh>Quantity</MudTh>
+        <MudTh>Price</MudTh>
+        <MudTh>Status</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+       <MudTd Class="fw-normal">@(context.ProductBrand?.BrandName ?? "N/A")</MudTd>
+       <MudTd Class="fw-normal">@(context.Product?.ProductName ?? "N/A")</MudTd>
+
+       <MudTd Class="fw-normal">@context.PurchaseItemMeasurementOption</MudTd>
+       <MudTd Class="fw-normal">@context.ItemQuantity</MudTd>
+       <MudTd Class="fw-normal">₱@context.ItemAmount.ToString("N2")</MudTd>
+        <MudTd>
+            <MudSelect T="bool" @bind-Value="@context.IsRecieved" Dense="true" ReadOnly=true>
+                <MudSelectItem Value="true">Received</MudSelectItem>
+                <MudSelectItem Value="false">Not Received</MudSelectItem>
+            </MudSelect>
+        </MudTd>
+
+    </RowTemplate>
+</MudTable>

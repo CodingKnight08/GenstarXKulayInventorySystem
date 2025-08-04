@@ -16,24 +16,19 @@ public class InventoryDbContext: IdentityDbContext<User>
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        
-
-        // Product → ProductBrand (Cascade delete when Brand is deleted)
+        // Product → ProductBrand, ProductCategory
         modelBuilder.Entity<Product>(entity =>
         {
-            // Relationships
             entity.HasOne(p => p.ProductBrand)
-            .WithMany(b => b.Products)
-            .HasForeignKey(p => p.BrandId)
-            .OnDelete(DeleteBehavior.Cascade);
+                  .WithMany(b => b.Products)
+                  .HasForeignKey(p => p.BrandId)
+                  .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(p => p.ProductCategory)
-                .WithMany(c => c.Products) 
-                .HasForeignKey(p => p.ProductCategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+                  .WithMany(c => c.Products)
+                  .HasForeignKey(p => p.ProductCategoryId)
+                  .OnDelete(DeleteBehavior.SetNull);
 
-
-            // Decimal precision
             entity.Property(p => p.Size).HasPrecision(18, 2);
             entity.Property(p => p.CostPrice).HasPrecision(18, 2);
             entity.Property(p => p.RetailPrice).HasPrecision(18, 2);
@@ -41,26 +36,47 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(p => p.ActualQuantity).HasPrecision(18, 4);
         });
 
+        // PurchaseOrder → Supplier, PurchaseOrderItems
         modelBuilder.Entity<PurchaseOrder>(entity =>
         {
             entity.HasOne(po => po.Supplier)
-                .WithMany()
-                .HasForeignKey(po => po.SupplierId)
-                .OnDelete(DeleteBehavior.SetNull);
+              .WithMany(s => s.PurchaseOrders)
+              .HasForeignKey(po => po.SupplierId)
+              .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasMany(po => po.PurchaseOrderItems)
+                  .WithOne(poi => poi.PurchaseOrder)
+                  .HasForeignKey(poi => poi.PurchaseOrderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
             entity.Property(po => po.AssumeTotalAmount).HasPrecision(18, 2);
+            entity.Property(po => po.PurchaseShipToOption).HasConversion<int>();
+            entity.Property(po => po.PurchaseRecieptOption).HasConversion<int>();
+            entity.Property(po => po.PurchaseRecieveOption).HasConversion<int>();
+        });
 
-            entity.Property(po => po.PurchaseShipToOption)
-                .HasConversion<int>();
 
-            entity.Property(po => po.PurchaseRecieptOption)
-                .HasConversion<int>();
+        // PurchaseOrderItem → Product, ProductBrand
+        modelBuilder.Entity<PurchaseOrderItem>(entity =>
+        {
+            entity.HasOne(poi => poi.Product)
+                  .WithMany()
+                  .HasForeignKey(poi => poi.ProductId)
+                  .OnDelete(DeleteBehavior.Restrict);
 
-            entity.Property(po => po.PurchaseRecieveOption)
-                .HasConversion<int>();
+            entity.HasOne(poi => poi.ProductBrand)
+                  .WithMany()
+                  .HasForeignKey(poi => poi.ProductBrandId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(poi => poi.ItemAmount).HasPrecision(18, 2);
+            entity.Property(poi => poi.PurchaseItemMeasurementOption).HasConversion<int>();
         });
 
         base.OnModelCreating(modelBuilder);
     }
+
+
 
 
 
@@ -69,4 +85,5 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<Product> Products { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
 }
