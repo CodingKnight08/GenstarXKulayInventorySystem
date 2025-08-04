@@ -21,6 +21,13 @@ public class ProductBrandController : ControllerBase
         return Ok(brands);
     }
 
+    [HttpGet("all/brands")]
+    public async Task<ActionResult<List<ProductBrandDto>>> GetAllBrands()
+    {
+        var brands = await _productService.GetAllBrandsWithProductsAsync();
+        return Ok(brands);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductBrandDto>> GetById(int id)
     {
