@@ -16,4 +16,11 @@ public class PurchaseOrderDto:BaseEntityDto
     public bool IsRecieved { get; set; } = false;
     public PurchaseRecieveOption PurchaseRecieveOption { get; set; } = PurchaseRecieveOption.Pending;
     public decimal AssumeTotalAmount { get; set; } = 0;
+
+    public List<PurchaseOrderItemDto> PurchaseOrderItems { get; set; } = new List<PurchaseOrderItemDto>();
+
+    public void RecalculateAssumeTotalAmount()
+    {
+        AssumeTotalAmount = PurchaseOrderItems.Sum(item => item.ItemAmount);
+    }
 }
