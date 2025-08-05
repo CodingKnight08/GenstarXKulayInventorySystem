@@ -27,6 +27,7 @@ public class Product:BaseEntity
     public int Quantity { get; set; } = 0; 
     public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
     public ProductMesurementOption? ProductMesurementOption { get; set; } 
+    public string Packaging { get; set; } = string.Empty;
     public decimal ActualQuantity { get; set; } = 0;
 
 }
