@@ -19,6 +19,7 @@ public class ProductDto:BaseEntityDto
     public int Quantity { get; set; } = 0;
     public ProductMesurementOption? ProductMesurementOption { get; set; }
     public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
+    public string Packaging { get; set; } = string.Empty;
     public decimal ActualQuantity { get; set; }
 
 }
