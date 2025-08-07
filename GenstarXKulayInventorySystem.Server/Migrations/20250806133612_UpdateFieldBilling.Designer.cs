@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250806133612_UpdateFieldBilling")]
+    partial class UpdateFieldBilling
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,9 +45,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Branch")
-                        .HasColumnType("int");
-
                     b.Property<int>("Category")
                         .HasColumnType("int");
 
@@ -54,14 +54,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("DateOfBilling")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DatePaid")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -335,9 +328,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BillingId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -382,8 +372,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BillingId");
 
                     b.HasIndex("ProductBrandId");
 
@@ -698,11 +686,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrderItem", b =>
                 {
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.Billing", "Billing")
-                        .WithMany("PurchaseOrderItems")
-                        .HasForeignKey("BillingId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductBrand", "ProductBrand")
                         .WithMany()
                         .HasForeignKey("ProductBrandId")
@@ -718,8 +701,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasForeignKey("PurchaseOrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Billing");
 
                     b.Navigation("Product");
 
@@ -777,11 +758,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Billing", b =>
-                {
-                    b.Navigation("PurchaseOrderItems");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.ProductBrand", b =>
