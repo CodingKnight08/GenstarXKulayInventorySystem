@@ -1,0 +1,118 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
+@using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper
+@if(IsLoading)
+{
+    <MudDialog>
+        <DialogContent>
+            <MudCard Elevation="0"
+                     Class="w-100 d-flex flex-column align-items-center justify-content-center"
+                     Style="min-height:120px; padding: 16px; overflow: hidden;">
+                <MudText Typo="Typo.body1">Loading</MudText>
+                <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+            </MudCard>
+        </DialogContent>
+    </MudDialog>
+
+    
+}
+else{
+
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="4">
+            <MudItem xl="6" lg="6" md="12" sm="12">
+                <MudTextField T="string" @bind-Value="Billing.BillingName" Label="Billing Name" FullWidth="true" ReadOnly=true />
+            </MudItem>
+
+            <MudItem xl="6" lg="6" md="12" sm="12">
+                <MudTextField T="string" @bind-Value="Billing.BillingNumber" Label="Billing Number" FullWidth="true" ReadOnly=true />
+            </MudItem>
+
+            <MudItem xl="6" lg="6" md="12" sm="12">
+                <MudDatePicker Date="Billing.DateOfBilling"
+                               Label="Billing Date"
+                               ReadOnly="true" />
+            </MudItem>
+
+            <MudItem xl="6" lg="6" md="12" sm="12">
+                <MudSelect T="BillingCategory" @bind-Value="Billing.Category" Label="Billing Category" FullWidth="true" ReadOnly=true>
+                    @foreach (var val in Enum.GetValues<BillingCategory>())
+                    {
+                        <MudSelectItem Value="@val" Disabled="@(val.Equals(BillingCategory.PurchaseOrder))">
+                            @val.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xl="6" xs="12">
+                <MudNumericField T="decimal"
+                                 Label="Amount"
+                                 @bind-Value="Billing.Amount"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 HideSpinButtons="true"
+                                 FullWidth="true" 
+                                 ReadOnly="true" />
+
+            </MudItem>
+            <MudItem xl="6" lg="6" md="6" sm="12">
+                <MudSelect T="BillingBranch" @bind-Value="Billing.Branch" Label="Billing Branch" FullWidth="true" ReadOnly=true>
+                    @foreach (var s in Enum.GetValues<BillingBranch>())
+                    {
+                        <MudSelectItem Value="@s">@s.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xl="6">
+                <MudSelect T="bool"
+                           ReadOnly="true"
+                           @bind-Value="Billing.IsPaid"
+                           Label="Billing Status"
+                           FullWidth="true">
+                    <MudSelectItem T="bool" Value="true">Paid</MudSelectItem>
+                    <MudSelectItem T="bool" Value="false">Unpaid</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+
+
+
+            <MudItem xl="6" lg="6" md="6" sm="12">
+                <MudSelect T="PaymentMethod" @bind-Value="Billing.PaymentMethod" Label="Payment Method" FullWidth="true" Disabled="!Billing.IsPaid" ReadOnly=true>
+                    @foreach (var s in Enum.GetValues<PaymentMethod>())
+                    {
+                        <MudSelectItem Value="@s">@s.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xl="12" xs="12">
+                <MudTextField @bind-Value="Billing.Remarks"
+                              ReadOnly="true"
+                              Label="Remarks"
+                              FullWidth="true"
+                              MaxLines="3" />
+            </MudItem>
+
+            <MudItem xl="3" lg="3" md="6" sm="12">
+                <MudCheckBox @bind-Value="Billing.Discounted" Label="Discounted" ReadOnly=true />
+            </MudItem>
+
+            @if (Billing.Discounted)
+            {
+                <MudItem xl="4" lg="4" md="6" sm="12">
+                    <MudNumericField T="decimal?"
+                                     ReadOnly="true"
+                                     HideSpinButtons="true"
+                                     @bind-Value="Billing.DiscountAmount"
+                                     Label="Discount Amount"
+                                     FullWidth="true" />
+                </MudItem>
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="CloseDialog">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+}

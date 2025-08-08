@@ -1,0 +1,44 @@
+﻿@layout MainLayout
+
+<div class="d-flex justify-content-end mb-3">
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="CreateBilling">
+        Add Billing
+    </MudButton>
+</div>
+
+<MudPaper Class="d-flex flex-column flex-grow-1" Style="height:100%;">
+    <MudTable Items="Billings"
+              Dense="true"
+              Bordered="true"
+              Hover="true"
+              Class="flex-grow-1">
+        <HeaderContent>
+            <MudTh>Billing Number</MudTh>
+            <MudTh>Billing Name</MudTh>
+            <MudTh>Billing Amount</MudTh>
+            <MudTh>Date of Billing</MudTh>
+            <MudTh>Category</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Branch</MudTh>
+            <MudTh>Action</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.BillingNumber</MudTd>
+            <MudTd>@context.BillingName</MudTd>
+            <MudTd>@context.Amount.ToString("C", new System.Globalization.CultureInfo("en-PH"))</MudTd>
+            <MudTd>@context.DateOfBilling.ToString("MM/dd/yyyy")</MudTd>
+            <MudTd>@context.Category.ToString()</MudTd>
+            <MudTd>@(context.IsPaid ? "Paid" : "Unpaid")</MudTd>
+            <MudTd>@context.Branch</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small" OnClick="() =>ViewBilling(context.Id)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Success" Size="Size.Small" OnClick="() => EditBilling(context)" Disabled="@(context.DatePaid.HasValue)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => DeleteBilling(context)" />
+            </MudTd>
+
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
