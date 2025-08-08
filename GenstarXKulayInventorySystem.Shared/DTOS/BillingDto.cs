@@ -11,7 +11,7 @@ public class BillingDto:BaseEntityDto
     public DateTime DateOfBilling { get; set; } = DateTime.Now;
     public int? PurchaseOrderId { get; set; }
     public PurchaseOrderDto? PurchaseOrder { get; set; }
-    public BillingCategory Category { get; set; } = BillingCategory.PurchaseOrder;
+    public BillingCategory Category { get; set; } = BillingCategory.Electric;
     public string? Remarks { get; set; }
     public decimal Amount { get; set; } = 0;
     public bool Discounted { get; set; } = false;

@@ -5,7 +5,6 @@ public class BillingHelper
     public enum BillingCategory
     {
         Logistics,
-        PurchaseOrder,
         Electric,
         Internet,
         Telephone,

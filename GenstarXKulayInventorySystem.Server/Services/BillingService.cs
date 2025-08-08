@@ -29,7 +29,7 @@ public class BillingService:IBillingService
         List<Billing> billings = await _context.Billings
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(c => c.PurchaseOrder)
+            
             .Where(e => !e.IsDeleted)
             .OrderByDescending(e => e.DateOfBilling).ToListAsync();
 
@@ -49,7 +49,7 @@ public class BillingService:IBillingService
         var billings = await _context.Billings
                         .AsNoTracking()
                         .AsSplitQuery()
-                        .Where(e => e.PurchaseOrderId == null && !e.IsDeleted && e.Category != BillingHelper.BillingCategory.PurchaseOrder)
+                        .Where(e => !e.IsDeleted)
                         .OrderByDescending(e => e.DateOfBilling)
                         .ToListAsync();
 
@@ -64,7 +64,6 @@ public class BillingService:IBillingService
     public async Task<BillingDto?> GetBillingById(int id)
     {
         var billing = await _context.Billings.AsNoTracking()
-                             .Include(c => c.PurchaseOrder)
                              .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
 
         return billing == null ? null : _mapper.Map<BillingDto>(billing);
