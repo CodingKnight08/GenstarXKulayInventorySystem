@@ -31,6 +31,7 @@ public class AutoMapperProfile: Profile
                 .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.Product))
                 .ForMember(dest => dest.ProductBrand, opt => opt.MapFrom(src => src.ProductBrand))
                 .ForMember(dest => dest.PurchaseOrder, opt => opt.Ignore()).ReverseMap();
+        _ = CreateMap<Billing,BillingDto>().ReverseMap();
 
     }
 }

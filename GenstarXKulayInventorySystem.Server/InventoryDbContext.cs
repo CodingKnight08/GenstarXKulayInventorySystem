@@ -68,10 +68,29 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .WithMany()
                   .HasForeignKey(poi => poi.ProductBrandId)
                   .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(poi => poi.Billing)
+                   .WithMany(b => b.PurchaseOrderItems)
+                   .HasForeignKey(poi => poi.BillingId)
+                   .IsRequired(false) 
+                   .OnDelete(DeleteBehavior.SetNull);
 
             entity.Property(poi => poi.ItemAmount).HasPrecision(18, 2);
             entity.Property(poi => poi.PurchaseItemMeasurementOption).HasConversion<int>();
         });
+
+        modelBuilder.Entity<Billing>(entity =>
+        {
+            entity.HasOne(b => b.PurchaseOrder)
+                  .WithMany(po => po.Billings) 
+                  .HasForeignKey(b => b.PurchaseOrderId) // force the FK mapping
+                  .IsRequired(false) 
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.Property(b => b.Amount).HasPrecision(18, 2);
+            entity.Property(b => b.DiscountAmount).HasPrecision(18, 2);
+            entity.Property(b => b.Category).HasConversion<int>();
+        });
+
 
         base.OnModelCreating(modelBuilder);
     }
@@ -86,4 +105,5 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
+    public DbSet<Billing> Billings { get; set; }
 }
