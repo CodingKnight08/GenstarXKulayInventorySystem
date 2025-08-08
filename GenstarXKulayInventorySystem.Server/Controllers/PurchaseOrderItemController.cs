@@ -27,6 +27,12 @@ public class PurchaseOrderItemController : ControllerBase
         return Ok(items);
     }
 
+    [HttpGet("all/recieved/purchaseorderitems")]
+    public async Task<ActionResult<List<PurchaseOrderItemDto>>> GetPurchaseOrdersForBilling()
+    {
+        var items = await _service.GetAllUnrecieveItemsByDate();
+        return Ok(items);
+    }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<PurchaseOrderItemDto?>> GetById(int id)

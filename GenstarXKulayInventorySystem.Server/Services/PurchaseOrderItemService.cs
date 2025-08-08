@@ -61,6 +61,24 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
         return purchaseOrderItemDtos;
     }
 
+    public async Task<List<PurchaseOrderItemDto>> GetAllUnrecieveItemsByDate()
+    {
+        List<PurchaseOrderItem> purchaseOrderItems = await _context.PurchaseOrderItems
+                                                     .AsNoTracking()
+                                                     .AsSplitQuery()
+                                                     .Include(c => c.PurchaseOrder)
+                                                     .Include(c => c.Product)
+                                                     .Include(c => c.ProductBrand)
+                                                     .Where(e => !e.IsDeleted && e.IsRecieved)
+                                                     .ToListAsync();
+        if (purchaseOrderItems == null || purchaseOrderItems.Count == 0)
+            {
+            return new List<PurchaseOrderItemDto>();
+        }
+        List<PurchaseOrderItemDto> purchaseOrderItemDtos = _mapper.Map<List<PurchaseOrderItemDto>>(purchaseOrderItems);
+        return purchaseOrderItemDtos;
+    }
+
 
     public async Task<PurchaseOrderItemDto?> GetByIdAsync(int id)
     {
@@ -211,6 +229,7 @@ public interface  IPurchaseOrderItemService
 {
     Task<List<PurchaseOrderItemDto>> GetAllUnrecieveItemsAsync(int purchaseOrderId);
     Task<List<PurchaseOrderItemDto>> GetAllRecieveItemsAsync(int purchaseOrderId);
+    Task<List<PurchaseOrderItemDto>> GetAllUnrecieveItemsByDate();
     Task<PurchaseOrderItemDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(PurchaseOrderItemDto purchaseOrderItemDto);
     Task<bool> UpdateAsync(PurchaseOrderItemDto purchaseOrderItemDto);

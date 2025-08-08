@@ -1,5 +1,15 @@
-﻿<h3>BillingMain</h3>
+﻿@page "/billings"
+@using GenstarXKulayInventorySystem.Client.Pages.Billings.OperationalBillings
+@using GenstarXKulayInventorySystem.Client.Pages.Billings.PurchaseOrderBillings
+@layout MainLayout
 
-@code {
-
-}
+<MudMainContent Class="w-auto" Style="height:100%;">
+    <MudTabs Elevation="2" Rounded="false" ApplyEffectsToContainer="true" PanelClass="pa-6" Style="height:100%;">
+        <MudTabPanel Text="Purchase Order Billing">
+            <GetAllPurchaseOrderBilling/>
+        </MudTabPanel>
+        <MudTabPanel Text="Operational Billing">
+            <GetAllOperationalBillings/>
+        </MudTabPanel>
+    </MudTabs>
+</MudMainContent>

@@ -1,0 +1,32 @@
+﻿@layout MainLayout
+
+<div class="d-flex justify-content-end mb-3">
+    <MudButton
+        Variant="Variant.Filled" 
+        Color="Color.Primary" 
+        StartIcon="@Icons.Material.Filled.Add"
+        OnClick="CreatePurchaseOrderBilling"
+    >
+        Add Purchase Order Billing
+    </MudButton>
+</div>
+
+<MudPaper Class="d-flex flex-column flex-grow-1" Style="height:100%;">
+    <MudTable 
+        Items="PurchaseOrderBilling"
+        Dense="true"
+        Bordered="true"
+        Hover="true"
+        Class="flex-grow-1"
+    >
+    <HeaderContent>
+        <MudTh>Billing Number</MudTh>
+        <MudTh>Billing Name</MudTh>
+        <MudTh>Billing Amount</MudTh>
+        <MudTh>Date of Billing</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+
+    </RowTemplate>
+    </MudTable>
+</MudPaper>
