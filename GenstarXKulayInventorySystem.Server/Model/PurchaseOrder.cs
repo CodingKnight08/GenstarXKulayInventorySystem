@@ -19,4 +19,5 @@ public class PurchaseOrder:BaseEntity
     public decimal AssumeTotalAmount { get; set; } = 0;
 
     public ICollection<PurchaseOrderItem> PurchaseOrderItems { get; set; } = new List<PurchaseOrderItem>();
+    public ICollection<PurchaseOrderBilling> PurchaseOrderBillings { get; set; } = new List<PurchaseOrderBilling>();
 }

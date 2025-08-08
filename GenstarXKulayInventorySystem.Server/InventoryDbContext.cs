@@ -80,6 +80,21 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(b => b.DiscountAmount).HasPrecision(18, 2);
             entity.Property(b => b.Category).HasConversion<int>();
         });
+        modelBuilder.Entity<PurchaseOrderBilling>(entity =>
+        {
+            entity.HasOne(pob => pob.PurchaseOrder)
+                  .WithMany(po => po.PurchaseOrderBillings)
+                  .HasForeignKey(pob => pob.PurchaseOrderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(pob => pob.AmountToBePaid).HasPrecision(18, 2);
+            entity.Property(pob => pob.AmountPaid).HasPrecision(18, 2);
+            entity.Property(pob => pob.DiscountAmount).HasPrecision(18, 2);
+
+            entity.Property(pob => pob.BillingBranch).HasConversion<int>();
+            entity.Property(pob => pob.PaymentMethod).HasConversion<int>();
+            entity.Property(pob => pob.PaymentTermsOption).HasConversion<int>();
+        });
 
 
         base.OnModelCreating(modelBuilder);
@@ -96,4 +111,5 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
     public DbSet<Billing> Billings { get; set; }
+    public DbSet<PurchaseOrderBilling> PurchaseOrderBillings { get; set; }
 }
