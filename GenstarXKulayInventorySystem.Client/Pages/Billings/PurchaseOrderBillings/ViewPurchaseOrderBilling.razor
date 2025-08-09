@@ -1,0 +1,101 @@
+﻿@page "/billings/puchase-order-billings/view/{Id:int}"
+@layout MainLayout
+
+<MudMainContent Class="w-auto h-100 d-flex flex-column align-items-center justify-content-start">
+    @if (IsLoading)
+    {
+        <MudProgressCircular Indeterminate=true Color="Color.Info" Size="Size.Medium"  />
+        <MudText Align="Align.Center" Typo="Typo.subtitle1">Loading Data ..</MudText>
+        
+    }
+    else
+    {
+        <MudCard Elevation="0" Class="mt-4 d-flex flex-column">
+            <MudGrid Spacing="4" Justify="Justify.SpaceBetween">
+            <MudItem xl="12">
+                <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
+            </MudItem>
+            <MudItem xl="12">
+                <MudText Typo="Typo.h6" Align="Align.Center">Purchase Order Billing Information</MudText>
+            </MudItem>
+            <MudItem xl="12" Class="d-flex flex-row align-items-center justify-content-end gap-2">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Success" Size="Size.Medium" OnClick="UpdateBilling" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Medium" Class="me-4" />
+
+            </MudItem>
+            <MudItem xl="4">
+                <MudText Typo="Typo.subtitle1" Align="Align.Left" Class="ms-5">
+                    Purchase Order Billing No:
+                    <span class="text-decoration-underline ms-2 fw-bold">
+                        @(PurchaseOrderBilling.PurchaseOrderBillingNumber)
+                    </span>
+                </MudText>
+
+            </MudItem>
+            <MudItem xl="4" Class="justify-content-center align-items-center">
+                <MudText Typo="Typo.subtitle1" Align="Align.Left">
+                    Purchase Order No: <span class="text-decoration-underline ms-2 fw-bold"> @(PurchaseOrderBilling.PurchaseOrder?.PurchaseOrderNumber ?? "N/A")</span>
+                </MudText>
+
+            </MudItem>
+            <MudItem xl="4" Class="justify-content-center align-items-center">
+                <MudText Typo="Typo.subtitle1" Align="Align.Left">
+                   Date of Billing: <span class="text-decoration-underline ms-2 fw-bold"> @(PurchaseOrderBilling.PurchaseOrderBillingDate.ToString("MMMM dd, yyyy"))</span>
+                </MudText>
+
+            </MudItem>
+            <MudItem xl="4" Class="justify-content-center align-items-center">
+                <MudText Typo="Typo.subtitle1" Align="Align.Left" Class="ms-5">
+                   Expected Bill Due: <span class="text-decoration-underline ms-2 fw-bold"> @(PurchaseOrderBilling.ExpectedPaymentDate?.ToString("MMMM dd, yyyy"))</span>
+                </MudText>
+
+            </MudItem>
+            <MudItem xl="4" Class="justify-content-center align-items-center">
+                <MudText Typo="Typo.subtitle1" Align="Align.Left">
+                    Billing Branch: <span class="text-decoration-underline ms-2 fw-bold"> @(PurchaseOrderBilling.BillingBranch.ToString())</span>
+                </MudText>
+
+            </MudItem>
+            <MudItem xl="4" Class="justify-content-center align-items-center">
+                <MudText Typo="Typo.subtitle1" Align="Align.Left">
+                    Payment Method: <span class="text-decoration-underline ms-2 fw-bold"> @(PurchaseOrderBilling.PaymentMethod.ToString())</span>
+                </MudText>
+
+            </MudItem>
+            <MudItem xl="4" Class="justify-content-center align-items-center">
+                <MudText Typo="Typo.subtitle1" Align="Align.Left" Class="ms-5">
+                    Payment Term: <span class="text-decoration-underline ms-2 fw-bold"> @( TermsOption(PurchaseOrderBilling.PaymentTermsOption)) day/s</span>
+                </MudText>
+
+            </MudItem>
+            <MudItem xl="12">
+                <MudText Typo="Typo.subtitle1" Align="Align.Left" Class="ms-5">
+                    Supplier: <span class="text-decoration-underline ms-2 fw-bold"> @(PurchaseOrderBilling.PurchaseOrder?.Supplier?.SupplierName)</span>
+                </MudText>
+            </MudItem>
+            <MudItem xl="12" Class="mt-5 d-flex justify-content-center">
+                <MudTable Items="PurchaseOderItems" Bordered=true Dense=true Hover=true Elevation="5" Style="width:90%;">
+                    <HeaderContent>
+                        <MudTh>Product Name</MudTh>
+                        <MudTh>Quantity</MudTh>
+                        <MudTh>Price</MudTh>
+                        <MudTh>Unit</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.Product?.ProductName</MudTd>
+                        <MudTd>@context.ItemQuantity</MudTd>
+                        <MudTd>₱@context.ItemAmount.ToString("N2")</MudTd>
+
+                        <MudTd>@context.PurchaseItemMeasurementOption.ToString()</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+            <MudItem xl="11" Class="d-flex flex-row justify-content-end mt-5">
+                 <MudText Typo="Typo.subtitle1" Align="Align.Left" >
+                        Total Estimate to Pay: <span class="text-decoration-underline ms-2 fw-bold"> ₱  @(PurchaseOrderBilling.AmountToBePaid.ToString("N2"))</span>
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </MudCard>
+    }
+</MudMainContent>

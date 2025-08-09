@@ -10,12 +10,13 @@ public partial class GetAllPurchaseOrderBilling
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected ILogger<GetAllPurchaseOrderBilling> Logger { get; set; } = default!;
-    protected List<BillingDto> PurchaseOrderBilling { get; set; } = new List<BillingDto>();
+    [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
+    protected List<PurchaseOrderBillingDto> PurchaseOrderBilling { get; set; } = new List<PurchaseOrderBillingDto>();
     protected bool IsLoading { get; set; } = true;
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        return base.OnInitializedAsync();
+        await LoadPurchaseOrderBillings();
     }
 
     protected async Task LoadPurchaseOrderBillings()
@@ -23,10 +24,10 @@ public partial class GetAllPurchaseOrderBilling
         IsLoading = true;
         try
         {
-           var response = await HttpClient.GetAsync("api/billings/all/purchaseorders");
+           var response = await HttpClient.GetAsync("api/billings/purchase-orders/all");
             if (response.IsSuccessStatusCode)
             {
-                PurchaseOrderBilling = await response.Content.ReadFromJsonAsync<List<BillingDto>>() ?? new List<BillingDto>();
+                PurchaseOrderBilling = await response.Content.ReadFromJsonAsync<List<PurchaseOrderBillingDto>>() ?? new List<PurchaseOrderBillingDto>();
             }
             else
             {
@@ -43,27 +44,8 @@ public partial class GetAllPurchaseOrderBilling
         }
     }
 
-    protected async Task CreatePurchaseOrderBilling()
+    protected void ViewPurchaseOrderBilling(int Id)
     {
-        try
-        {
-            var dialog = await DialogService.ShowAsync<CreatePurchaseOrderBilling>("",
-                new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth=true}
-                );
-            if(dialog is not null)
-            {
-                var result = await dialog.Result;
-                if (result is not null && !result.Canceled && result.Data is BillingDto)
-                {
-                    
-                    await LoadPurchaseOrderBillings();
-                    StateHasChanged();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-           Logger.LogError(ex, "Error creating purchase order billing");
-        }
+        NavigationManager.NavigateTo($"/billings/puchase-order-billings/view/{Id}");
     }
 }
