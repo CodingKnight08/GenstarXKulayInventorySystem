@@ -20,5 +20,6 @@ public class PurchaseOrderBillingDto: BaseEntityDto
     public bool IsDiscounted { get; set; } = false;
     public decimal? DiscountAmount { get; set; } = 0;
     public PaymentTermsOption PaymentTermsOption { get; set; } = PaymentTermsOption.Today;
+    public int? CustomPaymentTermsOption { get; set; } = null;
     public string ItemsRecieved { get; set; } = string.Empty;
 }

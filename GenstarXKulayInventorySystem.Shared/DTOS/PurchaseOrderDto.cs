@@ -18,7 +18,7 @@ public class PurchaseOrderDto:BaseEntityDto
     public decimal AssumeTotalAmount { get; set; } = 0;
 
     public List<PurchaseOrderItemDto> PurchaseOrderItems { get; set; } = new List<PurchaseOrderItemDto>();
-
+    public List<PurchaseOrderBillingDto> PurchaseOrderBillings { get; set; } = new List<PurchaseOrderBillingDto>();
     public void RecalculateAssumeTotalAmount()
     {
         AssumeTotalAmount = PurchaseOrderItems.Sum(item => item.ItemAmount);
