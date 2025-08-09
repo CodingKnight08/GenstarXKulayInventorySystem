@@ -38,6 +38,9 @@ public class BillingHelper
         SixtyDays = 60,
 
         [Description("90 Days")]
-        NinetyDays = 90
+        NinetyDays = 90,
+          
+        [Description("Custom")]
+         Custom = -1
     }
 }
