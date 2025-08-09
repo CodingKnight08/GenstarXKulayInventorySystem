@@ -53,10 +53,10 @@
         </MudSelect>
     </MudItem>
     <MudItem xl="2">
-        <MudTextField Label="Purchase Order No." @bind-Value="PurchaseOrder.PurchaseOrderNumber" Required=true />
+        <MudTextField Label="Purchase Order No." @bind-Value="PurchaseOrder.PurchaseOrderNumber" Required=true  ReadOnly=true/>
     </MudItem>
     <MudItem xl="3">
-        <MudDatePicker Label="Date Ordered" Date="PurchaseOrder.PurchaseOrderDate" DateChanged="@(newDate => OnDateChanged(newDate))" />
+        <MudDatePicker Label="Date Ordered" Date="PurchaseOrder.PurchaseOrderDate" ReadOnly=true DateChanged="@(newDate => OnDateChanged(newDate))" />
     </MudItem>
     <MudItem xl="3">
         <MudDatePicker Label="Date to Recieve" MinDate="PurchaseOrder.PurchaseOrderDate" Date="PurchaseOrder.ExpectedDeliveryDate" DateChanged="@(newDate => OnExpectedDateChanged(newDate))" />
