@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrderItems;
 
 public partial class CreatePurchaseOrderItem
 {
+    [Parameter] public BranchOption Branch { get; set; }
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
@@ -30,7 +32,7 @@ public partial class CreatePurchaseOrderItem
     {
         try
         {
-            var response = await HttpClient.GetAsync("api/productbrand/all/brands");
+            var response = await HttpClient.GetAsync($"api/productbrand/all/brands/{Branch}");
             response.EnsureSuccessStatusCode();
             var brands = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>();
             ProductBrands = brands ?? new List<ProductBrandDto>();
