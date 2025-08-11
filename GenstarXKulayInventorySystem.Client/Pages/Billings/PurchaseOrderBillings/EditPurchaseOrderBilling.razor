@@ -1,0 +1,104 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
+@using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper
+@if(IsLoading){
+
+}
+else
+{
+    <MudDialog>
+        <DialogContent>
+            <MudGrid Spacing="6">
+                <MudItem xl="6">
+                    <MudTextField 
+                        @bind-Value="PurchaseOrderBilling.PurchaseOrderBillingNumber" 
+                        Label="Purchase Order Billing No." 
+                        ReadOnly=true/>
+                </MudItem>
+                <MudItem xl="6">
+                    <MudDatePicker 
+                        Date="PurchaseOrderBilling.PurchaseOrderBillingDate" 
+                        Label="Date of Billing" 
+                        DateFormat="MMMM dd, yyyy"
+                        ReadOnly=true />
+                </MudItem>
+                <MudItem xl="6">
+                    <MudNumericField
+                        T="decimal"
+                        Label="Total Estimate to Pay"
+                        @bind-Value="PurchaseOrderBilling.AmountToBePaid"
+                        Adornment="Adornment.Start" 
+                        AdornmentText="₱"
+                        Format="N2" 
+                        ReadOnly=true 
+                        HideSpinButtons=true/>
+                </MudItem>
+                <MudItem xl="6">
+                    <MudSelect T="BillingBranch" Label="Billing Branch"
+                       @bind-Value="PurchaseOrderBilling.BillingBranch" ReadOnly=true>
+                        @foreach (var branch in Enum.GetValues(typeof(BillingBranch)).Cast<BillingBranch>())
+                        {
+                            <MudSelectItem Value="@branch">@branch</MudSelectItem>
+                        }
+                        </MudSelect>
+                </MudItem>
+
+                <MudItem xl="6">
+                    <MudSelect T="PaymentMethod" Label="Payment Method"
+                               @bind-Value="PurchaseOrderBilling.PaymentMethod">
+                        @foreach (var method in Enum.GetValues(typeof(PaymentMethod)).Cast<PaymentMethod>())
+                        {
+                            <MudSelectItem Value="@method">@method</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xl="6">
+                    <MudSelect T="PaymentTermsOption" Label="Payment Terms"
+                               @bind-Value="PurchaseOrderBilling.PaymentTermsOption">
+                        @foreach (var option in Enum.GetValues(typeof(PaymentTermsOption)).Cast<PaymentTermsOption>())
+                        {
+                            <MudSelectItem Value="@option">@GetEnumDescription(option)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                @if (PurchaseOrderBilling.PaymentTermsOption == PaymentTermsOption.Custom)
+                {
+                    <MudItem xl="4">
+                        <MudNumericField
+                            T="int?"
+                            @bind-Value="PurchaseOrderBilling.CustomPaymentTermsOption"
+                            Label="Override Payment Term"
+                            Placeholder="Enter number of Days"
+                            HideSpinButtons=true
+                            />
+                    </MudItem>
+                }
+                <MudItem xl="4">
+                    <MudCheckBox @bind-Value="PurchaseOrderBilling.IsPaid" Label="Is Paid?" Color="Color.Success"/>
+                </MudItem>
+                <MudItem xl="4">
+                    <MudCheckBox @bind-Value="PurchaseOrderBilling.IsDiscounted" Label="Discounted?" Color="Color.Default" />
+                </MudItem>
+                @if (PurchaseOrderBilling.IsDiscounted)
+                {
+                    <MudItem xl="4">
+                        <MudNumericField T="decimal?"
+                                         @bind-Value="PurchaseOrderBilling.DiscountAmount"
+                                         Label="Discount Amount"
+                                         HideSpinButtons=true
+                                         Adornment="Adornment.Start"
+                                         AdornmentText="₱"
+                                         Placeholder="Enter Discount Amount"
+                                         Format="N2" />
+                    </MudItem>
+                }
+                <MudItem xl="12">
+                    <MudTextField T="string" @bind-Value="PurchaseOrderBilling.Remarks" MaxLines="3"/>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="UpdatePurchaseOrderBilling">Update</MudButton>
+        </DialogActions>
+    </MudDialog>
+}

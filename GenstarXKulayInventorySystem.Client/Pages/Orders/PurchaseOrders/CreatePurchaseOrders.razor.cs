@@ -27,7 +27,7 @@ public partial class CreatePurchaseOrders
     protected bool IsNewSupplier { get; set; } = false;
     protected MudForm _form { get; set; } = default!;
 
-    protected bool IsPurchaseOrderValid => !string.IsNullOrWhiteSpace(SupplierName) && !string.IsNullOrWhiteSpace(NewPurchaseOrder.PurchaseOrderNumber) && NewPurchaseOrder.PurchaseOrderItems.Count !=0;
+    protected bool IsPurchaseOrderValid => !string.IsNullOrWhiteSpace(SupplierName) && NewPurchaseOrder.PurchaseOrderItems.Count !=0;
     protected override  async Task OnInitializedAsync()
     {
         IsLoading = true;

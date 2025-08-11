@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrders;
 
@@ -50,11 +51,32 @@ public partial class EditPurchaseOrders
             PurchaseOrder.SupplierId = selectedSupplier.Id;
             PurchaseOrder.Supplier = selectedSupplier;
 
-           
+            if (PurchaseOrder.PurchaseOrderItems != null && PurchaseOrder.PurchaseOrderItems.Any())
+            {
+                int totalItems = PurchaseOrder.PurchaseOrderItems.Count;
+                int receivedCount = PurchaseOrder.PurchaseOrderItems.Count(i => i.IsRecieved);
+
+                if (receivedCount == 0)
+                {
+                    PurchaseOrder.PurchaseRecieveOption = PurchaseRecieveOption.Pending;
+                }
+                else if (receivedCount == totalItems)
+                {
+                    PurchaseOrder.PurchaseRecieveOption = PurchaseRecieveOption.RecieveAll;
+                }
+                else
+                {
+                    PurchaseOrder.PurchaseRecieveOption = PurchaseRecieveOption.PartialRecieve;
+                }
+            }
+            else
+            {
+                PurchaseOrder.PurchaseRecieveOption = PurchaseRecieveOption.Pending;
+            }
             var response = await HttpClient.PutAsJsonAsync($"api/purchaseorder/{PurchaseOrder.Id}", PurchaseOrder);
             if (response.IsSuccessStatusCode)
             {
-                Snackbar.Add("Purchase order updated successfully.", Severity.Success);
+                Snackbar.Add("Purchase order updated successfully.", Severity.Success); 
                 
                 if (PurchaseOrder.PurchaseOrderItems == null || !PurchaseOrder.PurchaseOrderItems.Any())
                 {

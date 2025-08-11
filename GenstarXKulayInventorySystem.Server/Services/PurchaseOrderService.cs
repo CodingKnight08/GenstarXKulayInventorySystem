@@ -3,6 +3,8 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -12,12 +14,14 @@ public class PurchaseOrderService:IPurchaseOrderService
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<PurchaseOrderService> _logger;
-    public PurchaseOrderService(InventoryDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogger<PurchaseOrderService> logger)
+    private readonly IBillingService _billingService;
+    public PurchaseOrderService(InventoryDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogger<PurchaseOrderService> logger, IBillingService billingService)
     {
         _context = context;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        _billingService = billingService;
     }
     private string GetCurrentUsername()
     {
@@ -70,6 +74,9 @@ public class PurchaseOrderService:IPurchaseOrderService
             }
             await _context.PurchaseOrders.AddAsync(purchaseOrder);
             await _context.SaveChangesAsync();
+
+            purchaseOrder.PurchaseOrderNumber = $"PO-{purchaseOrder.Id:D7}-{DateTime.Now.Year.ToString()}";
+            await _context.SaveChangesAsync();
             return true;
         }
         catch (Exception ex)
@@ -83,6 +90,7 @@ public class PurchaseOrderService:IPurchaseOrderService
     {
         var existingPurchaseOrder = await _context.PurchaseOrders
             .Include(po => po.PurchaseOrderItems)
+            .Include(po => po.PurchaseOrderBillings)
             .FirstOrDefaultAsync(x => x.Id == purchaseOrderDto.Id && !x.IsDeleted && !x.IsRecieved);
 
         if (existingPurchaseOrder == null)
@@ -100,7 +108,41 @@ public class PurchaseOrderService:IPurchaseOrderService
 
 
             await _context.SaveChangesAsync();
-            return true;
+            if (purchaseOrderDto.PurchaseRecieveOption != PurchaseRecieveOption.Pending && existingPurchaseOrder.PurchaseOrderBillings.Count == 0)
+            
+            {
+                var billingDto = new PurchaseOrderBillingDto
+                {
+                    PurchaseOrderId = existingPurchaseOrder.Id,
+                    PurchaseOrderBillingDate = UtilitiesHelper.GetPhilippineTime(),
+                    AmountToBePaid = purchaseOrderDto.PurchaseOrderItems
+                                .Where(i => i.IsRecieved)
+                                .Sum(i => i.ItemAmount * i.ItemQuantity),
+                    PaymentTermsOption = PaymentTermsOption.SevenDays,
+                    BillingBranch = purchaseOrderDto.PurchaseShipToOption switch
+                    {
+                        PurchaseShipToOption.GeneralSantosCity => BillingBranch.GenStar,
+                        PurchaseShipToOption.Polomolok => BillingBranch.Kulay,
+                        PurchaseShipToOption.Warehouse => BillingBranch.Warehouse,
+                        _ => BillingBranch.GenStar
+                    },
+                    CreatedBy = GetCurrentUsername()
+                };
+
+                var billingCreated = await _billingService.AddPurchaseOrderBilling(billingDto);
+
+                if (!billingCreated)
+                {
+                    _logger.LogWarning("Purchase order updated, but billing creation failed for PO #{PurchaseOrderNumber}",
+                        existingPurchaseOrder.PurchaseOrderNumber);
+                }
+            }
+            else
+            {
+                _logger.LogError("exit if statement");
+            }
+
+                return true;
         }
         catch (Exception ex)
         {
