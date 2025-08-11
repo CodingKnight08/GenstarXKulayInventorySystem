@@ -16,7 +16,7 @@ public class BillingsController : ControllerBase
     [HttpGet("all/others")]
     public async Task<ActionResult<List<BillingDto>>> GetAllBillings()
     {
-        var billings = await _billingService.GetAllNotPurchaseOrderBillings();
+        var billings = await _billingService.GetAllBillingAsync();
         return Ok(billings);
     }
     [HttpGet("operational/{id:int}")]
@@ -78,4 +78,70 @@ public class BillingsController : ControllerBase
         }
     }
     //Puchase Order Billings
+
+
+    [HttpGet("purchase-orders/all")]
+    public async Task<ActionResult<List<PurchaseOrderBillingDto>>> GetAllPurchaseOrderBillings()
+    {
+        var billings = await _billingService.GetAllPurchaseOrderBillingAsync();
+        return Ok(billings);
+    }
+
+    [HttpGet("purchase-orders/{id:int}")]
+    public async Task<ActionResult<PurchaseOrderBillingDto>> GetPurchaseOrderBillingById(int id)
+    {
+        var billing = await _billingService.GetPurchaseOrderBillingById(id);
+        if (billing == null)
+            return NotFound("Purchase Order Billing not found.");
+        return Ok(billing);
+    }
+    [HttpPost("purchase-orders")]
+    public async Task<IActionResult> CreatePurchaseOrderBilling(PurchaseOrderBillingDto purchaseOrderBillingDto)
+    {
+        try
+        {
+            var result = await _billingService.AddPurchaseOrderBilling(purchaseOrderBillingDto);
+            if (!result)
+                return BadRequest("Purchase Order Billing already exists.");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
+    [HttpPut("purchase-orders/{id:int}")]
+    public async Task<IActionResult> UpdatePurchaseOrderBilling(int id, PurchaseOrderBillingDto purchaseOrderBillingDto)
+    {
+        try
+        {
+            if (id != purchaseOrderBillingDto.Id)
+                return BadRequest("Purchase Order Billing ID mismatch.");
+            var result = await _billingService.UpdatePurchaseOrderBilling(purchaseOrderBillingDto);
+            if (!result)
+                return NotFound("Purchase Order Billing not found or already deleted.");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+
+    [HttpDelete("purchase-orders/delete/{id:int}")]
+    public async Task<IActionResult> DeletePurchaseOrderBilling(int id)
+    {
+        try
+        {
+            var result = await _billingService.DeletePurchaseOrderBilling(id);
+            if (!result)
+                return NotFound("Purchase Order Billing not found or already deleted.");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
 }

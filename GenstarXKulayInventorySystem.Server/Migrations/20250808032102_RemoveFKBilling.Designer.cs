@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250808032102_RemoveFKBilling")]
+    partial class RemoveFKBilling
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -320,89 +323,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.HasIndex("SupplierId");
 
                     b.ToTable("PurchaseOrders");
-                });
-
-            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrderBilling", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("AmountPaid")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("AmountToBePaid")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("BillingBranch")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("CustomPaymentTermsOption")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("DiscountAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("ExpectedPaymentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDiscounted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ItemsRecieved")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PaymentTermsOption")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PurchaseOrderBillingDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PurchaseOrderBillingNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("PurchaseOrderId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Remarks")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PurchaseOrderId");
-
-                    b.ToTable("PurchaseOrderBillings");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrderItem", b =>
@@ -764,16 +684,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Navigation("Supplier");
                 });
 
-            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrderBilling", b =>
-                {
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.PurchaseOrder", "PurchaseOrder")
-                        .WithMany("PurchaseOrderBillings")
-                        .HasForeignKey("PurchaseOrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("PurchaseOrder");
-                });
-
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrderItem", b =>
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.Billing", null)
@@ -871,8 +781,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrder", b =>
                 {
-                    b.Navigation("PurchaseOrderBillings");
-
                     b.Navigation("PurchaseOrderItems");
                 });
 

@@ -17,9 +17,6 @@ public class PurchaseOrderItem:BaseEntity
     public int? ProductBrandId { get; set; }
     public ProductBrand? ProductBrand { get; set; }
 
-    public int? BillingId { get; set; }
-    public Billing? Billing { get; set; }
-
     public decimal ItemAmount { get; set; }
     public ProductMesurementOption? PurchaseItemMeasurementOption { get; set; }
     public int ItemQuantity { get; set; }

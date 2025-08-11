@@ -1,16 +1,16 @@
 ﻿@layout MainLayout
 
-<div class="d-flex justify-content-end mb-3">
-    <MudButton
-        Variant="Variant.Filled" 
-        Color="Color.Primary" 
-        StartIcon="@Icons.Material.Filled.Add"
-        OnClick="CreatePurchaseOrderBilling"
-    >
-        Add Purchase Order Billing
-    </MudButton>
-</div>
-
+<MudCard Elevation="0" Class="mb-4">
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="mt-5">Purchase Order Billing List</MudText>
+</MudCard>
+@if (IsLoading)
+{
+    <MudPaper Elevation="0" Class="d-flex flex-column align-items-center justify-content-center gap-2 w-100 h-100">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+        <MudText Typo="Typo.body1">Loading Purchase Order Billings...</MudText>
+    </MudPaper>
+}
+else{
 <MudPaper Class="d-flex flex-column flex-grow-1" Style="height:100%;">
     <MudTable 
         Items="PurchaseOrderBilling"
@@ -21,12 +21,24 @@
     >
     <HeaderContent>
         <MudTh>Billing Number</MudTh>
-        <MudTh>Billing Name</MudTh>
-        <MudTh>Billing Amount</MudTh>
+        <MudTh>Purchase OrderNumber</MudTh>
+        <MudTh>Amount To Pay</MudTh>
         <MudTh>Date of Billing</MudTh>
+        <MudTh>Expected Date Paid</MudTh>
+        <MudTh>Terms</MudTh>
+        <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
-
+        <MudTd>@context.PurchaseOrderBillingNumber</MudTd>
+        <MudTd>@context.PurchaseOrder?.PurchaseOrderNumber</MudTd>
+        <MudTd>₱@context.AmountToBePaid.ToString("N2")</MudTd>
+        <MudTd>@context.PurchaseOrderBillingDate.ToString("MMM dd, yyyy")</MudTd>
+        <MudTd>@(context.ExpectedPaymentDate?.ToString("MMM dd, yyyy"))</MudTd>
+        <MudTd>@context.PaymentTermsOption.ToString()</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" OnClick="() => ViewPurchaseOrderBilling(context.Id)" />
+        </MudTd>
     </RowTemplate>
     </MudTable>
 </MudPaper>
+}

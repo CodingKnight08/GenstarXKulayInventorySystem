@@ -41,7 +41,7 @@ else{
                 <MudSelect T="BillingCategory" @bind-Value="Billing.Category" Label="Billing Category" FullWidth="true" ReadOnly=true>
                     @foreach (var val in Enum.GetValues<BillingCategory>())
                     {
-                        <MudSelectItem Value="@val" Disabled="@(val.Equals(BillingCategory.PurchaseOrder))">
+                        <MudSelectItem Value="@val">
                             @val.ToString()
                         </MudSelectItem>
                     }

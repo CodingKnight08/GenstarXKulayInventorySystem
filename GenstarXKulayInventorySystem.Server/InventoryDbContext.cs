@@ -68,11 +68,6 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .WithMany()
                   .HasForeignKey(poi => poi.ProductBrandId)
                   .OnDelete(DeleteBehavior.Restrict);
-            entity.HasOne(poi => poi.Billing)
-                   .WithMany(b => b.PurchaseOrderItems)
-                   .HasForeignKey(poi => poi.BillingId)
-                   .IsRequired(false) 
-                   .OnDelete(DeleteBehavior.SetNull);
 
             entity.Property(poi => poi.ItemAmount).HasPrecision(18, 2);
             entity.Property(poi => poi.PurchaseItemMeasurementOption).HasConversion<int>();
@@ -80,15 +75,25 @@ public class InventoryDbContext: IdentityDbContext<User>
 
         modelBuilder.Entity<Billing>(entity =>
         {
-            entity.HasOne(b => b.PurchaseOrder)
-                  .WithMany(po => po.Billings) 
-                  .HasForeignKey(b => b.PurchaseOrderId) // force the FK mapping
-                  .IsRequired(false) 
-                  .OnDelete(DeleteBehavior.SetNull);
-
+          
             entity.Property(b => b.Amount).HasPrecision(18, 2);
             entity.Property(b => b.DiscountAmount).HasPrecision(18, 2);
             entity.Property(b => b.Category).HasConversion<int>();
+        });
+        modelBuilder.Entity<PurchaseOrderBilling>(entity =>
+        {
+            entity.HasOne(pob => pob.PurchaseOrder)
+                  .WithMany(po => po.PurchaseOrderBillings)
+                  .HasForeignKey(pob => pob.PurchaseOrderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(pob => pob.AmountToBePaid).HasPrecision(18, 2);
+            entity.Property(pob => pob.AmountPaid).HasPrecision(18, 2);
+            entity.Property(pob => pob.DiscountAmount).HasPrecision(18, 2);
+
+            entity.Property(pob => pob.BillingBranch).HasConversion<int>();
+            entity.Property(pob => pob.PaymentMethod).HasConversion<int>();
+            entity.Property(pob => pob.PaymentTermsOption).HasConversion<int>();
         });
 
 
@@ -106,4 +111,5 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
     public DbSet<Billing> Billings { get; set; }
+    public DbSet<PurchaseOrderBilling> PurchaseOrderBillings { get; set; }
 }

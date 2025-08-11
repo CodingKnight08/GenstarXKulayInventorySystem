@@ -18,6 +18,7 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+      
     }
     private string GetCurrentUsername()
     {
@@ -47,8 +48,7 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
     {
         List<PurchaseOrderItem> purchaseOrderItems = await _context.PurchaseOrderItems
            .AsNoTracking()
-           .AsSplitQuery()
-           .Include(c => c.PurchaseOrder)
+           .AsSplitQuery() 
            .Include(c => c.Product)
            .Include(c => c.ProductBrand)
            .Where(e => !e.IsDeleted && e.PurchaseOrderId == purchaseOrderId && e.IsRecieved)

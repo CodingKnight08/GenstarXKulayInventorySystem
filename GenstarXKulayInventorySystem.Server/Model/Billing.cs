@@ -9,9 +9,6 @@ public class Billing: BaseEntity
     public string BillingName { get; set; } = string.Empty;
     public  string BillingNumber { get; set; } = string.Empty;
     public DateTime DateOfBilling { get; set; }
-    public int? PurchaseOrderId { get; set; }
-    public PurchaseOrder? PurchaseOrder { get; set; } 
-
     public BillingCategory Category { get; set; }
     public string? Remarks { get; set; }
     public decimal Amount { get; set; } = 0;
