@@ -24,7 +24,7 @@
     <MudItem xl="2">
         <MudSelect T="PurchaseRecieptOption"
                    Label="Receipt Type"
-                   
+                   ReadOnly=true
                    @bind-Value="PurchaseOrder.PurchaseRecieptOption">
             @foreach (var val in Enum.GetValues<PurchaseRecieptOption>())
             {
