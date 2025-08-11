@@ -153,7 +153,7 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
                 {
                     entity.ItemQuantity = dto.ItemQuantity;
                     entity.PurchaseItemMeasurementOption = dto.PurchaseItemMeasurementOption;
-                    entity.ItemAmount = dto.ItemAmount;
+                    entity.ItemAmount = dto.ItemAmount ?? 0;
                     entity.ItemDescription = dto.ItemDescription;
                     entity.IsRecieved = dto.IsRecieved;
                     entity.UpdatedBy = GetCurrentUsername();

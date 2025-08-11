@@ -84,7 +84,7 @@
                     <RowTemplate>
                         <MudTd>@context.Product?.ProductName</MudTd>
                         <MudTd>@context.ItemQuantity</MudTd>
-                        <MudTd>₱@context.ItemAmount.ToString("N2")</MudTd>
+                        <MudTd>₱@context.ItemAmount?.ToString("N2")</MudTd>
 
                         <MudTd>@context.PurchaseItemMeasurementOption.ToString()</MudTd>
                     </RowTemplate>

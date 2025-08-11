@@ -5,6 +5,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
+using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -74,8 +75,8 @@ public class PurchaseOrderService:IPurchaseOrderService
             }
             await _context.PurchaseOrders.AddAsync(purchaseOrder);
             await _context.SaveChangesAsync();
-
-            purchaseOrder.PurchaseOrderNumber = $"PO-{purchaseOrder.Id:D7}-{DateTime.Now.Year.ToString()}";
+            purchaseOrder.PurchaseOrderNumber = $"PO-{purchaseOrder.Id:D7}-{UtilitiesHelper.GetPhilippineTime().Year.ToString()}";
+            _context.PurchaseOrders.Update(purchaseOrder);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -101,11 +102,12 @@ public class PurchaseOrderService:IPurchaseOrderService
             // Update purchase order basic fields
             existingPurchaseOrder.UpdatedBy = GetCurrentUsername();
             existingPurchaseOrder.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
-            existingPurchaseOrder.SupplierId = purchaseOrderDto.SupplierId;
             existingPurchaseOrder.PurchaseOrderNumber = purchaseOrderDto.PurchaseOrderNumber;
             existingPurchaseOrder.PurchaseOrderDate = purchaseOrderDto.PurchaseOrderDate;
             existingPurchaseOrder.ExpectedDeliveryDate = purchaseOrderDto.ExpectedDeliveryDate;
-
+            existingPurchaseOrder.AssumeTotalAmount = purchaseOrderDto.AssumeTotalAmount;
+            existingPurchaseOrder.PurchaseRecieveOption = purchaseOrderDto.PurchaseRecieveOption;
+            _ = _context.PurchaseOrders.Update(existingPurchaseOrder);
 
             await _context.SaveChangesAsync();
             if (purchaseOrderDto.PurchaseRecieveOption != PurchaseRecieveOption.Pending && existingPurchaseOrder.PurchaseOrderBillings.Count == 0)
@@ -117,7 +119,7 @@ public class PurchaseOrderService:IPurchaseOrderService
                     PurchaseOrderBillingDate = UtilitiesHelper.GetPhilippineTime(),
                     AmountToBePaid = purchaseOrderDto.PurchaseOrderItems
                                 .Where(i => i.IsRecieved)
-                                .Sum(i => i.ItemAmount * i.ItemQuantity),
+                                .Sum(i => (i.ItemAmount ?? 0) * i.ItemQuantity),
                     PaymentTermsOption = PaymentTermsOption.SevenDays,
                     BillingBranch = purchaseOrderDto.PurchaseShipToOption switch
                     {

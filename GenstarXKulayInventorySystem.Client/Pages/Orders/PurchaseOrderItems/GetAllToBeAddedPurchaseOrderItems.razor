@@ -21,7 +21,7 @@
         <MudTd>@(context.Product?.ProductName ?? "None")</MudTd>
         <MudTd>@(context.PurchaseItemMeasurementOption?.ToString() ?? "None")</MudTd>
         <MudTd>@context.ItemQuantity</MudTd>
-        <MudTd>@($"₱{context.ItemAmount.ToString("N2")}")</MudTd>
+        <MudTd>@($"₱{context.ItemAmount?.ToString("N2")}")</MudTd>
         <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                            Color="Color.Error"

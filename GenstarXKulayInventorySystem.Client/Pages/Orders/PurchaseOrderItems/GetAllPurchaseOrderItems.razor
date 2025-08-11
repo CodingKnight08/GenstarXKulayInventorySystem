@@ -21,7 +21,7 @@
 
        <MudTd Class="fw-normal">@context.PurchaseItemMeasurementOption</MudTd>
        <MudTd Class="fw-normal">@context.ItemQuantity</MudTd>
-       <MudTd Class="fw-normal">₱@context.ItemAmount.ToString("N2")</MudTd>
+       <MudTd Class="fw-normal">₱@context.ItemAmount?.ToString("N2")</MudTd>
         <MudTd>
             <MudSelect T="bool" @bind-Value="@context.IsRecieved" Dense="true" ReadOnly=true>
                 <MudSelectItem Value="true">Received</MudSelectItem>

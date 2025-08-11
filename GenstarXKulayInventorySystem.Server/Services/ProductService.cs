@@ -2,8 +2,10 @@
 using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -32,6 +34,7 @@ public class ProductService:IProductService
             .Include(p => p.ProductBrand)
             .Include(p => p.ProductCategory)
             .Where(p => p.BrandId == brandId && !p.IsDeleted)
+            .OrderBy(e => e.ProductName)
             .ToListAsync() ?? new List<Product>(); ;
 
         
@@ -54,7 +57,7 @@ public class ProductService:IProductService
         {
             var existingProduct = await _context.Products.AsNoTracking().AsSplitQuery()
                 .FirstOrDefaultAsync(x => x.ProductName == productDto.ProductName &&
-                                          x.BrandId == productDto.BrandId && x.Size == productDto.Size && x.ProductMesurementOption == productDto.ProductMesurementOption);
+                                          x.BrandId == productDto.BrandId && x.Size == productDto.Size && x.ProductMesurementOption == productDto.ProductMesurementOption && x.Branch == productDto.Branch);
             if (existingProduct != null)
                 return false;
 
@@ -110,12 +113,12 @@ public class ProductService:IProductService
         return brands.Select(brand => _mapper.Map<ProductBrandDto>(brand)).ToList();
     }
 
-    public async Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync()
+    public async Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync(BranchOption branch)
     {
         var brands = await _context.ProductBrands
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(b => b.Products.Where(p => !p.IsDeleted))
+            .Include(b => b.Products.Where(p => !p.IsDeleted && p.Branch == branch))
             .Where(b => !b.IsDeleted)
             .ToListAsync();
         return brands.Select(brand => _mapper.Map<ProductBrandDto>(brand)).ToList();
@@ -266,7 +269,7 @@ public interface IProductService
 
 
     Task<List<ProductBrandDto>> GetAllBrandsAsync();
-    Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync();
+    Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync(BranchOption branch);
     Task<ProductBrandDto?> GetBrandByIdAsync(int id);
     Task<bool> AddBrandAsync(ProductBrandDto brandDto);
     Task<bool> UpdateBrandAsync(ProductBrandDto brandDto);
