@@ -34,7 +34,23 @@ public class PurchaseOrderService:IPurchaseOrderService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(c => c.Supplier)
-            .Where(e => !e.IsDeleted && !e.IsRecieved && e.PurchaseRecieveOption != OrdersHelper.PurchaseRecieveOption.RecieveAll)
+            .Where(e => !e.IsDeleted && !e.IsRecieved && e.PurchaseRecieveOption != PurchaseRecieveOption.RecieveAll)
+            .OrderByDescending(e => e.PurchaseOrderDate).ToListAsync();
+        if (purchaseOrders == null || purchaseOrders.Count == 0)
+        {
+            return new List<PurchaseOrderDto>();
+        }
+        List<PurchaseOrderDto> purchaseOrderDtos = _mapper.Map<List<PurchaseOrderDto>>(purchaseOrders);
+        return purchaseOrderDtos;
+    }
+
+    public async Task<List<PurchaseOrderDto>> GetAllReceiveAllPOAsync()
+    {
+        List<PurchaseOrder> purchaseOrders = await _context.PurchaseOrders
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(c => c.Supplier)
+            .Where(e => !e.IsDeleted && e.IsRecieved && e.PurchaseRecieveOption == PurchaseRecieveOption.RecieveAll)
             .OrderByDescending(e => e.PurchaseOrderDate).ToListAsync();
         if (purchaseOrders == null || purchaseOrders.Count == 0)
         {
@@ -107,6 +123,8 @@ public class PurchaseOrderService:IPurchaseOrderService
             existingPurchaseOrder.ExpectedDeliveryDate = purchaseOrderDto.ExpectedDeliveryDate;
             existingPurchaseOrder.AssumeTotalAmount = purchaseOrderDto.AssumeTotalAmount;
             existingPurchaseOrder.PurchaseRecieveOption = purchaseOrderDto.PurchaseRecieveOption;
+            existingPurchaseOrder.IsRecieved =
+                                    purchaseOrderDto.PurchaseRecieveOption == PurchaseRecieveOption.RecieveAll;
             _ = _context.PurchaseOrders.Update(existingPurchaseOrder);
 
             await _context.SaveChangesAsync();
@@ -139,9 +157,21 @@ public class PurchaseOrderService:IPurchaseOrderService
                         existingPurchaseOrder.PurchaseOrderNumber);
                 }
             }
-            else
+            else if(purchaseOrderDto.PurchaseRecieveOption !=PurchaseRecieveOption.Pending && existingPurchaseOrder.PurchaseOrderBillings.Count !=0)
             {
-                _logger.LogError("exit if statement");
+                var existingBilling = existingPurchaseOrder.PurchaseOrderBillings.FirstOrDefault();
+                if (existingBilling != null)
+                {
+                    existingBilling.AmountToBePaid = purchaseOrderDto.PurchaseOrderItems
+                        .Where(i => i.IsRecieved)
+                        .Sum(i => (i.ItemAmount ?? 0) * i.ItemQuantity);
+
+                    existingBilling.UpdatedBy = GetCurrentUsername();
+                    existingBilling.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+
+                    _context.PurchaseOrderBillings.Update(existingBilling);
+                    await _context.SaveChangesAsync();
+                }
             }
 
                 return true;
