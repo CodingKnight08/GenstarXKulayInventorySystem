@@ -25,6 +25,7 @@ public partial class CreatePurchaseOrderItem
         IsLoading = true;
 
         await GetAllProductBrands();
+        
 
         IsLoading = false;
     }
@@ -134,6 +135,7 @@ public partial class CreatePurchaseOrderItem
         {
             PurchaseOrderItemDto.Product = selectedProduct;
             PurchaseOrderItemDto.ProductId = selectedProduct.Id;
+            PurchaseOrderItemDto.PurchaseItemMeasurementOption = selectedProduct.ProductMesurementOption;
         }
         else
         {

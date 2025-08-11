@@ -33,9 +33,9 @@
                    FullWidth="true"
                    Required="true"
                    RequiredError="Select Unit Option"
+                   ReadOnly=true
                 >
                 <MudSelectItem T="ProductMesurementOption?" Value="null" Disabled="true">
-                    -- Select Unit --
                 </MudSelectItem>
                     @foreach (var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
                     {
