@@ -45,7 +45,7 @@ else
                   <MudItem xl="1">
                         <MudSelect T="PurchaseRecieptOption"
                                    Label="Receipt Type"
-                                   ReadOnly=true
+                                   
                                    @bind-Value="NewPurchaseOrder.PurchaseRecieptOption">
                             @foreach (var val in Enum.GetValues<PurchaseRecieptOption>())
                             {
@@ -56,6 +56,7 @@ else
                   <MudItem xl="2">
                         <MudSelect T="PurchaseRecieveOption"
                                    Label="Receive Option"
+                                   ReadOnly=true
                                    @bind-Value="NewPurchaseOrder.PurchaseRecieveOption">
                             @foreach (var val in Enum.GetValues<PurchaseRecieveOption>())
                             {

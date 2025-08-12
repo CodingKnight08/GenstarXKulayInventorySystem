@@ -13,6 +13,7 @@ public partial class ViewPurchaseOrderBilling
     [Inject] protected ILogger<ViewPurchaseOrderBilling> Logger { get; set; } = default!;
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
+    [Inject] protected ISnackbar Snackbar { get; set; } = default!;
 
     protected PurchaseOrderBillingDto PurchaseOrderBilling { get; set; } = new PurchaseOrderBillingDto();
     protected List<PurchaseOrderItemDto> PurchaseOderItems { get; set; } = new List<PurchaseOrderItemDto>();
@@ -99,6 +100,41 @@ public partial class ViewPurchaseOrderBilling
                 await LoadPurchaseOrderBilling();
                 StateHasChanged();
             }
+        }
+    }
+
+    protected async Task DeleteBilling()
+    {
+        try
+        {
+            var dialog = await DialogService.ShowAsync<DeletePurchaseOrderBilling>("",
+               new DialogParameters
+               {
+                   {"PurchaseOrderBilling",PurchaseOrderBilling }
+               },
+                new DialogOptions
+                {
+                    MaxWidth = MaxWidth.Small,
+                    FullWidth = true,
+                    CloseButton = true,
+                    BackdropClick = false
+                });
+            if(dialog is not null)
+            {
+                var result = await dialog.Result;
+                if(result is not null && !result.Canceled)
+                {
+                    IsLoading = true;
+                    StateHasChanged() ;
+                    Snackbar.Add("Purchase Order Billing has been removed successfully", Severity.Success);
+                    await Task.Delay(1000);
+                    NavigationManager.NavigateTo("/billings");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error occured,{ex.Message}");
         }
     }
     protected int TermsOption(PaymentTermsOption term)

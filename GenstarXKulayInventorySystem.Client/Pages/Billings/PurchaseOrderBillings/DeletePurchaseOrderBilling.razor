@@ -1,0 +1,13 @@
+﻿<MudDialog>
+
+    <DialogContent>
+
+        <MudText Align="Align.Center" Class="text-danger">Are you sure you want to delete the Purchase Order Billing <strong>@PurchaseOrderBilling.PurchaseOrderBillingNumber</strong>?</MudText>
+        <MudText Align="Align.Center">All products ordered in this billing will also be deleted.</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" OnClick="DeletePurchaseOrderBillingAsync">Delete</MudButton>
+    </DialogActions>
+
+</MudDialog>

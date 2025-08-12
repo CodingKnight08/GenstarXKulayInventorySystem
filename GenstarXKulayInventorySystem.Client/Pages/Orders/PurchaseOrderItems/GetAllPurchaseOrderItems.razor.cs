@@ -77,7 +77,7 @@ public partial class GetAllPurchaseOrderItems
             {
                 var items = await response.Content.ReadFromJsonAsync<List<PurchaseOrderItemDto>>();
                 PurchaseOrderItems = items ?? new List<PurchaseOrderItemDto>();
-                decimal total = PurchaseOrderItems.Sum(x => x.ItemAmount ?? 0);
+                decimal total = PurchaseOrderItems.Sum(x => (x.ItemAmount ?? 0) * x.ItemQuantity);
                 await OnTotalCalculated.InvokeAsync(total);
 
             }
