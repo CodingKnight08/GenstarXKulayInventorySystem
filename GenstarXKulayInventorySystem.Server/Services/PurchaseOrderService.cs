@@ -50,7 +50,7 @@ public class PurchaseOrderService:IPurchaseOrderService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(c => c.Supplier)
-            .Where(e => !e.IsDeleted && e.IsRecieved && e.PurchaseRecieveOption != PurchaseRecieveOption.Pending)
+            .Where(e => !e.IsDeleted && e.PurchaseRecieveOption != PurchaseRecieveOption.Pending)
             .OrderByDescending(e => e.PurchaseOrderDate).ToListAsync();
         if (purchaseOrders == null || purchaseOrders.Count == 0)
         {
@@ -81,6 +81,7 @@ public class PurchaseOrderService:IPurchaseOrderService
             var purchaseOrder = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
             purchaseOrder.CreatedBy = GetCurrentUsername();
             purchaseOrder.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            purchaseOrder.AssumeTotalAmount = purchaseOrderDto.PurchaseOrderItems.Sum(item => (item.ItemAmount ?? 0) * item.ItemQuantity);
             foreach (var item in purchaseOrder.PurchaseOrderItems)
             {
                 item.PurchaseOrder = null;
@@ -123,13 +124,11 @@ public class PurchaseOrderService:IPurchaseOrderService
             existingPurchaseOrder.ExpectedDeliveryDate = purchaseOrderDto.ExpectedDeliveryDate;
             existingPurchaseOrder.AssumeTotalAmount = purchaseOrderDto.AssumeTotalAmount;
             existingPurchaseOrder.PurchaseRecieveOption = purchaseOrderDto.PurchaseRecieveOption;
-            existingPurchaseOrder.IsRecieved =
-                                    purchaseOrderDto.PurchaseRecieveOption == PurchaseRecieveOption.RecieveAll;
+            existingPurchaseOrder.IsRecieved = purchaseOrderDto.PurchaseRecieveOption == PurchaseRecieveOption.RecieveAll;
             _ = _context.PurchaseOrders.Update(existingPurchaseOrder);
 
             await _context.SaveChangesAsync();
-            if (purchaseOrderDto.PurchaseRecieveOption != PurchaseRecieveOption.Pending && existingPurchaseOrder.PurchaseOrderBillings.Count == 0)
-            
+            if (purchaseOrderDto.PurchaseRecieveOption != PurchaseRecieveOption.Pending && (existingPurchaseOrder.PurchaseOrderBillings.Count == 0 || existingPurchaseOrder.PurchaseOrderBillings.All(e => e.IsDeleted)))
             {
                 var billingDto = new PurchaseOrderBillingDto
                 {
