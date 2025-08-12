@@ -34,6 +34,7 @@
                 <MudTh>Supplier</MudTh>
                
                 <MudTh>Shipped To</MudTh>
+                <MudTh>Status</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -43,6 +44,11 @@
                 <MudTd>@context.Supplier?.SupplierName</MudTd>
                 
                 <MudTd>@context.PurchaseShipToOption.ToString()</MudTd>
+                <MudTd>
+                        <MudChip T="string" Color="@GetChipColor(context.PurchaseRecieveOption)">
+                            @context.PurchaseRecieveOption.ToString()
+                        </MudChip>
+                </MudTd>
                 <MudTd>
                     <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="@Color.Info" OnClick="() =>ViewPurchaseOrder(context.Id)"/>
 
