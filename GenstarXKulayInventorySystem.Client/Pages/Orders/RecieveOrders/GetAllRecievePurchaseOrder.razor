@@ -1,0 +1,58 @@
+﻿@page "/received-order"
+@layout MainLayout
+
+
+<MudMainContent Class="d-flex flex-column align-items-center justify-content-start w-auto gap-2" Style="height:100%;">
+    <MudCard Elevation="0" Class="w-100 bg-transparent">
+        <MudText Align="Align.Left" Typo="Typo.h4" Class="ms-4 mt-3">Delivered Purchase Orders</MudText>
+    </MudCard>
+    <MudCard Elevation="0" Class="w-100">
+        @if (IsLoading)
+        {
+            <div class="d-flex flex-column h-100 align-items-center justify-content-center">
+
+                <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+
+            </div>
+        }
+        else
+        {
+            <MudTable 
+                Items="PurchaseOrders"
+                Dense="true"
+                Hover="true"
+                Class="flex-grow-1 mx-2"
+
+            >
+            <HeaderContent>
+                <MudTh>PO No.</MudTh>
+                <MudTh>Purchase Date</MudTh>
+                <MudTh>Expected Date</MudTh>
+                <MudTh>Supplier</MudTh>
+               
+                <MudTh>Shipped To</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.PurchaseOrderNumber</MudTd>
+                <MudTd>@context.PurchaseOrderDate.ToString("MMM dd, yyyy")</MudTd>
+                <MudTd>@(context.ExpectedDeliveryDate?.ToString("MMM dd, yyyy") ?? "")</MudTd>
+                <MudTd>@context.Supplier?.SupplierName</MudTd>
+                
+                <MudTd>@context.PurchaseShipToOption.ToString()</MudTd>
+                <MudTd>
+                        <MudChip T="string" Color="@GetChipColor(context.PurchaseRecieveOption)">
+                            @context.PurchaseRecieveOption.ToString()
+                        </MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="@Color.Info" OnClick="() => ViewRecievePurchaseOrder(context.Id)" />
+
+                </MudTd>
+            </RowTemplate>
+
+            </MudTable>
+        }
+    </MudCard>
+</MudMainContent>
