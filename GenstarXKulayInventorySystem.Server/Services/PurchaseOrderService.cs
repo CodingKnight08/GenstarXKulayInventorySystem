@@ -50,7 +50,7 @@ public class PurchaseOrderService:IPurchaseOrderService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(c => c.Supplier)
-            .Where(e => !e.IsDeleted && e.IsRecieved && e.PurchaseRecieveOption == PurchaseRecieveOption.RecieveAll)
+            .Where(e => !e.IsDeleted && e.IsRecieved && e.PurchaseRecieveOption != PurchaseRecieveOption.Pending)
             .OrderByDescending(e => e.PurchaseOrderDate).ToListAsync();
         if (purchaseOrders == null || purchaseOrders.Count == 0)
         {
@@ -65,7 +65,7 @@ public class PurchaseOrderService:IPurchaseOrderService
         var purchaseOrder = await _context.PurchaseOrders
             .AsNoTracking()
             .Include(c => c.Supplier)
-            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted && !e.IsRecieved);
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         return purchaseOrder == null ? null : _mapper.Map<PurchaseOrderDto>(purchaseOrder);
     }
 
@@ -221,6 +221,7 @@ public class PurchaseOrderService:IPurchaseOrderService
 public interface IPurchaseOrderService
 {
     Task<List<PurchaseOrderDto>> GetAllAsync();
+    Task<List<PurchaseOrderDto>> GetAllReceiveAllPOAsync();
     Task<PurchaseOrderDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(PurchaseOrderDto purchaseOrderDto);
     Task<bool> UpdateAsync(PurchaseOrderDto purchaseOrderDto);

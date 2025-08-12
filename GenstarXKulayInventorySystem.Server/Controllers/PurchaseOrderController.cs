@@ -21,6 +21,13 @@ public class PurchaseOrderController : ControllerBase
         var purchaseOrders = await _service.GetAllAsync();
         return Ok(purchaseOrders);
     }
+    [HttpGet("all/received")]
+    public async Task<ActionResult<List<PurchaseOrderDto>>> GetAllRecieve()
+    {
+        var purchaseOrders = await _service.GetAllReceiveAllPOAsync();
+        return Ok(purchaseOrders);
+    }
+
 
     [HttpGet("{id}")]
     public async Task<ActionResult<PurchaseOrderDto?>> GetById(int id)
