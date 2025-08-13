@@ -5,6 +5,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
+using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -33,7 +34,23 @@ public class PurchaseOrderService:IPurchaseOrderService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(c => c.Supplier)
-            .Where(e => !e.IsDeleted && !e.IsRecieved && e.PurchaseRecieveOption != OrdersHelper.PurchaseRecieveOption.RecieveAll)
+            .Where(e => !e.IsDeleted && !e.IsRecieved && e.PurchaseRecieveOption != PurchaseRecieveOption.RecieveAll)
+            .OrderByDescending(e => e.PurchaseOrderDate).ToListAsync();
+        if (purchaseOrders == null || purchaseOrders.Count == 0)
+        {
+            return new List<PurchaseOrderDto>();
+        }
+        List<PurchaseOrderDto> purchaseOrderDtos = _mapper.Map<List<PurchaseOrderDto>>(purchaseOrders);
+        return purchaseOrderDtos;
+    }
+
+    public async Task<List<PurchaseOrderDto>> GetAllReceiveAllPOAsync()
+    {
+        List<PurchaseOrder> purchaseOrders = await _context.PurchaseOrders
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(c => c.Supplier)
+            .Where(e => !e.IsDeleted && e.PurchaseRecieveOption != PurchaseRecieveOption.Pending)
             .OrderByDescending(e => e.PurchaseOrderDate).ToListAsync();
         if (purchaseOrders == null || purchaseOrders.Count == 0)
         {
@@ -48,7 +65,7 @@ public class PurchaseOrderService:IPurchaseOrderService
         var purchaseOrder = await _context.PurchaseOrders
             .AsNoTracking()
             .Include(c => c.Supplier)
-            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted && !e.IsRecieved);
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         return purchaseOrder == null ? null : _mapper.Map<PurchaseOrderDto>(purchaseOrder);
     }
 
@@ -64,6 +81,7 @@ public class PurchaseOrderService:IPurchaseOrderService
             var purchaseOrder = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
             purchaseOrder.CreatedBy = GetCurrentUsername();
             purchaseOrder.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            purchaseOrder.AssumeTotalAmount = purchaseOrderDto.PurchaseOrderItems.Sum(item => (item.ItemAmount ?? 0) * item.ItemQuantity);
             foreach (var item in purchaseOrder.PurchaseOrderItems)
             {
                 item.PurchaseOrder = null;
@@ -74,8 +92,8 @@ public class PurchaseOrderService:IPurchaseOrderService
             }
             await _context.PurchaseOrders.AddAsync(purchaseOrder);
             await _context.SaveChangesAsync();
-
-            purchaseOrder.PurchaseOrderNumber = $"PO-{purchaseOrder.Id:D7}-{DateTime.Now.Year.ToString()}";
+            purchaseOrder.PurchaseOrderNumber = $"PO-{purchaseOrder.Id:D7}-{UtilitiesHelper.GetPhilippineTime().Year.ToString()}";
+            _context.PurchaseOrders.Update(purchaseOrder);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -101,15 +119,16 @@ public class PurchaseOrderService:IPurchaseOrderService
             // Update purchase order basic fields
             existingPurchaseOrder.UpdatedBy = GetCurrentUsername();
             existingPurchaseOrder.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
-            existingPurchaseOrder.SupplierId = purchaseOrderDto.SupplierId;
             existingPurchaseOrder.PurchaseOrderNumber = purchaseOrderDto.PurchaseOrderNumber;
             existingPurchaseOrder.PurchaseOrderDate = purchaseOrderDto.PurchaseOrderDate;
             existingPurchaseOrder.ExpectedDeliveryDate = purchaseOrderDto.ExpectedDeliveryDate;
-
+            existingPurchaseOrder.AssumeTotalAmount = purchaseOrderDto.AssumeTotalAmount;
+            existingPurchaseOrder.PurchaseRecieveOption = purchaseOrderDto.PurchaseRecieveOption;
+            existingPurchaseOrder.IsRecieved = purchaseOrderDto.PurchaseRecieveOption == PurchaseRecieveOption.RecieveAll;
+            _ = _context.PurchaseOrders.Update(existingPurchaseOrder);
 
             await _context.SaveChangesAsync();
-            if (purchaseOrderDto.PurchaseRecieveOption != PurchaseRecieveOption.Pending && existingPurchaseOrder.PurchaseOrderBillings.Count == 0)
-            
+            if (purchaseOrderDto.PurchaseRecieveOption != PurchaseRecieveOption.Pending && (existingPurchaseOrder.PurchaseOrderBillings.Count == 0 || existingPurchaseOrder.PurchaseOrderBillings.All(e => e.IsDeleted)))
             {
                 var billingDto = new PurchaseOrderBillingDto
                 {
@@ -117,7 +136,7 @@ public class PurchaseOrderService:IPurchaseOrderService
                     PurchaseOrderBillingDate = UtilitiesHelper.GetPhilippineTime(),
                     AmountToBePaid = purchaseOrderDto.PurchaseOrderItems
                                 .Where(i => i.IsRecieved)
-                                .Sum(i => i.ItemAmount * i.ItemQuantity),
+                                .Sum(i => (i.ItemAmount ?? 0) * i.ItemQuantity),
                     PaymentTermsOption = PaymentTermsOption.SevenDays,
                     BillingBranch = purchaseOrderDto.PurchaseShipToOption switch
                     {
@@ -137,9 +156,21 @@ public class PurchaseOrderService:IPurchaseOrderService
                         existingPurchaseOrder.PurchaseOrderNumber);
                 }
             }
-            else
+            else if(purchaseOrderDto.PurchaseRecieveOption !=PurchaseRecieveOption.Pending && existingPurchaseOrder.PurchaseOrderBillings.Count !=0)
             {
-                _logger.LogError("exit if statement");
+                var existingBilling = existingPurchaseOrder.PurchaseOrderBillings.FirstOrDefault();
+                if (existingBilling != null)
+                {
+                    existingBilling.AmountToBePaid = purchaseOrderDto.PurchaseOrderItems
+                        .Where(i => i.IsRecieved)
+                        .Sum(i => (i.ItemAmount ?? 0) * i.ItemQuantity);
+
+                    existingBilling.UpdatedBy = GetCurrentUsername();
+                    existingBilling.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+
+                    _context.PurchaseOrderBillings.Update(existingBilling);
+                    await _context.SaveChangesAsync();
+                }
             }
 
                 return true;
@@ -189,6 +220,7 @@ public class PurchaseOrderService:IPurchaseOrderService
 public interface IPurchaseOrderService
 {
     Task<List<PurchaseOrderDto>> GetAllAsync();
+    Task<List<PurchaseOrderDto>> GetAllReceiveAllPOAsync();
     Task<PurchaseOrderDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(PurchaseOrderDto purchaseOrderDto);
     Task<bool> UpdateAsync(PurchaseOrderDto purchaseOrderDto);

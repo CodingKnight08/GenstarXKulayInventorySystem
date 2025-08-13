@@ -2,6 +2,7 @@
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
@@ -21,10 +22,10 @@ public class ProductBrandController : ControllerBase
         return Ok(brands);
     }
 
-    [HttpGet("all/brands")]
-    public async Task<ActionResult<List<ProductBrandDto>>> GetAllBrands()
+    [HttpGet("all/brands/{branch}")]
+    public async Task<ActionResult<List<ProductBrandDto>>> GetAllBrands(BranchOption branch)
     {
-        var brands = await _productService.GetAllBrandsWithProductsAsync();
+        var brands = await _productService.GetAllBrandsWithProductsAsync(branch);
         return Ok(brands);
     }
 

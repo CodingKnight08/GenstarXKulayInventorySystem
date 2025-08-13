@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrders;
 
@@ -75,4 +76,14 @@ public partial class GetAllPurchaseOrders
         NavigationManager.NavigateTo($"/purchase-order/view/{purchaseOrderId}");
     }
 
+    protected Color GetChipColor(PurchaseRecieveOption status)
+    {
+        return status switch
+        {
+            PurchaseRecieveOption.Pending => Color.Warning,  
+            PurchaseRecieveOption.PartialRecieve => Color.Info,     
+            PurchaseRecieveOption.RecieveAll => Color.Success, 
+            _ => Color.Default
+        };
+    }
 }

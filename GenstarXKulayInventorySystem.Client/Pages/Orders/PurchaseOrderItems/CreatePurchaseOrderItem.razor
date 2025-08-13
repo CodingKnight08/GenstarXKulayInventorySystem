@@ -33,9 +33,9 @@
                    FullWidth="true"
                    Required="true"
                    RequiredError="Select Unit Option"
+                   ReadOnly=true
                 >
                 <MudSelectItem T="ProductMesurementOption?" Value="null" Disabled="true">
-                    -- Select Unit --
                 </MudSelectItem>
                     @foreach (var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
                     {
@@ -57,9 +57,9 @@
 
             </MudItem>
             <MudItem xs="12" xl="6">
-                <MudNumericField T="decimal"
+                <MudNumericField T="decimal?"
                     @bind-Value="PurchaseOrderItemDto.ItemAmount"
-                    Label="Amount"
+                    Label="Item Amount"
                     Adornment="Adornment.Start"
                     AdornmentText="₱"
                     HideSpinButtons="true"

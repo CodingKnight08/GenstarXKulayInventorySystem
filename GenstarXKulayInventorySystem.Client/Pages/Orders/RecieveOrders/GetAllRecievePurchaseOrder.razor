@@ -1,13 +1,10 @@
-﻿@layout MainLayout
-@page "/purchase-order"
+﻿@page "/received-order"
+@layout MainLayout
+
 
 <MudMainContent Class="d-flex flex-column align-items-center justify-content-start w-auto gap-2" Style="height:100%;">
     <MudCard Elevation="0" Class="w-100 bg-transparent">
-        <MudText Align="Align.Left" Typo="Typo.h4" Class="ms-4 mt-3">Purchase Orders</MudText>
-    </MudCard>
-    
-    <MudCard Elevation="0" Class="w-100 pt-2 my-2 d-flex flex-row align-items-center justify-content-end bg-transparent">
-        <MudButton StartIcon="@Icons.Material.Filled.AddCircle" Variant="Variant.Filled" Color="Color.Primary" Class="me-3" OnClick="CreatePurchaseOrder">Add Purchase Order </MudButton>
+        <MudText Align="Align.Left" Typo="Typo.h4" Class="ms-4 mt-3">Delivered Purchase Orders</MudText>
     </MudCard>
     <MudCard Elevation="0" Class="w-100">
         @if (IsLoading)
@@ -50,7 +47,7 @@
                         </MudChip>
                 </MudTd>
                 <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="@Color.Info" OnClick="() =>ViewPurchaseOrder(context.Id)"/>
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="@Color.Info" OnClick="() => ViewRecievePurchaseOrder(context.Id)" />
 
                 </MudTd>
             </RowTemplate>

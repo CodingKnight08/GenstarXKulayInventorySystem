@@ -14,7 +14,7 @@ public class PurchaseOrderItemDto:BaseEntityDto
 
     public int? ProductBrandId { get; set; }
     public ProductBrandDto? ProductBrand { get; set; }
-    public decimal ItemAmount { get; set; }
+    public decimal? ItemAmount { get; set; }
     public ProductMesurementOption? PurchaseItemMeasurementOption { get; set; }
     public string? ItemDescription { get; set; } = string.Empty;
     public int ItemQuantity { get; set; }

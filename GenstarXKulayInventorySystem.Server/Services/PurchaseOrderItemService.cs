@@ -142,7 +142,7 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
                 return false;
 
             var itemIds = purchaseItems.Select(i => i.Id).ToList();
-            var existingItems = await _context.PurchaseOrderItems
+            var existingItems = await _context.PurchaseOrderItems.Include(e => e.Product)
                 .Where(x => itemIds.Contains(x.Id) && !x.IsDeleted)
                 .ToListAsync();
 
@@ -153,11 +153,15 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
                 {
                     entity.ItemQuantity = dto.ItemQuantity;
                     entity.PurchaseItemMeasurementOption = dto.PurchaseItemMeasurementOption;
-                    entity.ItemAmount = dto.ItemAmount;
+                    entity.ItemAmount = dto.ItemAmount ?? 0;
                     entity.ItemDescription = dto.ItemDescription;
                     entity.IsRecieved = dto.IsRecieved;
                     entity.UpdatedBy = GetCurrentUsername();
                     entity.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+                    if (dto.IsRecieved && entity.ProductId.HasValue && entity.Product != null)
+                    {
+                        entity.Product.Quantity += dto.ItemQuantity;
+                    }
                 }
             }
 

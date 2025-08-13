@@ -1,16 +1,15 @@
 ﻿using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using static MudBlazor.CategoryTypes;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrderItems;
 
 public partial class GetAllToBeAddedPurchaseOrderItems
 {
     [Parameter] public EventCallback<List<PurchaseOrderItemDto>> OnPurchaseOrderItemsChanged { get; set; }
+    [Parameter] public PurchaseShipToOption Branch { get; set; }
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
@@ -32,7 +31,18 @@ public partial class GetAllToBeAddedPurchaseOrderItems
     {
         try
         {
-            var dialog = await DialogService.ShowAsync<CreatePurchaseOrderItem>("");
+            BranchOption branch = Branch switch
+            {
+                PurchaseShipToOption.GeneralSantosCity => BranchOption.GeneralSantosCity,
+                PurchaseShipToOption.Polomolok => BranchOption.Polomolok,
+                PurchaseShipToOption.Warehouse => BranchOption.Warehouse,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            var dialog = await DialogService.ShowAsync<CreatePurchaseOrderItem>("", new DialogParameters
+            {
+                {"Branch", branch}
+            });
             if (dialog is not null)
             {
                 var result = await dialog.Result;

@@ -45,6 +45,7 @@ else
                   <MudItem xl="1">
                         <MudSelect T="PurchaseRecieptOption"
                                    Label="Receipt Type"
+                                   
                                    @bind-Value="NewPurchaseOrder.PurchaseRecieptOption">
                             @foreach (var val in Enum.GetValues<PurchaseRecieptOption>())
                             {
@@ -55,6 +56,7 @@ else
                   <MudItem xl="2">
                         <MudSelect T="PurchaseRecieveOption"
                                    Label="Receive Option"
+                                   ReadOnly=true
                                    @bind-Value="NewPurchaseOrder.PurchaseRecieveOption">
                             @foreach (var val in Enum.GetValues<PurchaseRecieveOption>())
                             {
@@ -92,7 +94,7 @@ else
               
              
               <MudCard Class="w-100 mt-4" Elevation="0">
-                  <GetAllToBeAddedPurchaseOrderItems @ref="PurchaseOrderItemComponent" OnPurchaseOrderItemsChanged="HandlePurchaseOrderItemsChanged" />
+                  <GetAllToBeAddedPurchaseOrderItems @ref="PurchaseOrderItemComponent" OnPurchaseOrderItemsChanged="HandlePurchaseOrderItemsChanged" Branch="NewPurchaseOrder.PurchaseShipToOption" />
               </MudCard>
 
           </MudForm>

@@ -9,7 +9,9 @@
                          Value="SupplierName"
                          SearchFunc="SearchSupplier"
                          ValueChanged="@(async (string value) => await OnSupplierChanged(value))"
-                         Required=true />
+                         Required=true 
+                         ReadOnly=true
+                         />
 
     </MudItem>
     <MudItem xl="1" Class="d-flex align-items-end justify-content-start">
@@ -22,7 +24,7 @@
     <MudItem xl="2">
         <MudSelect T="PurchaseRecieptOption"
                    Label="Receipt Type"
-                   
+                   ReadOnly=true
                    @bind-Value="PurchaseOrder.PurchaseRecieptOption">
             @foreach (var val in Enum.GetValues<PurchaseRecieptOption>())
             {
