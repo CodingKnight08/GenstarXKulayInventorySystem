@@ -13,6 +13,6 @@ public class DailySaleDto:BaseEntityDto
     public string RecieptReference { get; set; } = string.Empty;
     public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
     public PaymentMethod PaymentType { get; set; } = PaymentMethod.Cash;
-    public PurchaseRecieptOption SalesOption { get; set; } = PurchaseRecieptOption.NonBIR;
+    public PurchaseRecieptOption? SalesOption { get; set; } 
     public decimal? TotalAmount { get; set; }
 }
