@@ -1,6 +1,7 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 
@@ -19,6 +20,28 @@ public class SalesController : ControllerBase
     public async Task<ActionResult<List<DailySaleDto>>> GetAllDailySales()
     {
         var sales = await _saleService.GetAllDailySalesAsync();
+        return Ok(sales);
+    }
+
+    [HttpGet("all/range/{range}")]
+    public async Task<ActionResult<List<DailySaleDto>>> GetDailySalesByRange(DateRangeOption range)
+    {
+        var sales = await _saleService.GetAllDailySaleByDaysAsync(range);
+
+        if (sales == null || sales.Count == 0)
+            return NotFound("No sales found for the given date range.");
+
+        return Ok(sales);
+    }
+
+    [HttpGet("by-date/{date}")]
+    public async Task<ActionResult<List<DailySaleDto>>> GetDailySalesByDate(DateTime date)
+    {
+        var sales = await _saleService.GetAllDailySalesByDaySetAsync(date);
+
+        if (sales == null || sales.Count == 0)
+            return NotFound($"No sales found for {date:yyyy-MM-dd}.");
+
         return Ok(sales);
     }
 
