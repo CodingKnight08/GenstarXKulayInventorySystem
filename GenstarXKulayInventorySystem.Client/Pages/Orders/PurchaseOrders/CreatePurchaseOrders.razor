@@ -29,7 +29,7 @@ else
                             CoerceValue="true" 
                             Value="SupplierName"
                             SearchFunc="SearchSupplier"
-                            ValueChanged="@(async (string value) => await OnSupplierChanged(value))"
+                            ValueChanged="OnSupplierChanged"
                             Required=true
                             />
                        
