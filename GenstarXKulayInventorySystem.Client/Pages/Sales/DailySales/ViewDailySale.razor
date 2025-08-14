@@ -1,0 +1,81 @@
+﻿@page "/sales/view/{id:int}"
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+@using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
+<MudMainContent Class="w-auto h-100 d-flex flex-column gap-3">
+    <MudCard Elevation="0" Class="w-100 d-flex px-4">
+        <MudBreadcrumbs Items="_items"/>
+        <MudText Typo="Typo.h4" Align="Align.Center"> Sales Information </MudText>
+    </MudCard>
+    @if (!IsEdit)
+    {
+        <MudCard Elevation="0" Class="w-100 d-flex flex-row justify-content-end gap-3">
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Success" OnClick="UpdateSale"/>
+        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" Class="me-3" />
+    </MudCard>
+    }
+    <MudCard Elevation="0" Class="w-auto p-4">
+        <MudGrid Spacing="6">
+            
+                <MudItem xl="4">
+                    <MudTextField Placeholder="Enter Client Name" Label="Client Name" @bind-Value="Sales.NameOfClient" ReadOnly=true />
+                </MudItem>
+                <MudItem xl="2">
+                    <MudSelect T="PaymentMethod" @bind-Value="Sales.PaymentType" Label="Payment Method" ReadOnly=true>
+                        @foreach (var method in Enum.GetValues(typeof(PaymentMethod)).Cast<PaymentMethod>())
+                        {
+                            <MudSelectItem T="PaymentMethod" Value="@method">
+                                @method.ToString()
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xl="2">
+                    <MudSelect T="PurchaseRecieptOption?" @bind-Value="Sales.SalesOption" Label="Receipt Type" ReadOnly=true>
+
+
+                        @foreach (var option in Enum.GetValues(typeof(PurchaseRecieptOption)).Cast<PurchaseRecieptOption>())
+                        {
+                            <MudSelectItem T="PurchaseRecieptOption?" Value="@option">
+                                @(option == PurchaseRecieptOption.BIR ? "Invoice" : "Non-Voice")
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+
+                <MudItem xl="2">
+                    <MudTextField T="string" Placeholder="Auto Generated" Label="Sale Number" ReadOnly=true/>
+                </MudItem>
+                <MudItem xl="2">
+                    <MudSelect T="BranchOption"
+                               @bind-Value="Sales.Branch"
+                               ReadOnly=true
+                               Label="Branch">
+                        @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
+                        {
+                            <MudSelectItem T="BranchOption" Value="@branch">
+                                @branch.ToString()
+                            </MudSelectItem>
+                        }
+
+                    </MudSelect>
+                </MudItem>
+                <MudItem xl="3">
+                    <MudTextField @bind-Value="Sales.RecieptReference"
+                                  T="string"
+                                  Placeholder="Enter Receipt No."
+                                  Label="Reciept No."
+                                  ReadOnly=true
+                                  />
+                </MudItem>
+        </MudGrid>
+    </MudCard>
+    @if (IsEdit)
+    {
+        <MudCard Elevation="0" Class="w-100 d-flex flex-row justify-content-end gap-2">
+            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="UpdateSale" Size="Size.Small">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small" Class="me-3"> Update </MudButton>
+        </MudCard>
+    }
+</MudMainContent>

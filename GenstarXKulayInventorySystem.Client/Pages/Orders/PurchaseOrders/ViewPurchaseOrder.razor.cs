@@ -64,7 +64,7 @@ public partial class ViewPurchaseOrder
         IsEdit = !IsEdit;
     }
 
-    protected async Task UpdatePurchaseOrderData(PurchaseOrderDto updatedDto)
+    protected void UpdatePurchaseOrderData(PurchaseOrderDto updatedDto)
     {
         PurchaseOrder = updatedDto;
         IsEdit = false;

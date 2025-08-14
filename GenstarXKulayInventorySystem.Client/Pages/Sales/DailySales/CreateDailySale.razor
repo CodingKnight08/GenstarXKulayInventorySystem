@@ -1,0 +1,76 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+@using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xl="4">
+                <MudTextField Placeholder="Enter Client Name" Label="Client Name" @bind-Value="Sale.NameOfClient" Required=true />
+            </MudItem>
+            <MudItem xl="2">
+                <MudSelect T="PaymentMethod" @bind-Value="Sale.PaymentType" Label="Payment Method">
+                    @foreach (var method in Enum.GetValues(typeof(PaymentMethod)).Cast<PaymentMethod>())
+                    {
+                        <MudSelectItem T="PaymentMethod" Value="@method">
+                            @method.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xl="2">
+                <MudSelect T="PurchaseRecieptOption?" @bind-Value="Sale.SalesOption" Label="Receipt Type" Placeholder="--Select RecieptType--">
+                   
+
+                    @foreach (var option in Enum.GetValues(typeof(PurchaseRecieptOption)).Cast<PurchaseRecieptOption>())
+                    {
+                        <MudSelectItem T="PurchaseRecieptOption?" Value="@option">
+                            @(option == PurchaseRecieptOption.BIR ? "Invoice" : "Non-Voice")
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+
+            <MudItem xl="2">
+                <MudTextField T="string" Placeholder="Auto Generated" Label="Sale Number" Disabled=true/>
+            </MudItem>
+            <MudItem xl="2">
+                <MudSelect T="BranchOption"
+                    @bind-Value="Sale.Branch"
+                    Label="Branch"
+                >
+                    @foreach(var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
+                    {
+                        <MudSelectItem T="BranchOption" Value="@branch">
+                            @branch.ToString()
+                        </MudSelectItem>
+                    }
+
+                </MudSelect>
+            </MudItem>
+            <MudItem xl="3">
+                <MudTextField 
+                    @bind-Value="Sale.RecieptReference" 
+                    T="string" 
+                    Placeholder="Enter Receipt No."
+                    Label="Reciept No." />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton 
+            Variant="Variant.Filled" 
+            Color="Color.Default" 
+            OnClick="Cancel">Cancel
+        </MudButton>
+
+        <MudButton 
+            Variant="Variant.Filled" 
+            Color="Color.Success"
+            StartIcon="@Icons.Material.Filled.Save"
+            OnClick="CreateSaleAsync"
+            Disabled="!IsValid"
+        >Save
+        </MudButton>
+    </DialogActions>
+</MudDialog>

@@ -141,7 +141,7 @@ public partial class CreatePurchaseOrders
 
         return Task.FromResult(matches);
     }
-    protected async Task OnSupplierChanged(string value)
+    protected void OnSupplierChanged(string value)
     {
         SupplierName = value;
 

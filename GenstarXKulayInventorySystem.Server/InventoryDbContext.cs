@@ -96,7 +96,10 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(pob => pob.PaymentTermsOption).HasConversion<int>();
         });
 
-
+        modelBuilder.Entity<DailySale>(entity =>
+        {
+            entity.Property(ds => ds.TotalAmount).HasPrecision(18, 2);
+        });
         base.OnModelCreating(modelBuilder);
     }
 
@@ -112,4 +115,5 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
     public DbSet<Billing> Billings { get; set; }
     public DbSet<PurchaseOrderBilling> PurchaseOrderBillings { get; set; }
+    public DbSet<DailySale> DailySales { get; set; } 
 }

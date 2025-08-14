@@ -1,0 +1,65 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+
+    <MudCard Elevation="0" Class="d-flex w-100 flex-row align-items-center justify-content-end">
+        <MudButton
+            StartIcon="@Icons.Material.Filled.AddCircle" 
+            OnClick="CreateSaleAsync"
+            Variant="Variant.Filled"
+            Color="Color.Info" 
+            Class="me-4">Add Sales</MudButton>
+    </MudCard>
+@if (IsLoading)
+{
+    <MudCard Elevation="0" Class="w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+        <MudProgressCircular Indeterminate=true Color="Color.Info" Size="Size.Medium" Rounded=true/>
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="mt-2">Loading Data..</MudText>
+      
+    </MudCard>
+}
+else
+{
+    
+
+<MudCard Elevation="0" Class="w-100 mx-2 mt-5 px-3">
+    <MudGrid Spacing="4">
+        <MudItem xl="2">
+                <MudDatePicker Label="Date of Sales"
+                               Date="SelectedDate"
+                               DateChanged="OnDateChanged"
+                               MaxDate="@Today"
+                               PickerVariant="PickerVariant.Inline"
+                               Class="mb-4" />
+        </MudItem>
+        <MudItem xl="12">
+                <MudTable Items="Sales"
+                          Dense=true
+                          Hover=true
+                          Square=true
+                          Bordered=true>
+
+                    <HeaderContent>
+                        <MudTh>Time of Sale</MudTh>
+                        <MudTh>Sale No.</MudTh>
+                        <MudTh>Receipt No.</MudTh>
+                        <MudTh>Client</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Action</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.DateOfSales.ToString("hh:mm tt")</MudTd>
+                        <MudTd>@context.SalesNumber</MudTd>
+                        <MudTd>@context.RecieptReference</MudTd>
+                        <MudTd>@context.NameOfClient</MudTd>
+                        <MudTd>@(context.SalesOption == PurchaseRecieptOption.BIR ? "Invoice" : "Non-Voice")</MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small" OnClick="() => ViewSaleAsync(context.Id)" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+        </MudItem>
+    </MudGrid>
+       
+
+       
+    </MudCard>
+}
