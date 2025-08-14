@@ -39,8 +39,8 @@ public class AutoMapperProfile: Profile
         _ = CreateMap<PurchaseOrderBilling, PurchaseOrderBillingDto>()
             .ForMember(dest => dest.PurchaseOrder, opt => opt.MapFrom(src => src.PurchaseOrder))
             .ReverseMap()
-            .ForMember(dest => dest.PurchaseOrder, opt => opt.Ignore()); 
-
+            .ForMember(dest => dest.PurchaseOrder, opt => opt.Ignore());
+        _ = CreateMap<DailySale, DailySaleDto>().ReverseMap();
 
 
     }
