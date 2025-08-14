@@ -18,4 +18,13 @@ public static class UtilitiesHelper
         MobilePayment,
         Other
     }
+
+    public enum DateRangeOption
+    {
+        OneWeek = 1,
+        OneMonth = 2,
+        TwoMonths = 3,
+        ThreeMonths = 4,
+        OneYear = 5
+    }
 }
