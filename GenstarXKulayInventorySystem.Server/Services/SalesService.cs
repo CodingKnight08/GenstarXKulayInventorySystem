@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -29,7 +30,12 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySalesAsync()
     {
-        List<DailySale> dailySales = await _context.DailySales.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted && e.DateOfSales == UtilitiesHelper.GetPhilippineTime().Date).ToListAsync();
+        List<DailySale> dailySales = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(e => !e.IsDeleted && e.DateOfSales.Date == UtilitiesHelper.GetPhilippineTime().Date)
+            .OrderByDescending(e => e.DateOfSales)
+            .ToListAsync();
         if(dailySales == null || dailySales.Count == 0)
         {
             return new List<DailySaleDto>();
@@ -38,9 +44,19 @@ public class SalesService:ISalesService
         List<DailySaleDto> dailySaleDtos = _mapper.Map<List<DailySaleDto>>(dailySales);
         return dailySaleDtos;
     }
-    public async Task<List<DailySaleDto>> GetAllDailySaleByDaysAsync(int days)
+
+    public async Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date)
     {
-        List<DailySale> dailySales = await _context.DailySales.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted && (e.DateOfSales <= DateTime.Now.AddDays(-days))).ToListAsync();
+        DateTime chosenDate = date.Date; 
+        DateTime startOfDay = chosenDate;
+        DateTime endOfDay = chosenDate.AddDays(1);
+
+        List<DailySale> dailySales = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(e => !e.IsDeleted && e.DateOfSales >= startOfDay && e.DateOfSales < endOfDay)
+            .OrderByDescending(e => e.DateOfSales)
+            .ToListAsync();
         if (dailySales == null || dailySales.Count == 0)
         {
             return new List<DailySaleDto>();
@@ -50,6 +66,32 @@ public class SalesService:ISalesService
         return dailySaleDtos;
     }
 
+    public async Task<List<DailySaleDto>> GetAllDailySaleByDaysAsync(DateRangeOption range)
+    {
+        DateTime startDate = range switch
+        {
+            DateRangeOption.OneWeek => UtilitiesHelper.GetPhilippineTime().AddDays(-7),
+            DateRangeOption.OneMonth => UtilitiesHelper.GetPhilippineTime().AddMonths(-1),
+            DateRangeOption.TwoMonths => UtilitiesHelper.GetPhilippineTime().AddMonths(-2),
+            DateRangeOption.ThreeMonths => UtilitiesHelper.GetPhilippineTime().AddMonths(-3),
+            DateRangeOption.OneYear => UtilitiesHelper.GetPhilippineTime().AddYears(-1),
+            _ => UtilitiesHelper.GetPhilippineTime() 
+        };
+
+        var dailySales = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(e => !e.IsDeleted && e.DateOfSales >= startDate)
+            .OrderByDescending(e => e.DateOfSales)
+            .ToListAsync();
+
+        if (dailySales.Count == 0)
+            return new List<DailySaleDto>();
+
+        return _mapper.Map<List<DailySaleDto>>(dailySales);
+    }
+
+    
     public async Task<DailySaleDto?> GetDailySaleByIdAsync(int id)
     {
         var dailySale = await _context.DailySales.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
@@ -65,9 +107,12 @@ public class SalesService:ISalesService
                 return false;
             }
             var sale = _mapper.Map<DailySale>(saleDto);
+            sale.DateOfSales = UtilitiesHelper.GetPhilippineTime();
             sale.CreatedAt = UtilitiesHelper.GetPhilippineTime();
             sale.CreatedBy = GetCurrentUsername();
             _ = await _context.DailySales.AddAsync(sale);
+            _ = await _context.SaveChangesAsync();
+            sale.SalesNumber = $"DS-{sale.Id:D10}-{DateTime.Now.Year.ToString()}";
             int result = await _context.SaveChangesAsync();
             return result > 0;
         }
@@ -129,7 +174,8 @@ public class SalesService:ISalesService
 public interface ISalesService
 {
     Task<List<DailySaleDto>> GetAllDailySalesAsync();
-    Task<List<DailySaleDto>> GetAllDailySaleByDaysAsync(int days);
+    Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date);
+    Task<List<DailySaleDto>> GetAllDailySaleByDaysAsync(DateRangeOption range);
     Task<DailySaleDto?> GetDailySaleByIdAsync(int id);
     Task<bool> AddAsync(DailySaleDto saleDto);
     Task<bool> UpdateAsync(DailySaleDto saleDto);
