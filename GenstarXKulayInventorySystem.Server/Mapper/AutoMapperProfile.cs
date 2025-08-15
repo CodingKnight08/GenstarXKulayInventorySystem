@@ -41,7 +41,22 @@ public class AutoMapperProfile: Profile
             .ReverseMap()
             .ForMember(dest => dest.PurchaseOrder, opt => opt.Ignore());
         _ = CreateMap<DailySale, DailySaleDto>().ReverseMap();
+        _ = CreateMap<SaleItem, SaleItemDto>()
+               .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => DeserializeInvolvePaints(src.DataList)))
+               .ReverseMap()
+               .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => SerializeInvolvePaints(src.DataList)));
 
+    }
 
+    private List<InvolvePaintsDto>? DeserializeInvolvePaints(string datalistJson)
+    {
+        List<InvolvePaintsDto> productData = JsonSerializer.Deserialize<List<InvolvePaintsDto>>(datalistJson, options)
+           ?? new List<InvolvePaintsDto>();
+        return productData;
+    }
+
+    private string SerializeInvolvePaints(List<InvolvePaintsDto> productData) 
+    {
+        return JsonSerializer.Serialize(productData, options);
     }
 }
