@@ -34,6 +34,7 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(p => p.RetailPrice).HasPrecision(18, 2);
             entity.Property(p => p.WholesalePrice).HasPrecision(18, 2);
             entity.Property(p => p.ActualQuantity).HasPrecision(18, 4);
+            entity.Property(p => p.BufferStocks).HasPrecision(18, 4);
         });
 
         // PurchaseOrder → Supplier, PurchaseOrderItems
@@ -100,6 +101,30 @@ public class InventoryDbContext: IdentityDbContext<User>
         {
             entity.Property(ds => ds.TotalAmount).HasPrecision(18, 2);
         });
+        modelBuilder.Entity<SaleItem>(entity =>
+        {
+            // Relationships
+            entity.HasOne(si => si.DailySale)
+                  .WithMany(ds => ds.SaleItems) 
+                  .HasForeignKey(si => si.DailySaleId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(si => si.Product)                
+                   .WithMany(p => p.SaleItems)              
+                   .HasForeignKey(si => si.ProductId)       
+                   .OnDelete(DeleteBehavior.SetNull);
+
+            // Decimal precision
+            entity.Property(si => si.Quantity).HasPrecision(18, 4);
+            entity.Property(si => si.ItemPrice).HasPrecision(18, 2);
+
+            // Enum conversions
+            entity.Property(si => si.BranchPurchased).HasConversion<int>();
+            entity.Property(si => si.UnitMeasurement).HasConversion<int>();
+            entity.Property(si => si.ProductPricingOption).HasConversion<int>();
+            entity.Property(si => si.PaintCategory).HasConversion<int>();
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -116,4 +141,5 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<Billing> Billings { get; set; }
     public DbSet<PurchaseOrderBilling> PurchaseOrderBillings { get; set; }
     public DbSet<DailySale> DailySales { get; set; } 
+    public DbSet<SaleItem> SaleItems { get; set; } 
 }

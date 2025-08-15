@@ -44,4 +44,17 @@ public class ProductsEnumHelpers
 
     }
 
+    public enum ProductPricingOption
+    {
+        Retail,
+        WholeSale,
+        Override
+    }
+
+    public enum PaintCategory
+    {
+        Combo,
+        Mix,
+        None
+    }
 }

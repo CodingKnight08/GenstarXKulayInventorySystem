@@ -15,4 +15,5 @@ public class DailySale:BaseEntity
     public PaymentMethod PaymentType { get; set; } = PaymentMethod.Cash;
     public PurchaseRecieptOption SalesOption { get; set; } = PurchaseRecieptOption.NonBIR;
     public decimal? TotalAmount { get; set; } 
+    public virtual ICollection<SaleItem> SaleItems { get; set; } = new HashSet<SaleItem>();
 }
