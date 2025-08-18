@@ -1,4 +1,5 @@
 ﻿@page "/sales/view/{id:int}"
+@using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
 @using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
@@ -45,7 +46,7 @@
 
 
                 <MudItem xl="2">
-                    <MudTextField T="string" Placeholder="Auto Generated" Label="Sale Number" ReadOnly=true/>
+                    <MudTextField T="string" Placeholder="Auto Generated" Label="Sale Number" @bind-Value="Sales.SalesNumber" ReadOnly=true/>
                 </MudItem>
                 <MudItem xl="2">
                     <MudSelect T="BranchOption"
@@ -69,7 +70,24 @@
                                   ReadOnly=true
                                   />
                 </MudItem>
+
+                <MudItem xl="12">
+                @if (!IsLoading)
+                {
+                    <GetAllSaleItems DailySaleId="@Sales.Id" />
+                }
+               
+                </MudItem>
+               
         </MudGrid>
+        <MudCard Elevation="0" Class="d-flex flex-row justify-content-end mt-3 bg-transparent">
+            <MudItem xl="3">
+                <MudText Typo="Typo.subtitle2">
+                    Total: ₱@(Sales.TotalAmount?.ToString("N2") ?? "0.00")
+                </MudText>
+            </MudItem>
+
+        </MudCard>
     </MudCard>
     @if (IsEdit)
     {
