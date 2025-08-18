@@ -29,5 +29,7 @@ public class Product:BaseEntity
     public ProductMesurementOption? ProductMesurementOption { get; set; } 
     public string Packaging { get; set; } = string.Empty;
     public decimal ActualQuantity { get; set; } = 0;
+    public decimal? BufferStocks { get; set; } = 0;
+    public virtual ICollection<SaleItem> SaleItems { get; set; } = new HashSet<SaleItem>();
 
 }

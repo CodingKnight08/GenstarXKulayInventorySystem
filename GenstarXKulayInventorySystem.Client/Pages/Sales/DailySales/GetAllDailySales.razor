@@ -55,6 +55,9 @@ else
                             <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small" OnClick="() => ViewSaleAsync(context.Id)" />
                         </MudTd>
                     </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Typo="Typo.subtitle2" Align="Align.Center">No Current Sales</MudText>
+                    </NoRecordsContent>
                 </MudTable>
         </MudItem>
     </MudGrid>

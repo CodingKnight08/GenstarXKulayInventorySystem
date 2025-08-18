@@ -15,4 +15,5 @@ public class DailySaleDto:BaseEntityDto
     public PaymentMethod PaymentType { get; set; } = PaymentMethod.Cash;
     public PurchaseRecieptOption? SalesOption { get; set; } 
     public decimal? TotalAmount { get; set; }
+    public List<SaleItemDto> SaleItems { get; set; } = new List<SaleItemDto>();
 }

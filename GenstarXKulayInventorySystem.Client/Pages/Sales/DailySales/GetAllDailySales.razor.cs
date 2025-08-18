@@ -82,26 +82,9 @@ public partial class GetAllDailySales
             IsLoading = false;
         }
     }
-    protected async Task CreateSaleAsync()
+    protected void CreateSaleAsync()
     {
-        var dialog = await DialogService.ShowAsync<CreateDailySale>("Create Sale",
-            
-            new DialogOptions
-            {
-                MaxWidth = MaxWidth.ExtraLarge,
-                FullWidth = true,
-                CloseButton = true,
-                BackdropClick = false
-            });
-        if (dialog != null) 
-        {
-            var result = await dialog.Result;
-            if (result is not null && !result.Canceled)
-            {
-                await LoadDailySales();
-                StateHasChanged();
-            }
-        }
+        NavigationManager.NavigateTo("/sales/create");
     }
 
     protected void ViewSaleAsync(int Id)

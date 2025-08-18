@@ -1,0 +1,33 @@
+﻿<MudCard Elevation="0" Class="w-100 my-4 d-flex flex-column gap-2">
+    <MudCard Elevation="0" Class="w-100 d-flex flex-row justify-content-end">
+        <MudButton StartIcon="@Icons.Material.Filled.AddCircle" Class="float-end" Variant="Variant.Filled" Color="Color.Info" OnClick="AddSaleItem"> Add Item</MudButton>
+    </MudCard>
+    <MudCard Elevation="5" Class="w-100">
+        <MudTable Items="SaleItemsToBeAdded" Bordered=true Hover=true Dense=true RowsPerPage="6">
+            <HeaderContent>
+                <MudTh>Item Name</MudTh>
+                <MudTh>Size</MudTh>
+                <MudTh>Unit</MudTh>
+                <MudTh>Quantity</MudTh>
+                <MudTh>Paint Category</MudTh>
+                <MudTh>Price</MudTh>
+                <MudTh>Description</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.ItemName</MudTd>
+                <MudTd></MudTd>
+                <MudTd>@context.UnitMeasurement</MudTd>
+                <MudTd>@context.Quantity</MudTd>
+                <MudTd>@context.PaintCategory</MudTd>
+                <MudTd>@context.ItemPrice</MudTd>
+                <MudTd>@context.Description</MudTd>
+
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Warning">
+                    No Sale Item Products
+                </MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudCard>
+</MudCard>
