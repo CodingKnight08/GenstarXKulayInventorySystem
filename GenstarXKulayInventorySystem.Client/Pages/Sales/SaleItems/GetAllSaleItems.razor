@@ -1,0 +1,42 @@
+﻿@if (IsLoading)
+{
+    <MudCard Elevation="10" Class="w-100 d-flex flex-column align-items-center justify-content-center">
+        <MudProgressCircular Color="Color.Info" Indeterminate=true Size="Size.Small" Rounded=true />
+        <MudText Align="Align.Center" Typo="Typo.subtitle2">Loading Sale Items</MudText>
+    </MudCard>
+}
+else
+{
+    <MudCard Elevation="0" Class="w-100">
+        <MudTable Items="SaleItems" Bordered="true" Hover="true" Elevation="10">
+            <HeaderContent>
+                <MudTh>Item Name</MudTh>
+                <MudTh>Size</MudTh>
+                <MudTh>Unit</MudTh>
+                <MudTh>Quantity</MudTh>
+                <MudTh>Paint Category</MudTh>
+                <MudTh>Price</MudTh>
+                <MudTh>Description</MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd>@context.ItemName</MudTd>
+                <MudTd>@context.Size</MudTd>
+                <MudTd>@context.UnitMeasurement</MudTd>
+                <MudTd>@context.Quantity</MudTd>
+                <MudTd>@context.PaintCategory</MudTd>
+                <MudTd>@context.ItemPrice</MudTd>
+                <MudTd>@context.Description</MudTd>
+            </RowTemplate>
+
+            <NoRecordsContent>
+                <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Warning">
+                    No Items
+                </MudText>
+            </NoRecordsContent>
+           <PagerContent>
+               <MudTablePager/>
+           </PagerContent>
+        </MudTable>
+    </MudCard>
+}

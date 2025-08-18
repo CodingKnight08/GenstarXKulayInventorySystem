@@ -1,0 +1,77 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xl="4">
+                <MudAutocomplete 
+                         Label="Select Brand"
+                         Value="SelectedBrand?.BrandName"  
+                         CoerceText="true"
+                         CoerceValue="true"
+                         Placeholder="Select Brand"
+                         SearchFunc="SearchBrands"
+                         ValueChanged="(string value) => OnBrandSelect(value)"
+                         Variant="Variant.Text" />
+            </MudItem>
+            <MudItem xl="5">
+                 <MudAutocomplete T="string"
+                                 Label="Item Name"
+                                 @bind-Value="SelectedProduct"
+                                 SearchFunc="SearchProducts"
+                                 Dense="true"
+                                 Clearable="true"
+                                 CoerceText="true"
+                                 CoerceValue="true"
+                                 Placeholder="Enter Item Name"
+                                 Variant="Variant.Text"
+                                 Required=true
+                                 ShowProgressIndicator="IsProductLoading"
+                                 TextChanged="OnProductTyped"
+                                  />
+            </MudItem>
+
+            <MudItem xl="3">
+                <MudSelect T="PaintCategory" @bind-Value="SaleItemDto.PaintCategory" Label="Paint Type">
+                    @foreach(var type in Enum.GetValues(typeof(PaintCategory)).Cast<PaintCategory>())
+                    {
+                        <MudSelectItem T="PaintCategory" Value="@type">
+                            @type.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xl="3">
+                <MudNumericField T="decimal?" @bind-Value="SaleItemDto.Size"  Placeholder="Item Size eg. 1.5" Label="Item Size" HideSpinButtons="true" Variant="Variant.Text" Required=true/>
+            </MudItem>
+            <MudItem xl="3">
+                <MudSelect T="ProductMesurementOption" @bind-Value="SaleItemDto.UnitMeasurement" Label="Unit">
+                    @foreach(var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
+                    {
+                        <MudSelectItem T="ProductMesurementOption" Value="@unit">
+                            @unit.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xl="3">
+                <MudNumericField T="int" @bind-Value="SaleItemDto.Quantity" Label="Quantity" Placeholder="Enter Quantity" HideSpinButtons=true /> 
+            </MudItem>
+            @if (ShouldShowSaleType())
+{
+            <MudItem xl="3">
+                <MudCheckBox  T="bool" @bind-Checked="IsWholeSale" Label="Wholesale Price?" Size="Size.Small" ValueChanged="OnWholeSaleChanged" />
+            </MudItem>
+}
+            <MudItem xl="3">
+                <MudNumericField T="decimal" @bind-Value="SaleItemDto.ItemPrice" Adornment="Adornment.Start" AdornmentText="₱" HideSpinButtons="true" Label="Price" />
+            </MudItem>
+            <MudItem xl="12">
+                <MudTextField @bind-Value="SaleItemDto.Description" MaxLines="2" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Info" Label="Description" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="SaveItem">Add</MudButton>
+    </DialogActions>
+</MudDialog>
