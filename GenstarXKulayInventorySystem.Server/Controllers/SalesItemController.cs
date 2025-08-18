@@ -14,10 +14,10 @@ public class SalesItemController : ControllerBase
         _saleItemService = saleItemService;
     }
 
-    [HttpGet("all/{dailySaleItemId}")]
-    public async Task<ActionResult<List<SaleItemDto>>> GetAllSaleItemsByDailySale(int dailySaleItemId)
+    [HttpGet("all/{dailySaleId:int}")]
+    public async Task<ActionResult<List<SaleItemDto>>> GetAllSaleItemsByDailySale(int dailySaleId)
     {
-        var saleItems = await _saleItemService.GetAllSaleItemsAsync(dailySaleItemId);
+        var saleItems = await _saleItemService.GetAllSaleItemsAsync(dailySaleId);
         if (saleItems == null || saleItems.Count == 0) { 
          return NotFound("No sale items found");
         }

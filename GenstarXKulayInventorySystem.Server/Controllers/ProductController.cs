@@ -2,6 +2,7 @@
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
@@ -21,6 +22,24 @@ public class ProductController : ControllerBase
     {
         var products = await _productService.GetAllAsync(brandId);
         return Ok(products);
+    }
+
+    [HttpGet("all/by/{brandId:int}/{branch}")]
+    public async Task<ActionResult<List<ProductDto>>> GetProductsByBrandAndBranch(int brandId, BranchOption branch)
+    {
+        try
+        {
+            var products = await _productService.GetAllProductByBrandAndBrand(brandId, branch);
+
+            if (products == null || !products.Any())
+                return NotFound("No products found for the selected brand and branch.");
+
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
+        }
     }
 
     // GET: api/products/5
