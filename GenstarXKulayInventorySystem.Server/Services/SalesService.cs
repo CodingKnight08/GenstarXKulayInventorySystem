@@ -14,13 +14,15 @@ public class SalesService:ISalesService
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<SalesService> _logger;
+    private readonly ISaleItemService _saleItemService;
 
-    public SalesService(InventoryDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogger<SalesService> logger)
+    public SalesService(InventoryDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogger<SalesService> logger, ISaleItemService saleItemService)
     {
         _context = context;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        _saleItemService = saleItemService;
     }
 
     private string GetCurrentUsername()
@@ -110,6 +112,7 @@ public class SalesService:ISalesService
             sale.DateOfSales = UtilitiesHelper.GetPhilippineTime();
             sale.CreatedAt = UtilitiesHelper.GetPhilippineTime();
             sale.CreatedBy = GetCurrentUsername();
+            sale.TotalAmount = saleDto.SaleItems.Sum(x => (x.ItemPrice) * (x.Quantity));
             _ = await _context.DailySales.AddAsync(sale);
             _ = await _context.SaveChangesAsync();
             sale.SalesNumber = $"DS-{sale.Id:D10}-{DateTime.Now.Year.ToString()}";

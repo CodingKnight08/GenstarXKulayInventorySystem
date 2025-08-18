@@ -115,8 +115,8 @@ public class InventoryDbContext: IdentityDbContext<User>
                    .OnDelete(DeleteBehavior.SetNull);
 
             // Decimal precision
-            entity.Property(si => si.Quantity).HasPrecision(18, 4);
             entity.Property(si => si.ItemPrice).HasPrecision(18, 2);
+            entity.Property(si => si.Size).HasPrecision(18, 2);
 
             // Enum conversions
             entity.Property(si => si.BranchPurchased).HasConversion<int>();
