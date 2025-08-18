@@ -55,6 +55,7 @@ public class ProductsEnumHelpers
     {
         Combo,
         Mix,
-        None
+        None,
+        Solid
     }
 }
