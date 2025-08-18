@@ -10,10 +10,11 @@ public class SaleItem:BaseEntity
     public int? ProductId { get; set; }
     public Product? Product { get; set; }
     public string ItemName { get; set; } = string.Empty;
+    public decimal Size { get; set; } 
     public string Description { get; set; } = string.Empty;
     public BranchOption BranchPurchased { get; set; } = BranchOption.GeneralSantosCity;
     public ProductMesurementOption UnitMeasurement { get; set; } = ProductMesurementOption.Gallon;
-    public decimal Quantity { get; set; } 
+    public int Quantity { get; set; } 
     public decimal ItemPrice { get; set; }
     public ProductPricingOption ProductPricingOption { get; set; } = ProductPricingOption.Retail;
     public PaintCategory PaintCategory { get; set; } = PaintCategory.None;
