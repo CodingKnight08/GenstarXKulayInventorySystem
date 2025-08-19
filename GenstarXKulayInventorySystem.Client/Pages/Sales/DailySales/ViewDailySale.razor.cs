@@ -1,4 +1,5 @@
 ﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
@@ -14,8 +15,10 @@ public partial class ViewDailySale
     [Inject] protected ILogger<ViewDailySale> Logger { get; set; } = default!;
 
     protected DailySaleDto Sales { get; set; } = new DailySaleDto();
+    protected DailySaleDto EditableSale { get; set; } = new DailySaleDto();
     protected bool IsLoading { get; set; } = false;
     protected bool IsEdit { get; set; } = false;
+    protected bool IsSameDate => Sales.DateOfSales.Date == UtilitiesHelper.GetPhilippineTime().Date;
     protected override async Task OnInitializedAsync()
     {
         await LoadSale();
@@ -49,6 +52,35 @@ public partial class ViewDailySale
        ];
 
     protected void UpdateSale() {
+        if (!IsEdit)
+        {
+            EditableSale = new DailySaleDto
+            {
+                Id = Sales.Id,
+                NameOfClient = Sales.NameOfClient,
+                PaymentType = Sales.PaymentType,
+                SalesOption = Sales.SalesOption,
+                SalesNumber = Sales.SalesNumber,
+                Branch = Sales.Branch,
+                RecieptReference = Sales.RecieptReference,
+                DateOfSales = Sales.DateOfSales,
+                TotalAmount = Sales.TotalAmount
+            };
+        }
         IsEdit = !IsEdit;
+    }
+    protected void CancelEdit()
+    {
+        
+        IsEdit = false;
+        StateHasChanged();
+    }
+
+    protected void SaveEdit(DailySaleDto updatedSale)
+    {
+       
+        Sales = updatedSale;
+        IsEdit = false;
+        StateHasChanged();
     }
 }
