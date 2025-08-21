@@ -1,5 +1,16 @@
-﻿<h3>DeleteDailySale</h3>
-
-@code {
-
-}
+﻿<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="4">
+            <MudItem xl="12">
+                <MudText Align="Align.Center">Are sure you want to delete daily sale No. <strong class="text-danger">@Sale.SalesNumber</strong> ?</MudText>
+            </MudItem>
+            <MudItem xl="12">
+                <MudText Typo="Typo.body1" Align="Align.Center">All sale items included will also be deleted.</MudText>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" Size="Size.Small" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" OnClick="DeleteAsync">Delete</MudButton>
+    </DialogActions>
+</MudDialog>

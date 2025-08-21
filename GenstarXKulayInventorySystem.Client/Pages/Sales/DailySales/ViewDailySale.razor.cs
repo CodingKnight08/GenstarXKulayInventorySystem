@@ -83,4 +83,35 @@ public partial class ViewDailySale
         IsEdit = false;
         StateHasChanged();
     }
+
+    protected async Task DeleteSale()
+    {
+        try
+        {
+            var parameter = new DialogParameters
+            {
+                {"Sale",Sales }
+            };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = true,
+                BackdropClick = false,
+            };
+            var dialog = await DialogService.ShowAsync<DeleteDailySale>("", parameter, options);
+            if (dialog != null) { 
+                var result = await dialog.Result;
+                if (result != null && !result.Canceled) { 
+                    IsLoading = true;
+                    await Task.Delay(1000);
+                    NavigationManager.NavigateTo("/sales");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error occured: {ex.Message}");
+        }
+    }
 }
