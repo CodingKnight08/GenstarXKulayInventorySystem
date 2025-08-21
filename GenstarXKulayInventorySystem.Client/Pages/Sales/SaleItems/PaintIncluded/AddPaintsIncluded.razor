@@ -1,0 +1,51 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="6">
+            <MudItem xl="6" xs="12">
+                <MudAutocomplete 
+                    T="string"
+                    Label="Select Brand"
+                    CoerceText=true
+                    CoerceValue=true
+                    Dense="true"
+                    Value="SelectedBrand.BrandName"
+                    Clearable="true"
+                    ResetValueOnEmptyText="true"
+                    SearchFunc="SearchBrands"
+                    ValueChanged="OnBrandSelect"
+                    Placeholder="Type to search brand..."
+                    DebounceInterval="2"
+                    ShowProgressIndicator="IsLoading" />
+            </MudItem>
+            <MudItem xl="6">
+                <MudAutocomplete T="string"
+                                 Label="Select Product"
+                                 Dense="true"
+                                 Clearable="true"
+                                 ResetValueOnEmptyText="true"
+                                 SearchFunc="SearchProducts"
+                                 ValueChanged="OnProductSelect"
+                                 Placeholder="Type to search product..."
+                                 ShowProgressIndicator="IsProductLoading" />
+            </MudItem>
+            <MudItem xl="4">
+                <MudNumericField T="decimal?" Label="Size" @bind-Value="AddedPaint.Size" Variant="Variant.Text" Placeholder="Enter Size eg. 1000 (ml)" />
+            </MudItem>
+            <MudItem xl="3">
+                <MudSelect T="ProductMesurementOption" @bind-Value="AddedPaint.UnitMeasurement" Label="Unit">
+                    @foreach (var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
+                    {
+                        <MudSelectItem T="ProductMesurementOption" Value="@unit">
+                            @unit.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" Size="Size.Small" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick="Add" Disabled="!IsValid" >Add</MudButton>
+    </DialogActions>
+</MudDialog>

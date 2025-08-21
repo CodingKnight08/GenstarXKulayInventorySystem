@@ -1,5 +1,30 @@
-﻿<h3>GetAllPaintsIncluded</h3>
+﻿@using GenstarXKulayInventorySystem.Shared.DTOS
+<MudTable Items="PaintsDtos" 
+    Hover=true
+    Bordered=true
+    Dense=true>
+    <HeaderContent>
+        <MudTh>Brand</MudTh>
+        <MudTh>Item Name</MudTh>
+        <MudTh>Size</MudTh>
+        <MudTh>Unit</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Brand">@context.BrandName</MudTd>
+        <MudTd DataLabel="Paint Name">@context.ProductName</MudTd>
+        <MudTd DataLabel="Size">@context.Size</MudTd>
+        <MudTd DataLabel="Unit">@context.UnitMeasurement</MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Warning">No Items Added!</MudText>
+    </NoRecordsContent>
+</MudTable>
+@code{
+    [Parameter] public List<InvolvePaintsDto> PaintItems { get; set; } = new();
+    protected List<InvolvePaintsDto> PaintsDtos { get; set; } = new();
 
-@code {
-
+    protected override void OnParametersSet()
+    {
+        PaintsDtos = PaintItems.ToList();
+    }   
 }
