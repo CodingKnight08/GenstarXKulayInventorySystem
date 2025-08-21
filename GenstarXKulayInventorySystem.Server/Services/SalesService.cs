@@ -128,27 +128,59 @@ public class SalesService:ISalesService
 
     public async Task<bool> UpdateAsync(DailySaleDto saleDto)
     {
-        var existingSale = await _context.DailySales.AsNoTracking().FirstOrDefaultAsync(x => x.Id == saleDto.Id && !x.IsDeleted);
+        var existingSale = await _context.DailySales
+            .Include(ds => ds.SaleItems)
+            .FirstOrDefaultAsync(x => x.Id == saleDto.Id && !x.IsDeleted);
+
         if (existingSale == null)
-        {
             return false;
-        }
+
         try
         {
-            var sale = _mapper.Map<DailySale>(saleDto);
-            sale.UpdatedAt = UtilitiesHelper.GetPhilippineTime();   
-            sale.UpdatedBy = GetCurrentUsername();
-            _ = _context.DailySales.Update(sale);
+            // Map top-level props
+            _mapper.Map(saleDto, existingSale);
+
+            existingSale.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            existingSale.UpdatedBy = GetCurrentUsername();
+
+            // Sync SaleItems
+            foreach (var itemDto in saleDto.SaleItems)
+            {
+                var existingItem = existingSale.SaleItems.FirstOrDefault(i => i.Id == itemDto.Id);
+
+                if (existingItem != null)
+                {
+                    _mapper.Map(itemDto, existingItem);
+                }
+                else
+                {
+                    existingSale.SaleItems.Add(_mapper.Map<SaleItem>(itemDto));
+                }
+            }
+
+            // Handle deleted items (soft delete)
+            var dtoItemIds = saleDto.SaleItems.Select(i => i.Id).ToList();
+            var deletedItems = existingSale.SaleItems.Where(i => !dtoItemIds.Contains(i.Id)).ToList();
+            foreach (var deleted in deletedItems)
+            {
+                deleted.IsDeleted = true;
+            }
+
+            // ✅ Recalculate total only from items not deleted
+            existingSale.TotalAmount = existingSale.SaleItems
+                .Where(i => !i.IsDeleted)
+                .Sum(i => i.ItemPrice * i.Quantity);
+
             int result = await _context.SaveChangesAsync();
             return result > 0;
-
         }
-        catch (Exception ex) { 
-            _logger.LogError($"{ex.Message}");
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update sale");
             return false;
-        
         }
     }
+
 
     public async Task<bool> DeleteSaleASync(int id)
     {

@@ -25,8 +25,10 @@ public class InvolvePaintsDto
 {
     public int Id { get; set; }
     public int ProductId { get; set; }
+    public int BrandId { get; set; }
+    public string BrandName { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
-    public decimal Quantity { get; set; }
+    public decimal? Size { get; set; }
     public ProductMesurementOption UnitMeasurement { get; set; }
 
 }

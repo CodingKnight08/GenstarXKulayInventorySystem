@@ -1,0 +1,38 @@
+﻿<MudCard Elevation="0" Class="w-100">
+    <MudTable Items="SaleItems" Bordered="true" Hover="true" Elevation="10">
+        <HeaderContent>
+            <MudTh>Item Name</MudTh>
+            <MudTh>Size</MudTh>
+            <MudTh>Unit</MudTh>
+            <MudTh>Quantity</MudTh>
+            <MudTh>Paint Category</MudTh>
+            <MudTh>Price</MudTh>
+            <MudTh>Description</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd>@context.ItemName</MudTd>
+            <MudTd>@context.Size</MudTd>
+            <MudTd>@context.UnitMeasurement</MudTd>
+            <MudTd>@context.Quantity</MudTd>
+            <MudTd>@context.PaintCategory</MudTd>
+            <MudTd>@context.ItemPrice</MudTd>
+            <MudTd>@context.Description</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Success" Size="Size.Small"/>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => RemoveSale(context.Id)"/>
+
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Warning">
+                No Items
+            </MudText>
+        </NoRecordsContent>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudCard>

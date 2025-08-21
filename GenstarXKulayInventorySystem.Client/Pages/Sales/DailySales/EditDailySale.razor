@@ -1,5 +1,86 @@
-﻿<h3>EditDailySale</h3>
+﻿@using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+@using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
+<MudPaper Elevation="0" Class="d-flex flex-column w-100">
 
-@code {
+    <MudCard Elevation="0" Class="w-100 p-4">
+        <MudGrid Spacing="6">
+            
+                <MudItem xl="4">
+                    <MudTextField Placeholder="Enter Client Name" Label="Client Name" @bind-Value="Sale.NameOfClient" ReadOnly=true />
+                </MudItem>
+                <MudItem xl="2">
+                    <MudSelect T="PaymentMethod" @bind-Value="Sale.PaymentType" Label="Payment Method">
+                        @foreach (var method in Enum.GetValues(typeof(PaymentMethod)).Cast<PaymentMethod>())
+                        {
+                            <MudSelectItem T="PaymentMethod" Value="@method">
+                                @method.ToString()
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xl="2">
+                    <MudSelect T="PurchaseRecieptOption?" @bind-Value="Sale.SalesOption" Label="Receipt Type">
 
-}
+
+                        @foreach (var option in Enum.GetValues(typeof(PurchaseRecieptOption)).Cast<PurchaseRecieptOption>())
+                        {
+                            <MudSelectItem T="PurchaseRecieptOption?" Value="@option">
+                                @(option == PurchaseRecieptOption.BIR ? "Invoice" : "Non-Voice")
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+
+                <MudItem xl="2">
+                    <MudTextField T="string" Placeholder="Auto Generated" Label="Sale Number" @bind-Value="Sale.SalesNumber" ReadOnly=true/>
+                </MudItem>
+                <MudItem xl="2">
+                    <MudSelect T="BranchOption"
+                               @bind-Value="Sale.Branch"
+                               ReadOnly=true
+                               Label="Branch">
+                        @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
+                        {
+                            <MudSelectItem T="BranchOption" Value="@branch">
+                                @branch.ToString()
+                            </MudSelectItem>
+                        }
+
+                    </MudSelect>
+                </MudItem>
+                <MudItem xl="3">
+                    <MudTextField @bind-Value="Sale.RecieptReference"
+                                  T="string"
+                                  Placeholder="Enter Receipt No."
+                                  Label="Reciept No."
+                                  
+                                  />
+                </MudItem>
+
+                <MudItem xl="12">
+                @if (IsLoading)
+                {
+                    <MudCard Elevation="0" Class="d-flex flex-column align-items-center justify-content-center">
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Info"/>
+                        <MudText Typo="Typo.subtitle2" Align="Align.Center">Loading</MudText>
+                    </MudCard>
+                }
+                else
+                {
+                    <EditSaleItems EditableSaleItems="SaleItems" OnSaleItemsChanged="HandleSaleItemsChanged" />
+                }
+               
+                </MudItem>
+               
+        </MudGrid>
+    </MudCard>
+    <MudCard Elevation="0" Class="w-100 d-flex flex-row justify-content-end gap-3">
+        
+        <MudButton Color="Color.Default" OnClick="HandleCancel" Variant="Variant.Filled" >Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="HandleSave" Variant="Variant.Filled" Class="me-3">Update</MudButton>
+
+    </MudCard>
+</MudPaper>
