@@ -1,10 +1,9 @@
-﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+﻿using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems.PaintIncluded;
+using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
-using static MudBlazor.Icons.Custom;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems;
 
@@ -14,11 +13,13 @@ public partial class CreateSaleItem
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ILogger<CreateSaleItem> Logger { get; set; } = default!;
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
+    [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     protected SaleItemDto SaleItemDto { get; set; } = new SaleItemDto();
     protected List<ProductBrandDto> ProductBrands { get; set; } = new List<ProductBrandDto>();
     protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
     protected ProductDto? SelectedProductFromList { get; set; } = new ProductDto();
+    protected List<InvolvePaintsDto> Paints { get; set; } = new List<InvolvePaintsDto>();
 
     protected ProductBrandDto? SelectedBrand { get; set; } = new ProductBrandDto();
     protected string SelectedProduct { get; set; } = string.Empty;
@@ -43,6 +44,7 @@ public partial class CreateSaleItem
         }
         catch (Exception ex) {
             Logger.LogError($"Error in loading brands: {ex.Message}");
+            Snackbar.Add("Error occured", Severity.Warning);
         }
         finally
         {
@@ -63,23 +65,28 @@ public partial class CreateSaleItem
         }
         catch (Exception ex) { 
             Logger.LogError($"{ex.Message}");
+            Snackbar.Add("Error occured", Severity.Warning);
+
         }
         finally
         {
             IsProductLoading = false;
         }
     }
-    protected Task<IEnumerable<string>> SearchBrands(string value,CancellationToken cancellationToken)
+    protected Task<IEnumerable<string?>> SearchBrands(string value, CancellationToken cancellationToken)
     {
         if (ProductBrands is null || !ProductBrands.Any())
-            return Task.FromResult(Enumerable.Empty<string>());
+            return Task.FromResult(Enumerable.Empty<string?>());
 
         var result = ProductBrands
-           .Where(b => !string.IsNullOrWhiteSpace(b.BrandName) && (string.IsNullOrWhiteSpace(value) || b.BrandName.Contains(value, StringComparison.OrdinalIgnoreCase)))
-           .Select(b => b.BrandName);
+            .Where(b => !string.IsNullOrWhiteSpace(b.BrandName)
+                     && (string.IsNullOrWhiteSpace(value)
+                     || b.BrandName.Contains(value, StringComparison.OrdinalIgnoreCase)))
+            .Select(b => (string?)b.BrandName); // cast to nullable
 
         return Task.FromResult(result);
     }
+
 
     protected Task<IEnumerable<string>> SearchProducts(string value, CancellationToken cancellationToken)
     { if (Products is null || !Products.Any()) 
@@ -156,7 +163,7 @@ public partial class CreateSaleItem
         {
             SaleItemDto.ProductPricingOption = ProductPricingOption.Override;
         }
-        Snackbar.Add("Item has been added!", Severity.Success);
+        SaleItemDto.DataList = Paints;
         MudDialog.Close(DialogResult.Ok(SaleItemDto));
         
     }
@@ -189,4 +196,46 @@ public partial class CreateSaleItem
         StateHasChanged(); // force UI update
     }
 
+
+    protected async Task AddPaintIncluded()
+    {
+        var parameter = new DialogParameters
+        {
+            {"Branch", Branch }
+        };
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        // Show the dialog with a proper title
+        var dialog = await DialogService.ShowAsync<AddPaintsIncluded>(
+            "Add Paint Included",parameter, options
+        );
+
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled && result.Data is InvolvePaintsDto newPaint)
+        {
+            bool exists = Paints.Any(p =>
+                p.BrandId == newPaint.BrandId &&
+                p.ProductId == newPaint.ProductId);
+
+            if (!exists)
+            {
+                newPaint.Id = Paints.Any() ? Paints.Max(p => p.Id) + 1 : 1;
+
+                Paints.Add(newPaint);
+                StateHasChanged();
+                Snackbar.Add("Item is Added", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("This item is already included!", Severity.Warning);
+            }
+        }
+
+    }
 }

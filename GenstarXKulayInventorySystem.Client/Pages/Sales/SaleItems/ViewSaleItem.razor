@@ -1,0 +1,55 @@
+﻿@using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems.PaintIncluded
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+@if (IsLoading)
+{
+    <MudDialog>
+        <DialogContent>
+            <MudGrid Spacing="6">
+                <MudItem xl="12">
+                    <MudProgressCircular Color="Color.Info" Indeterminate=true Size="Size.Small" Rounded=true/>
+                </MudItem>
+                <MudItem xl="12">
+                    <MudText Align="Align.Center" Typo="Typo.subtitle2">Loading Data</MudText>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+    </MudDialog>
+}
+else{
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="6">
+            <MudItem xl="6">
+                <MudTextField @bind-Value="SaleItem.ItemName" Label="Item Name" ReadOnly=true/>
+            </MudItem>
+            <MudItem xl="4">
+                <MudNumericField T="decimal?" @bind-Value="SaleItem.Size" HideSpinButtons=true Label="Size"/>
+            </MudItem>
+            <MudItem xl="3">
+                <MudSelect T="ProductMesurementOption" @bind-Value="SaleItem.UnitMeasurement" Label="Unit" ReadOnly=true>
+                    @foreach (var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
+                    {
+                        <MudSelectItem T="ProductMesurementOption" Value="@unit">
+                            @unit.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xl="4">
+                    <MudNumericField @bind-Value="SaleItem.ItemPrice" Label="Price per Item" Adornment="Adornment.Start" AdornmentText="₱" HideSpinButtons=true />
+            </MudItem>
+            <MudItem xl="3">
+                <MudNumericField T="int" @bind-Value="SaleItem.Quantity" Label="Quantity" Placeholder="Enter Quantity" HideSpinButtons=true />
+            </MudItem>
+
+            <MudItem xl="12">
+                   <GetAllPaintsIncluded PaintItems="Paints"/>
+            </MudItem>
+
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Size="Size.Small" Color="Color.Default" OnClick="Cancel" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+}

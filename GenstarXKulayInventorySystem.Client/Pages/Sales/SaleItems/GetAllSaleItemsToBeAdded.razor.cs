@@ -10,6 +10,7 @@ public partial class GetAllSaleItemsToBeAdded
     [Parameter] public BranchOption Branch { get; set; }
     [Parameter] public EventCallback<List<SaleItemDto>> OnSaleItemsChanged { get; set; }
     [Inject] protected IDialogService Dialog { get; set; } = default!;
+    [Inject] protected ISnackbar SnackBar { get; set; } = default!;
     
     protected List<SaleItemDto> SaleItemsToBeAdded { get; set; } = new List<SaleItemDto>();
     protected bool IsLoading { get; set; } = false;
@@ -19,7 +20,7 @@ public partial class GetAllSaleItemsToBeAdded
         var dialog = await Dialog.ShowAsync<CreateSaleItem>("Add Sale Item",
             new DialogParameters
             {
-                { "Branch", Branch}
+            { "Branch", Branch }
             },
             new DialogOptions
             {
@@ -30,22 +31,34 @@ public partial class GetAllSaleItemsToBeAdded
             }
         );
 
-        if(dialog != null)
+        if (dialog != null)
         {
             var result = await dialog.Result;
-            if (result is not null && !result.Canceled) {
+            if (result is not null && !result.Canceled)
+            {
                 var saleItem = result.Data as SaleItemDto;
                 if (saleItem != null)
                 {
-                    // ✅ Add logic here, e.g.
-                    SaleItemsToBeAdded.Add(saleItem);
-                    StateHasChanged();
-                    await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
+                    bool exists = SaleItemsToBeAdded.Any(x =>
+                        x.ProductId == saleItem.ProductId ||
+                        string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
+
+                    if (!exists)
+                    {
+                        SaleItemsToBeAdded.Add(saleItem);
+                        StateHasChanged();
+                        await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
+                        SnackBar.Add("Item has been added!", Severity.Success);
+                    }
+                    else
+                    {
+                        SnackBar.Add("Item already exists in the list!", Severity.Warning);
+                    }
                 }
             }
-
         }
     }
 
-    
+
+
 }
