@@ -24,6 +24,16 @@ public class SalesItemController : ControllerBase
         return Ok(saleItems);
     }
 
+    [HttpGet("all/undeducted")]
+    public async Task<ActionResult<List<SaleItemDto>>> GetAllUndeductedItems()
+    {
+        var saleItems = await _saleItemService.GetAllUndeductedItemsAsync();
+        if(saleItems == null || saleItems.Count == 0)
+        {
+            return NotFound("No sale items to be processed found");
+        }
+        return Ok(saleItems);
+    }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<SaleItemDto>> GetSaleItem(int id)
