@@ -44,6 +44,21 @@ public class SaleItemService:ISaleItemService
         return saleItemDtos;
     }
 
+    public async Task<List<SaleItemDto>> GetAllUndeductedItemsAsync()
+    {
+        List<SaleItem> salesItems = await _context.SaleItems
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(si=> si.Product)
+            .Where(si => !si.IsDeleted && !si.IsDeducted).ToListAsync();
+        if(salesItems == null || salesItems.Count == 0)
+        {
+            return new List<SaleItemDto>();
+        }
+        List<SaleItemDto> saleItemsDto = _mapper.Map<List<SaleItemDto>>(salesItems);
+        return saleItemsDto;
+    }
+
     public async Task<SaleItemDto?> GetSaleItemById(int saleItemId)
     {
         var saleItem = await _context.SaleItems.FirstOrDefaultAsync(e => e.Id == saleItemId);
@@ -95,6 +110,25 @@ public class SaleItemService:ISaleItemService
         }
     }
 
+    public async Task<bool> UpdateSaleItemStatus(SaleItemDto saleItem)
+    {
+        var entity = new SaleItem
+        {
+            Id = saleItem.Id,
+            UpdatedAt = UtilitiesHelper.GetPhilippineTime(),
+            UpdatedBy = GetCurrentUsername(),
+            IsDeducted = true
+        };
+
+        _context.SaleItems.Attach(entity);
+        _context.Entry(entity).Property(x => x.UpdatedAt).IsModified = true;
+        _context.Entry(entity).Property(x => x.UpdatedBy).IsModified = true;
+        _context.Entry(entity).Property(x => x.IsDeducted).IsModified = true;
+
+        return await _context.SaveChangesAsync() > 0;
+    }
+
+
     public async Task<bool> DeleteSaleItemAsync(int saleItemId)
     {
         var existingSaleItem = await _context.SaleItems.AsNoTracking().FirstOrDefaultAsync(e => e.Id == saleItemId);
@@ -120,8 +154,10 @@ public class SaleItemService:ISaleItemService
 public interface ISaleItemService
 {
     Task<List<SaleItemDto>> GetAllSaleItemsAsync(int dailySaleId);
+    Task<List<SaleItemDto>> GetAllUndeductedItemsAsync();
     Task<SaleItemDto?> GetSaleItemById(int saleItemId);
     Task<bool> AddSaleItemAsync(SaleItemDto saleItemDto);
     Task<bool> UpdateSaleItemAsync(SaleItemDto saleItem);
+    Task<bool> UpdateSaleItemStatus(SaleItemDto saleItem);
     Task<bool> DeleteSaleItemAsync(int saleItemId);
 }
