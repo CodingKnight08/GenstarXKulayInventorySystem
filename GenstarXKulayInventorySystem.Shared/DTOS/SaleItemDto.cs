@@ -19,6 +19,7 @@ public class SaleItemDto:BaseEntityDto
     public ProductPricingOption ProductPricingOption { get; set; } = ProductPricingOption.Retail;
     public PaintCategory PaintCategory { get; set; } = PaintCategory.Solid;
     public List<InvolvePaintsDto> DataList { get; set; } = new List<InvolvePaintsDto>();
+    public bool IsDeducted { get; set; } = false;
 }
 
 public class InvolvePaintsDto
