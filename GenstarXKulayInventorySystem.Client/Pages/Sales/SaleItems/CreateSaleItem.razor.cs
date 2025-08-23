@@ -58,6 +58,13 @@ public partial class CreateSaleItem
         try
         {
             var response = await HttpClient.GetAsync($"api/product/all/by/{SelectedBrand?.Id}/{Branch}");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Products = new List<ProductDto>();
+                Snackbar.Add("Products for the selected brand is low.", Severity.Warning);
+                return;
+            }
             response.EnsureSuccessStatusCode();
             var products = await response.Content.ReadFromJsonAsync<List<ProductDto>>();
             Products = products ?? new List<ProductDto>();
