@@ -19,5 +19,5 @@ public class SaleItem:BaseEntity
     public ProductPricingOption ProductPricingOption { get; set; } = ProductPricingOption.Retail;
     public PaintCategory PaintCategory { get; set; } = PaintCategory.None;
     public string DataList { get; set; } = string.Empty;
-
+    public bool IsDeducted { get; set; } 
 }

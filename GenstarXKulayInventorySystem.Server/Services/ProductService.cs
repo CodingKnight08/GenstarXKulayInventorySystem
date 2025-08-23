@@ -15,12 +15,14 @@ public class ProductService:IProductService
     private readonly InventoryDbContext _context;
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<ProductService> _logger;
 
-    public ProductService(InventoryDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
+    public ProductService(InventoryDbContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogger<ProductService> logger)
     {
         _context = context;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     private string GetCurrentUsername()
@@ -40,10 +42,10 @@ public class ProductService:IProductService
         
         return products.Select(product => _mapper.Map<ProductDto>(product)).ToList();
     }
-    public async Task<List<ProductDto>> GetAllProductByBrandAndBrand(int brandId, BranchOption branch)
+    public async Task<List<ProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch)
     {
         var products = await _context.Products.AsNoTracking().AsSplitQuery()
-            .Where(p => p.BrandId == brandId && p.Branch == branch && !p.IsDeleted).ToListAsync() ?? new List<Product>();
+            .Where(p => p.BrandId == brandId && p.Branch == branch && !p.IsDeleted && p.ActualQuantity > p.BufferStocks).ToListAsync() ?? new List<Product>();
         return products.Select(product => _mapper.Map<ProductDto>(product)).ToList();
     }
     public async Task<ProductDto?> GetByIdAsync(int id)
@@ -68,7 +70,7 @@ public class ProductService:IProductService
 
             productDto.CreatedBy = GetCurrentUsername();
             productDto.CreatedAt = UtilitiesHelper.GetPhilippineTime();
-            productDto.ActualQuantity = (productDto.Size ?? 0) * productDto.Quantity;
+            productDto.ActualQuantity = productDto.Quantity;
             var product = _mapper.Map<Product>(productDto);
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
@@ -84,19 +86,33 @@ public class ProductService:IProductService
 
     public async Task<bool> UpdateAsync(ProductDto productDto)
     {
-        var existingProduct = await _context.Products
-            .Include(p => p.ProductBrand)
-            .Include(p => p.ProductCategory)
-            .FirstOrDefaultAsync(p => p.Id == productDto.Id);
+        try
+        {
+            var existingProduct = await _context.Products
+                .Include(p => p.ProductBrand)
+                .Include(p => p.ProductCategory)
+                .FirstOrDefaultAsync(p => p.Id == productDto.Id);
 
-        if (existingProduct == null)
+            if (existingProduct == null)
+                return false;
+
+            existingProduct.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            existingProduct.Quantity = (int)Math.Floor(productDto.ActualQuantity);
+
+            _mapper.Map(productDto, existingProduct);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // log the error properly (ILogger or your logging service)
+            _logger.LogError(ex, "Error updating product with Id {ProductId}", productDto.Id);
+
             return false;
-        existingProduct.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
-        _mapper.Map(productDto, existingProduct);
-        await _context.SaveChangesAsync();
-
-        return true;
+        }
     }
+
 
     public async Task<bool> DeleteAsync(int id)
     {
@@ -267,7 +283,7 @@ public class ProductService:IProductService
 public interface IProductService
 {
     Task<List<ProductDto>> GetAllAsync(int brandId);
-    Task<List<ProductDto>> GetAllProductByBrandAndBrand(int brandId, BranchOption branch);
+    Task<List<ProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
     Task<ProductDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(ProductDto productDto);
     Task<bool> UpdateAsync(ProductDto productDto);

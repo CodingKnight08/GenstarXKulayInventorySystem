@@ -29,7 +29,7 @@ public class ProductController : ControllerBase
     {
         try
         {
-            var products = await _productService.GetAllProductByBrandAndBrand(brandId, branch);
+            var products = await _productService.GetAllProductByBrandAndBranch(brandId, branch);
 
             if (products == null || !products.Any())
                 return NotFound("No products found for the selected brand and branch.");

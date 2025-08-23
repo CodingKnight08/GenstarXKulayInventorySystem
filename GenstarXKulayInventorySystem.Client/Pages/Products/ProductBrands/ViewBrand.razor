@@ -56,6 +56,7 @@
                     <MudTh>Unit</MudTh>
                     <MudTh>Category</MudTh>
                     <MudTh>Quantity</MudTh>
+                    <MudTh>Lvl Stock</MudTh>
                     <MudTh>Color</MudTh>
                     <MudTh>Capital Price</MudTh>
                     <MudTh>Retail Price</MudTh>
@@ -78,7 +79,12 @@
 
 
 
-                    <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
+                        <MudTd DataLabel="Quantity"
+                               Style=@($"color:{(context.ActualQuantity < context.BufferStocks ? "red" : "inherit")}")>
+                            @context.ActualQuantity
+                        </MudTd>
+
+                    <MudTd DataLabel="LevelStock">@context.BufferStocks</MudTd>
                     <MudTd DataLabel="Color">@context.Color</MudTd>
                     <MudTd DataLabel="Capital"> ₱ @context.CostPrice</MudTd>
                     <MudTd DataLabel="RetailPrice"> ₱@context.RetailPrice</MudTd>

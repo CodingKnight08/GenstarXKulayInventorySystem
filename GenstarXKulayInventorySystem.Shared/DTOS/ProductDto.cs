@@ -21,5 +21,5 @@ public class ProductDto:BaseEntityDto
     public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
     public string Packaging { get; set; } = string.Empty;
     public decimal ActualQuantity { get; set; }
-
+    public decimal? BufferStocks { get; set; }
 }

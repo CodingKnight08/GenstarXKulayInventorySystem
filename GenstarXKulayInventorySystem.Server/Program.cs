@@ -67,7 +67,7 @@ builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 
 
 
-
+builder.Services.AddHostedService<SalesHostedService>();
 //Register Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IProductService, ProductService>();

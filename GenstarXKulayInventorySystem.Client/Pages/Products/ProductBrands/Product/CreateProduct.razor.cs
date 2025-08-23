@@ -22,7 +22,8 @@ public partial class CreateProduct
     protected bool IsDisabled => string.IsNullOrWhiteSpace(NewProduct.ProductName)
                                 || NewProduct.Size.Equals(0)
                                 || NewProduct.CostPrice.Equals(0)
-                                || NewProduct.ProductMesurementOption == null;
+                                || NewProduct.ProductMesurementOption == null
+                                || NewProduct.BufferStocks == 0;
 
 
     protected override async Task OnInitializedAsync()

@@ -161,6 +161,7 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
                     if (dto.IsRecieved && entity.ProductId.HasValue && entity.Product != null)
                     {
                         entity.Product.Quantity += dto.ItemQuantity;
+                        entity.Product.ActualQuantity += dto.ItemQuantity;
                     }
                 }
             }
