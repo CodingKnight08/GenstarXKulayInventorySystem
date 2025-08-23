@@ -156,6 +156,13 @@ else
 
 
                 </MudItem>
+                <MudItem xl="6">
+                    <MudNumericField HideSpinButtons="true"
+                                     @bind-Value="UpdatedProduct.BufferStocks"
+                                     Label="Level Stocks"
+                                     Placeholder="Enter items needed to maintain"
+                                     Required="true" />
+                </MudItem>
             </MudGrid>
         </DialogContent>
         <DialogActions>
