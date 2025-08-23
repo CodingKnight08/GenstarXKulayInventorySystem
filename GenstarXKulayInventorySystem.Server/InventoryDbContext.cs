@@ -113,6 +113,10 @@ public class InventoryDbContext: IdentityDbContext<User>
                    .WithMany(p => p.SaleItems)              
                    .HasForeignKey(si => si.ProductId)       
                    .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(si => si.Client)
+             .WithMany(c => c.SaleItems)
+             .HasForeignKey(si => si.ClientId)
+             .OnDelete(DeleteBehavior.SetNull);
 
             // Decimal precision
             entity.Property(si => si.ItemPrice).HasPrecision(18, 2);
@@ -124,7 +128,12 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(si => si.ProductPricingOption).HasConversion<int>();
             entity.Property(si => si.PaintCategory).HasConversion<int>();
         });
-
+        modelBuilder.Entity<Client>(entity =>
+        {
+            entity.Property(c => c.ClientName).HasMaxLength(200).IsRequired();
+            entity.Property(c => c.Address).HasMaxLength(500);
+            entity.Property(c => c.ContactNumber).HasMaxLength(50);
+        });
         base.OnModelCreating(modelBuilder);
     }
 
@@ -141,5 +150,6 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<Billing> Billings { get; set; }
     public DbSet<PurchaseOrderBilling> PurchaseOrderBillings { get; set; }
     public DbSet<DailySale> DailySales { get; set; } 
-    public DbSet<SaleItem> SaleItems { get; set; } 
+    public DbSet<SaleItem> SaleItems { get; set; }
+    public DbSet<Client> Clients { get; set; }
 }

@@ -9,6 +9,8 @@ public class SaleItem:BaseEntity
     public DailySale? DailySale { get; set; } 
     public int? ProductId { get; set; }
     public Product? Product { get; set; }
+    public int? ClientId { get; set; }
+    public Client? Client { get; set; }
     public string ItemName { get; set; } = string.Empty;
     public decimal Size { get; set; } 
     public string Description { get; set; } = string.Empty;
