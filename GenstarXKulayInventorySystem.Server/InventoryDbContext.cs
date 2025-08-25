@@ -99,7 +99,13 @@ public class InventoryDbContext: IdentityDbContext<User>
 
         modelBuilder.Entity<DailySale>(entity =>
         {
+            entity.HasOne(ds => ds.Client)
+             .WithMany(c => c.DailySales)
+             .HasForeignKey(ds => ds.ClientId)
+             .OnDelete(DeleteBehavior.SetNull);
+
             entity.Property(ds => ds.TotalAmount).HasPrecision(18, 2);
+
         });
         modelBuilder.Entity<SaleItem>(entity =>
         {
@@ -113,10 +119,7 @@ public class InventoryDbContext: IdentityDbContext<User>
                    .WithMany(p => p.SaleItems)              
                    .HasForeignKey(si => si.ProductId)       
                    .OnDelete(DeleteBehavior.SetNull);
-            entity.HasOne(si => si.Client)
-             .WithMany(c => c.SaleItems)
-             .HasForeignKey(si => si.ClientId)
-             .OnDelete(DeleteBehavior.SetNull);
+           
 
             // Decimal precision
             entity.Property(si => si.ItemPrice).HasPrecision(18, 2);

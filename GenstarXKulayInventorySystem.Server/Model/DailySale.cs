@@ -7,6 +7,8 @@ namespace GenstarXKulayInventorySystem.Server.Model;
 public class DailySale:BaseEntity
 {
     public int Id { get; set; }
+    public int? ClientId { get; set; }
+    public Client? Client { get; set; }
     public DateTime DateOfSales { get; set; }
     public string NameOfClient { get; set; } = string.Empty;
     public string SalesNumber { get; set; } = string.Empty;

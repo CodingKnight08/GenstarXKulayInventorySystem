@@ -6,6 +6,5 @@ public class Client:BaseEntity
     public string ClientName { get; set; } = string.Empty;
     public string Address { get; set; }= string.Empty;
     public string ContactNumber = string.Empty;
-
-    public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
+    public ICollection<DailySale> DailySales { get; set; } = new List<DailySale>();
 }
