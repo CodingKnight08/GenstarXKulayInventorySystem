@@ -45,7 +45,7 @@ public class AutoMapperProfile: Profile
                .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => DeserializeInvolvePaints(src.DataList)))
                .ReverseMap()
                .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => SerializeInvolvePaints(src.DataList)));
-
+        _ = CreateMap<Client, ClientDto>().ReverseMap();
     }
 
     private List<InvolvePaintsDto>? DeserializeInvolvePaints(string datalistJson)
