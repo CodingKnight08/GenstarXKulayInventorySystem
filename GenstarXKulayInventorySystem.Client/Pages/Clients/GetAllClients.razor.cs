@@ -11,7 +11,8 @@ public partial class GetAllClients
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ILogger<GetAllClients> Logger { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
-    [Inject] protected ISnackbar SnackBar { get; set; } = default!; 
+    [Inject] protected ISnackbar SnackBar { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     protected List<ClientDto> Clients { get; set; } = new List<ClientDto>();
     protected BranchOption SelectedBranch { get; set; } = BranchOption.GeneralSantosCity;
 
@@ -64,6 +65,60 @@ public partial class GetAllClients
         {
             var result = await dialog.Result;
             if(result is not null && !result.Canceled && result.Data is ClientDto)
+            {
+                await LoadClients();
+                StateHasChanged();
+            }
+        }
+    }
+
+    protected void ViewClientAsync(int id)
+    {
+        NavigationManager.NavigateTo($"/clients/view/{id}");
+    }
+
+    protected async Task EditClientAsync(int id)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ClientId", id }
+        };
+        var option = new DialogOptions
+        {
+            FullWidth = true,
+            MaxWidth = MaxWidth.Medium,
+            BackdropClick = false,
+            CloseButton = true,
+        };
+
+        var dialog = await DialogService.ShowAsync<UpdateClient>("Edit Client", parameters, option);
+        if (dialog is not null)
+        {
+            var result = await dialog.Result;
+            if (result is not null && !result.Canceled && result.Data is ClientDto)
+            {
+                await LoadClients();
+                StateHasChanged();
+            }
+        }
+    }
+
+    protected async Task DeleteClientAsync(int id)
+    {
+        var parameter = new DialogParameters { { "ClientId", id } };
+        var option = new DialogOptions
+        {
+            FullWidth = true,
+            MaxWidth = MaxWidth.Small,
+            CloseButton = true,
+            NoHeader = false,
+            BackdropClick = false
+        };
+        var dialog = await DialogService.ShowAsync<DeleteClient>("", parameter, option);
+        if (dialog is not null)
+        {
+            var result = await dialog.Result;
+            if (result is not null && !result.Canceled && result.Data is true)
             {
                 await LoadClients();
                 StateHasChanged();

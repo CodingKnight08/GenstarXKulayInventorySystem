@@ -52,11 +52,11 @@
             <RowTemplate>
                 <MudTd>@context.ClientName</MudTd>
                 <MudTd>@context.Address</MudTd>
-                <MudTd>@context.ContactNumber</MudTd>
+                <MudTd>@context.DisplayContactNumber</MudTd>
                 <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Info"  />
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Success" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Info" OnClick="()=>ViewClientAsync(context.Id)" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Success" OnClick="()=>EditClientAsync(context.Id)" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteClientAsync(context.Id)" />
 
                 </MudTd>
             </RowTemplate>
