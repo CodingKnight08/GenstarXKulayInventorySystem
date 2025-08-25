@@ -1,0 +1,69 @@
+﻿@page "/clients"
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+
+<MudMainContent Class="w-auto h-100 d-flex flex-column align-items-center gap-3">
+    <MudCard Elevation="0" Class="p-2 w-100 h-auto">
+        <MudText Typo="Typo.h5" Align="Align.Center" Class="mt-3">Client List</MudText>
+        <MudCard Elevation="0" Class="w-100 d-flex flex-row align-items-center justify-content-end gap-2">
+            <MudItem xl="3">
+                <MudSelect T="BranchOption"
+                           Value="SelectedBranch"
+                           ValueChanged="OnBranchChange"
+                           Label="Branch Option"
+                           Style="width:250px;">
+                    @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
+                    {
+                        <MudSelectItem T="BranchOption" Value="@branch">
+                            @branch.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+
+
+            </MudItem>
+           
+            <MudButton StartIcon="@Icons.Material.Filled.PersonAdd" Variant="Variant.Filled" Color="Color.Info" OnClick="CreateClientAsync">Add Client</MudButton>
+        </MudCard>
+    </MudCard>
+    @if (IsLoading)
+    {
+        <MudCard Elevation="0" Class="w-100 d-flex align-items-center my-3">
+            <MudProgressCircular Indeterminate=true Color="Color.Info" Size="Size.Medium" />
+            <MudText Align="Align.Center" Typo="Typo.subtitle1">Loading..</MudText>
+        </MudCard>
+    }
+    else
+    {
+
+
+        <MudCard Elevation="0" Class="w-100 p-3">
+            <MudTable 
+            Dense="true"
+            Hover="true"
+            Bordered="true"
+            
+            Items="Clients">
+            <HeaderContent>
+                <MudTh>Client Name</MudTh>
+                <MudTh>Address</MudTh>
+                <MudTh>Contact Info</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.ClientName</MudTd>
+                <MudTd>@context.Address</MudTd>
+                <MudTd>@context.ContactNumber</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Info"  />
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Success" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" />
+
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Align="Align.Center" Typo="Typo.subtitle1" Color="Color.Error">No Clients Available</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudCard>
+    }
+</MudMainContent>
