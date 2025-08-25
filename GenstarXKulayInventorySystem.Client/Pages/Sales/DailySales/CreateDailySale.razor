@@ -10,7 +10,21 @@
         <!-- Main content fills available space -->
         <MudGrid>
             <MudItem xl="4">
-                <MudTextField Placeholder="Enter Client Name" Label="Client Name" @bind-Value="Sale.NameOfClient" Required=true />
+               <MudAutocomplete
+                   T="string"
+                   Label="Client Name"
+                   @bind-Value="Client"
+                   SearchFunc="SearchClients"
+                   Dense="true"
+                   Clearable="true"
+                   CoerceText="true"
+                   CoerceValue="true"
+                   Placeholder="Enter Client name"
+                   Variant="Variant.Text"
+                   Required=true
+                   ShowProgressIndicator="IsClientLoading"
+                   TextChanged="OnClientNameTyped"
+                   />
             </MudItem>
             <MudItem xl="2">
                 <MudSelect T="PaymentMethod" @bind-Value="Sale.PaymentType" Label="Payment Method">
@@ -38,7 +52,8 @@
             </MudItem>
             <MudItem xl="2">
                 <MudSelect T="BranchOption"
-                           @bind-Value="Sale.Branch"
+                           Value="Sale.Branch"
+                           ValueChanged="OnBranchChanged"
                            Label="Branch">
                     @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
                     {
