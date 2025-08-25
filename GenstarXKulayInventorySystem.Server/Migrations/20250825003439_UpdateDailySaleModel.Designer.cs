@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250825003439_UpdateDailySaleModel")]
+    partial class UpdateDailySaleModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -109,9 +112,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("Branch")
-                        .HasColumnType("int");
 
                     b.Property<string>("ClientName")
                         .IsRequired()
@@ -936,8 +936,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.Client", "Client")
                         .WithMany("DailySales")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ClientId");
 
                     b.Navigation("Client");
                 });

@@ -1,0 +1,57 @@
+﻿@page "/clients/view/{id:int}"
+
+<MudMainContent Class="w-auto h-100">
+    <MudCard Elevation="0" Class="justify-content-start">
+        <MudBreadcrumbs Items="_items" />
+    </MudCard>
+    @if (IsLoading)
+    {
+        <MudCard Elevation="0" Class="h-75 w-100 d-flex flex-column align-items-center justify-content-center">
+            <MudProgressCircular Color="Color.Info" Indeterminate="true" Size="Size.Large"/>
+            <MudText Align="Align.Center" Typo="Typo.subtitle1">Loading</MudText>
+        </MudCard>
+
+    }
+    else
+    {
+
+     <MudCard Elevation="0" Class="w-100 px-3 h-25 d-flex flex-column gap-2">
+            <MudGrid Spacing="6" Class="mt-2">
+                <MudItem xl="6">
+                    <MudTextField @bind-Value="Client.ClientName" Label="Client Name" ReadOnly="true" Variant="Variant.Text"  />
+                </MudItem>
+                <MudItem xl="6">
+                    <MudTextField @bind-Value="Client.Address" Label="Address" ReadOnly="true" Variant="Variant.Text"  />
+                </MudItem>
+                <MudItem xl="6">
+                    <MudTextField @bind-Value="Client.ContactNumber" Adornment="Adornment.Start" AdornmentText="+63" Label="Contact Number" ReadOnly="true" Variant="Variant.Text"  />
+                </MudItem>
+
+            </MudGrid>
+            <MudText Typo="Typo.subtitle1" Align="Align.Left" Class="my-3">Purchase History</MudText>
+            <MudTable Items="Client.DailySales" Bordered=true Hover=true Elevation="10" Class="p-2">
+                <HeaderContent>
+                    <MudTh>Sale Number</MudTh>
+                    <MudTh>Reciept Number</MudTh>
+                    <MudTh>Date Purchased</MudTh>
+                    <MudTh>Payment Type</MudTh>
+                    <MudTh>Purchase Type</MudTh>
+                    <MudTh>Total Amount</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.SalesNumber</MudTd>
+                    <MudTd>@context.RecieptReference</MudTd>
+                    <MudTd>@context.DateOfSales.ToString("MMMM dd, yyyy")</MudTd>
+                    <MudTd>@context.PaymentType.ToString()</MudTd>
+                    <MudTd>@context.SalesOption</MudTd>
+                    <MudTd>@($"₱{context.TotalAmount:N2}")</MudTd>
+
+
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.h6" Align="Align.Center" Color="Color.Tertiary">No Purchase History</MudText>
+                </NoRecordsContent>
+            </MudTable>
+    </MudCard>
+    }
+</MudMainContent>

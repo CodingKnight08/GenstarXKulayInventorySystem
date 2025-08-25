@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250825001922_RemoveSaleItemFk")]
+    partial class RemoveSaleItemFk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -110,9 +113,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int>("Branch")
-                        .HasColumnType("int");
-
                     b.Property<string>("ClientName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -155,9 +155,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Branch")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ClientId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -204,8 +201,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
 
                     b.ToTable("DailySales");
                 });
@@ -932,16 +927,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.DailySale", b =>
-                {
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.Client", "Client")
-                        .WithMany("DailySales")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Client");
-                });
-
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductBrand", "ProductBrand")
@@ -1081,11 +1066,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Billing", b =>
                 {
                     b.Navigation("PurchaseOrderItems");
-                });
-
-            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Client", b =>
-                {
-                    b.Navigation("DailySales");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.DailySale", b =>

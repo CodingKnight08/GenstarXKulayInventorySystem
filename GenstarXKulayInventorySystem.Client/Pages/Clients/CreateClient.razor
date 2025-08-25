@@ -1,0 +1,31 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="6">
+            <MudItem xl="12">
+                <MudTextField T="string" @bind-Value="Client.ClientName" Label="Client Name" Placeholder="Enter Client Name" Variant="Variant.Text" Required="true" />
+            </MudItem>
+            <MudItem xl="12">
+                <MudTextField T="string" @bind-Value="Client.Address" Label="Address" Placeholder="Enter Client Address" Variant="Variant.Text" />
+            </MudItem>
+            <MudItem xl="6">
+                <MudTextField T="string" Adornment="Adornment.Start" AdornmentText="+63" Mask="@(new PatternMask("000-000-0000"))" @bind-Value="Client.ContactNumber" Label="Contact Number" Placeholder="Enter Contact Number" Variant="Variant.Text" />
+            </MudItem>
+            <MudItem xl="6">
+                <MudSelect T="BranchOption" @bind-Value="Client.Branch" Label="Branch">
+                    @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
+                    {
+                        <MudSelectItem T="BranchOption" Value="@branch">
+                            @branch.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel" Size="Size.Small">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="SubmitClient" Size="Size.Small" Disabled="!IsValid" StartIcon="@Icons.Material.Filled.Save">Save Client</MudButton>
+
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,45 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+@if(!IsLoading){
+    <MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="6">
+            <MudItem xl="12">
+                <MudTextField T="string" @bind-Value="Client.ClientName" Label="Client Name" Placeholder="Enter Client Name" Variant="Variant.Text" Required="true" />
+            </MudItem>
+            <MudItem xl="12">
+                <MudTextField T="string" @bind-Value="Client.Address" Label="Address" Placeholder="Enter Client Address" Variant="Variant.Text" />
+            </MudItem>
+            <MudItem xl="6">
+                <MudTextField T="string" Adornment="Adornment.Start" AdornmentText="+63" Mask="@(new PatternMask("000-000-0000"))" @bind-Value="Client.ContactNumber" Label="Contact Number" Placeholder="Enter Contact Number" Variant="Variant.Text" />
+            </MudItem>
+            <MudItem xl="6">
+                <MudSelect T="BranchOption" @bind-Value="Client.Branch" Label="Branch" ReadOnly=true>
+                    @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
+                    {
+                        <MudSelectItem T="BranchOption" Value="@branch">
+                            @branch.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+       
+        <MudButton Variant="Variant.Filled" Color="Color.Default" Size="Size.Small" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick="UpdateClientAsync" Disabled="!IsValid" >Update</MudButton>
+    </DialogActions>
+    </MudDialog>
+}
+else
+{
+    <MudDialog>
+        <DialogContent>
+            <MudCard Elevation="0" Class="d-flex flex-column align-items-center justify-content-center gap-2">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+                <MudText Typo="Typo.h6" Class="mt-2">Loading...</MudText>
+            </MudCard>
+          
+        </DialogContent>
+    </MudDialog>
+}
