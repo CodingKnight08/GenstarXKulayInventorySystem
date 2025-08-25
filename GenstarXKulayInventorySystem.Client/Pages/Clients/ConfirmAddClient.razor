@@ -1,0 +1,15 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.subtitle1">Do you want to save <strong class="text-danger">@ClientName</strong> as new Client  </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Success" Size="Size.Small" Variant="Variant.Filled" OnClick="() => MudDialog.Close(DialogResult.Ok(true))">Yes</MudButton>
+        <MudButton Color="Color.Default" Size="Size.Small" Variant="Variant.Filled" OnClick="() => MudDialog.Cancel()">No</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public string ClientName { get; set; } = string.Empty;
+}
+
