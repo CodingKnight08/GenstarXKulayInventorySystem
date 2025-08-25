@@ -26,6 +26,8 @@ public partial class CreateSaleItem
     protected bool IsLoading { get; set; } = false;
     protected bool IsProductLoading { get; set; } = false;
     protected bool IsWholeSale { get; set; } = false;
+
+    protected bool IsValid => !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) && SaleItemDto.ItemPrice > 0 && SaleItemDto.Quantity > 0;
     protected override async Task OnInitializedAsync()
     {
         await LoadBrands();
