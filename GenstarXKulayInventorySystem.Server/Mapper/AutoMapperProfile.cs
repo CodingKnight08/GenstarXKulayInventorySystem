@@ -40,12 +40,16 @@ public class AutoMapperProfile: Profile
             .ForMember(dest => dest.PurchaseOrder, opt => opt.MapFrom(src => src.PurchaseOrder))
             .ReverseMap()
             .ForMember(dest => dest.PurchaseOrder, opt => opt.Ignore());
-        _ = CreateMap<DailySale, DailySaleDto>().ReverseMap();
+        _ = CreateMap<DailySale, DailySaleDto>()
+                .ForMember(dest => dest.Client, opt => opt.Ignore()) 
+                .ReverseMap();
         _ = CreateMap<SaleItem, SaleItemDto>()
                .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => DeserializeInvolvePaints(src.DataList)))
                .ReverseMap()
                .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => SerializeInvolvePaints(src.DataList)));
-        _ = CreateMap<Client, ClientDto>().ReverseMap();
+        _ = CreateMap<Client, ClientDto>()
+                 .ForMember(dest => dest.DailySales, opt => opt.MapFrom(src => src.DailySales))
+                 .ReverseMap();
     }
 
     private List<InvolvePaintsDto>? DeserializeInvolvePaints(string datalistJson)
