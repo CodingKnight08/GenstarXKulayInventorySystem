@@ -1,5 +1,6 @@
 ﻿@page "/sales/view/{id:int}"
 @using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems
+@using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
 @using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
@@ -22,13 +23,14 @@
                     <MudTextField Placeholder="Enter Client Name" Label="Client Name" @bind-Value="Sales.NameOfClient" ReadOnly=true />
                 </MudItem>
                 <MudItem xl="2">
-                    <MudSelect T="PaymentMethod" @bind-Value="Sales.PaymentType" Label="Payment Method" ReadOnly=true>
+                    <MudSelect T="PaymentMethod?" @bind-Value="Sales.PaymentType" Label="Payment Method" Placeholder="Select PaymentMethod" ReadOnly=true>
                         @foreach (var method in Enum.GetValues(typeof(PaymentMethod)).Cast<PaymentMethod>())
                         {
-                            <MudSelectItem T="PaymentMethod" Value="@method">
+                            <MudSelectItem T="PaymentMethod?" Value="@method">
                                 @method.ToString()
                             </MudSelectItem>
                         }
+                        <MudSelectItem T="PaymentMethod?" Value="null">N/A</MudSelectItem>
                     </MudSelect>
                 </MudItem>
                 <MudItem xl="2">
@@ -70,7 +72,27 @@
                                   ReadOnly=true
                                   />
                 </MudItem>
+                @if (Sales.PaymentType == null)
+                {
 
+
+                    <MudItem xl="3">
+                        <MudSelect T="PaymentTermsOption?" @bind-Value="Sales.PaymentTermsOption" Label="Payment Term Option" Placeholder="--Select Term Option--">
+                            @foreach (var option in Enum.GetValues(typeof(PaymentTermsOption)).Cast<PaymentTermsOption>())
+                            {
+                                <MudSelectItem T="PaymentTermsOption?" Value="@option">
+                                    @option.ToString()
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+                @if (Sales.PaymentTermsOption == PaymentTermsOption.Custom)
+                {
+                    <MudItem xl="2">
+                        <MudNumericField T="int?" @bind-Value="Sales.CustomPaymentTermsOption" HideSpinButtons=true Placeholder="Number of days to be paid" Label="Custom Payment Term" Adornment="Adornment.End" AdornmentText="day's"/>
+                    </MudItem>
+                }
                 <MudItem xl="12">
                 @if (!IsLoading)
                 {
