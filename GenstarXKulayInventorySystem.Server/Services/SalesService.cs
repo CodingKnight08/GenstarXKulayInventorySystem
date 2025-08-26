@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 
@@ -113,6 +114,10 @@ public class SalesService:ISalesService
             sale.CreatedAt = UtilitiesHelper.GetPhilippineTime();
             sale.CreatedBy = GetCurrentUsername();
             sale.TotalAmount = saleDto.SaleItems.Sum(x => (x.ItemPrice) * (x.Quantity));
+            sale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
+                saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
+                UtilitiesHelper.GetPhilippineTime(),
+                saleDto.CustomPaymentTermsOption ?? 0);
             _ = await _context.DailySales.AddAsync(sale);
             _ = await _context.SaveChangesAsync();
             sale.SalesNumber = $"DS-{sale.Id:D10}-{DateTime.Now.Year.ToString()}";
@@ -142,6 +147,10 @@ public class SalesService:ISalesService
 
             existingSale.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
             existingSale.UpdatedBy = GetCurrentUsername();
+            existingSale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
+                saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
+                existingSale.DateOfSales,
+                saleDto.CustomPaymentTermsOption ?? 0);
 
             // Sync SaleItems
             foreach (var itemDto in saleDto.SaleItems)
@@ -204,6 +213,20 @@ public class SalesService:ISalesService
             return false;
 
         }
+    }
+
+    private DateTime CalculateExpectedPaymentDate(PaymentTermsOption terms, DateTime dateSales, int customDate = 0)
+    {
+        return terms switch
+        {
+            PaymentTermsOption.Today => dateSales,
+            PaymentTermsOption.SevenDays => dateSales.AddDays(7),
+            PaymentTermsOption.ThirtyDays => dateSales.AddDays(30),
+            PaymentTermsOption.SixtyDays => dateSales.AddDays(60),
+            PaymentTermsOption.NinetyDays => dateSales.AddDays(90),
+            PaymentTermsOption.Custom => dateSales.AddDays(customDate),
+            _ => dateSales
+        };
     }
 }
 public interface ISalesService
