@@ -1,4 +1,5 @@
-﻿using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
+﻿using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
@@ -15,6 +16,7 @@ public class DailySaleDto:BaseEntityDto
     public string RecieptReference { get; set; } = string.Empty;
     public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
     public PaymentMethod? PaymentType { get; set; }
+    public PaymentTermsOption? PaymentTermsOption { get; set; }
     public int? CustomPaymentTermsOption { get; set; }
     public DateTime? ExpectedPaymentDate { get; set; }
     public PurchaseRecieptOption? SalesOption { get; set; } 
