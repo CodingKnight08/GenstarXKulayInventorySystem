@@ -33,7 +33,8 @@ public class ClientService: IClientService
         List<Client> clients = await _context.Clients
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(c => !c.IsDeleted && c.Branch == branch).ToListAsync();
+            .Where(c => !c.IsDeleted && c.Branch == branch)
+            .OrderBy(c => c.ClientName).ToListAsync();
 
         if (clients == null || clients.Count == 0)
         {
