@@ -14,7 +14,9 @@ public class DailySaleDto:BaseEntityDto
     public string SalesNumber { get; set; } = string.Empty;
     public string RecieptReference { get; set; } = string.Empty;
     public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
-    public PaymentMethod PaymentType { get; set; } = PaymentMethod.Cash;
+    public PaymentMethod? PaymentType { get; set; }
+    public int? CustomPaymentTermsOption { get; set; }
+    public DateTime? ExpectedPaymentDate { get; set; }
     public PurchaseRecieptOption? SalesOption { get; set; } 
     public decimal? TotalAmount { get; set; }
     public List<SaleItemDto> SaleItems { get; set; } = new List<SaleItemDto>();
