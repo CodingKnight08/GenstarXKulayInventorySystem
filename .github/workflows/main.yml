@@ -25,6 +25,6 @@ jobs:
       with:
         server: win1027.site4now.net
         username: genstarkulay-001
-        password: genstarkulay@2025
+        password: genstarxkulay@2025
         local-dir: ./publish/
         server-dir: /inventory/
