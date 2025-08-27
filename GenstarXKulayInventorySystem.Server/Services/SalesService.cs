@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 
@@ -94,7 +95,80 @@ public class SalesService:ISalesService
         return _mapper.Map<List<DailySaleDto>>(dailySales);
     }
 
-    
+    public async Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date)
+    {
+        var start = date.Date;
+        var end = start.AddDays(1);
+
+        var paidDailySales = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(ds => !ds.IsDeleted
+                      && ds.PaymentType != null
+                      && ds.DateOfSales >= start
+                      && ds.DateOfSales < end)
+            .ToListAsync();
+
+        if (paidDailySales.Count == 0)
+            return new List<DailySaleDto>();
+
+        return _mapper.Map<List<DailySaleDto>>(paidDailySales);
+    }
+
+    public async Task<decimal> GetAllDailyInvoiceAsync(DateTime date)
+    {
+        var start = date.Date;
+        var end = start.AddDays(1);
+        decimal invoices = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(ds => !ds.IsDeleted
+                      && ds.SalesOption == PurchaseRecieptOption.BIR
+                      && ds.DateOfSales >= start
+                      && ds.DateOfSales < end)
+            .SumAsync(ds => (decimal?)ds.TotalAmount) ?? 0;
+
+
+        return invoices;
+    }
+
+    public async Task<decimal> GetAllDailyNonVoiceAsync(DateTime date)
+    {
+        var start = date.Date;
+        var end = start.AddDays(1);
+        decimal nonVoices = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(ds => !ds.IsDeleted
+                      && ds.SalesOption == PurchaseRecieptOption.NonBIR
+                      && ds.DateOfSales >= start
+                      && ds.DateOfSales < end)
+            .SumAsync(ds => (decimal?)ds.TotalAmount) ?? 0;
+
+
+        return nonVoices;
+    }
+
+    public async Task<List<DailySaleDto>> GetAllDailySalesUnpaidAsync(DateTime date)
+    {
+        var start = date.Date;
+        var end = start.AddDays(1);
+
+        var unpaidDailySales = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(ds => !ds.IsDeleted
+                      && ds.PaymentType == null
+                      && ds.DateOfSales >= start
+                      && ds.DateOfSales < end)
+            .ToListAsync();
+
+        if (unpaidDailySales.Count == 0)
+            return new List<DailySaleDto>();
+
+        return _mapper.Map<List<DailySaleDto>>(unpaidDailySales);
+    }
+
     public async Task<DailySaleDto?> GetDailySaleByIdAsync(int id)
     {
         var dailySale = await _context.DailySales.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
@@ -234,6 +308,14 @@ public interface ISalesService
     Task<List<DailySaleDto>> GetAllDailySalesAsync();
     Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date);
     Task<List<DailySaleDto>> GetAllDailySaleByDaysAsync(DateRangeOption range);
+
+    Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date);
+    Task<List<DailySaleDto>> GetAllDailySalesUnpaidAsync(DateTime date);
+
+    Task<decimal> GetAllDailyInvoiceAsync(DateTime date);
+    Task<decimal> GetAllDailyNonVoiceAsync(DateTime date);
+
+
     Task<DailySaleDto?> GetDailySaleByIdAsync(int id);
     Task<bool> AddAsync(DailySaleDto saleDto);
     Task<bool> UpdateAsync(DailySaleDto saleDto);

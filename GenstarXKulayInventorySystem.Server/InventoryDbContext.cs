@@ -137,6 +137,33 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(c => c.Address).HasMaxLength(500);
             entity.Property(c => c.ContactNumber).HasMaxLength(50);
         });
+
+        modelBuilder.Entity<DailySaleReport>(entity =>
+        {
+            entity.Property(dsr => dsr.CashIn).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.TotalSalesToday).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.BeginningBalance).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.InvoiceCash).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.InvoiceChecks).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.NonInvoiceCash).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.NonInvoiceChecks).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.TotalCash).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.TotalChecks).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.TotalSales).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.ChargeSales).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.CollectionCash).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.CollectionChecks).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.Transportation).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.Foods).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.SalaryAndAdvances).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.Commissions).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.Supplies).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.Others).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.TotalExpenses).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.TotalCashOnHand).HasPrecision(18, 2);
+
+
+        });
         base.OnModelCreating(modelBuilder);
     }
 
@@ -155,4 +182,5 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<DailySale> DailySales { get; set; } 
     public DbSet<SaleItem> SaleItems { get; set; }
     public DbSet<Client> Clients { get; set; }
+    public DbSet<DailySaleReport> DailySaleReports { get; set; }
 }
