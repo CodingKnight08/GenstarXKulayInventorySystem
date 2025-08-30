@@ -56,7 +56,6 @@ public partial class CreateOperationalBilling
     protected bool IsValid()
     {
         return !string.IsNullOrWhiteSpace(Billing.BillingName)
-        && !string.IsNullOrWhiteSpace(Billing.BillingNumber)
         && Billing.Amount != 0;
     }
 }
