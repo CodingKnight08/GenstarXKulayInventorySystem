@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -57,6 +58,27 @@ public class BillingService:IBillingService
         List<BillingDto> billingDtos = _mapper.Map<List<BillingDto>>(billings);
         return billingDtos;
     }
+
+
+    public async Task<List<BillingDto>> GetAllExpensesBillingPerDay(DateTime date, BillingBranch branch)
+    {
+        var start = date.Date;
+        var end = start.AddDays(1);
+
+        var billings = await _context.Billings
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(e => !e.IsDeleted
+                     && e.Branch == branch
+                     && e.IsPaid
+                     && e.DatePaid.HasValue
+                     && e.DatePaid >= start
+                     && e.DatePaid < end)
+            .ToListAsync();
+
+        return _mapper.Map<List<BillingDto>>(billings);
+    }
+
     public async Task<BillingDto?> GetBillingById(int id)
     {
         var billing = await _context.Billings.AsNoTracking()
@@ -71,7 +93,7 @@ public class BillingService:IBillingService
         {
             var existingBilling = await _context.Billings
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.BillingNumber == billingDto.BillingNumber);
+                .FirstOrDefaultAsync(x => x.BillingName == billingDto.BillingName && x.Branch == billingDto.Branch && x.DateOfBilling.Date == billingDto.DateOfBilling.Date);
             if (existingBilling != null)
                 return false;
             var billing = _mapper.Map<Billing>(billingDto);
@@ -81,9 +103,28 @@ public class BillingService:IBillingService
             }
             billing.CreatedBy = GetCurrentUsername();
             billing.CreatedAt = UtilitiesHelper.GetPhilippineTime();
-            await _context.Billings.AddAsync(billing);
-            await _context.SaveChangesAsync();
-            return true;
+            _ = await _context.Billings.AddAsync(billing);
+            _ =await _context.SaveChangesAsync();
+            string code = billingDto.Category switch
+            {
+                BillingCategory.Logistics => "LB",
+                BillingCategory.Electric => "EB",
+                BillingCategory.Internet => "IB",
+                BillingCategory.Telephone => "TB",
+                BillingCategory.Water => "WB",
+                BillingCategory.Cellphone => "CB",
+                BillingCategory.SchoolSupplies => "SSB",
+                BillingCategory.Other => "OTB",
+                BillingCategory.Foods => "FB",
+                _ => "NA" // fallback
+            };
+
+            billing.BillingNumber = $"{code}{billing.Id:D10}";
+
+
+            billing.BillingNumber = $"{code}-{billing.Id:D10}";
+            int result = await _context.SaveChangesAsync();
+            return result > 0;
         }
         catch (Exception ex)
         {
@@ -267,6 +308,7 @@ public class BillingService:IBillingService
 public interface IBillingService
 {
     Task<List<BillingDto>> GetAllBillingAsync();
+    Task<List<BillingDto>> GetAllExpensesBillingPerDay(DateTime date, BillingBranch branch);
     Task<BillingDto?> GetBillingById(int id);
     Task<bool> AddBillingAsync(BillingDto billingDto);
     Task<bool> UpdateBillingAsync(BillingDto billingDto);

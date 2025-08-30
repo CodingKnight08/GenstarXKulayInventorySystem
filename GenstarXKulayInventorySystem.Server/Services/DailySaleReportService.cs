@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -21,12 +22,12 @@ public class DailySaleReportService : IDailySaleReportService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<List<DailySaleReportDto>> GetAllDailyReportAsync()
+    public async Task<List<DailySaleReportDto>> GetAllDailyReportAsync(BranchOption branch)
     {
         List<DailySaleReport> reports = await _context.DailySaleReports
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(dr => !dr.IsDeleted)
+            .Where(dr => !dr.IsDeleted && dr.Branch == branch)
             .OrderBy(dr => dr.Date)
             .ToListAsync();
 
@@ -59,10 +60,10 @@ public class DailySaleReportService : IDailySaleReportService
     {
         try
         {
-            var existingReport = await _context.DailySaleReports.AsNoTracking().FirstOrDefaultAsync(dr => !dr.IsDeleted && dr.Date.Date == UtilitiesHelper.GetPhilippineTime().Date);
+            var existingReport = await _context.DailySaleReports.AsNoTracking().FirstOrDefaultAsync(dr => !dr.IsDeleted && dr.Date.Date == UtilitiesHelper.GetPhilippineTime().Date && dr.Branch == reportDto.Branch);
             if(existingReport != null)
             {
-                return false; // Report for the date already exists
+                return false; 
             }
             var report = _mapper.Map<DailySaleReport>(reportDto);
             report.Date = UtilitiesHelper.GetPhilippineTime();
@@ -130,7 +131,7 @@ public class DailySaleReportService : IDailySaleReportService
 
 public interface IDailySaleReportService
 {
-    Task<List<DailySaleReportDto>> GetAllDailyReportAsync();
+    Task<List<DailySaleReportDto>> GetAllDailyReportAsync(BranchOption branch);
     Task<DailySaleReportDto?> GetDailyReportByIdAsync(int id);
     Task<bool> AddReportAsync(DailySaleReportDto reportDto);
     Task<bool> UpdateReportAsync(DailySaleReportDto reportDto);

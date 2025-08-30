@@ -5,6 +5,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 
@@ -95,7 +96,7 @@ public class SalesService:ISalesService
         return _mapper.Map<List<DailySaleDto>>(dailySales);
     }
 
-    public async Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date)
+    public async Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date, BranchOption branch)
     {
         var start = date.Date;
         var end = start.AddDays(1);
@@ -104,6 +105,8 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
+                      && ds.Branch == branch
+                      && ds.UpdatedAt == null
                       && ds.PaymentType != null
                       && ds.DateOfSales >= start
                       && ds.DateOfSales < end)
@@ -149,7 +152,7 @@ public class SalesService:ISalesService
         return nonVoices;
     }
 
-    public async Task<List<DailySaleDto>> GetAllDailySalesUnpaidAsync(DateTime date)
+    public async Task<List<DailySaleDto>> GetAllDailySalesUnpaidAsync(DateTime date, BranchOption branch)
     {
         var start = date.Date;
         var end = start.AddDays(1);
@@ -158,6 +161,8 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
+                      && ds.Branch == branch
+                      && ds.UpdatedAt == null
                       && ds.PaymentType == null
                       && ds.DateOfSales >= start
                       && ds.DateOfSales < end)
@@ -168,6 +173,25 @@ public class SalesService:ISalesService
 
         return _mapper.Map<List<DailySaleDto>>(unpaidDailySales);
     }
+
+    public async Task<List<DailySaleDto>> GetAllCollectionAsync(DateTime date, BranchOption branch)
+    {
+        var collectedSales = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(ds => !ds.IsDeleted
+                      && ds.Branch == branch
+                      && ds.UpdatedAt.HasValue
+                     )
+            .ToListAsync();
+
+        if(collectedSales == null)
+        {
+            return new List<DailySaleDto>();
+        }
+        return _mapper.Map<List<DailySaleDto>>(collectedSales);
+    }
+
 
     public async Task<DailySaleDto?> GetDailySaleByIdAsync(int id)
     {
@@ -208,7 +232,6 @@ public class SalesService:ISalesService
     public async Task<bool> UpdateAsync(DailySaleDto saleDto)
     {
         var existingSale = await _context.DailySales
-            .Include(ds => ds.SaleItems)
             .FirstOrDefaultAsync(x => x.Id == saleDto.Id && !x.IsDeleted);
 
         if (existingSale == null)
@@ -225,35 +248,6 @@ public class SalesService:ISalesService
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
                 existingSale.DateOfSales,
                 saleDto.CustomPaymentTermsOption ?? 0);
-
-            // Sync SaleItems
-            foreach (var itemDto in saleDto.SaleItems)
-            {
-                var existingItem = existingSale.SaleItems.FirstOrDefault(i => i.Id == itemDto.Id);
-
-                if (existingItem != null)
-                {
-                    _mapper.Map(itemDto, existingItem);
-                }
-                else
-                {
-                    existingSale.SaleItems.Add(_mapper.Map<SaleItem>(itemDto));
-                }
-            }
-
-            // Handle deleted items (soft delete)
-            var dtoItemIds = saleDto.SaleItems.Select(i => i.Id).ToList();
-            var deletedItems = existingSale.SaleItems.Where(i => !dtoItemIds.Contains(i.Id)).ToList();
-            foreach (var deleted in deletedItems)
-            {
-                deleted.IsDeleted = true;
-            }
-
-            // ✅ Recalculate total only from items not deleted
-            existingSale.TotalAmount = existingSale.SaleItems
-                .Where(i => !i.IsDeleted)
-                .Sum(i => i.ItemPrice * i.Quantity);
-
             int result = await _context.SaveChangesAsync();
             return result > 0;
         }
@@ -309,9 +303,9 @@ public interface ISalesService
     Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date);
     Task<List<DailySaleDto>> GetAllDailySaleByDaysAsync(DateRangeOption range);
 
-    Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date);
-    Task<List<DailySaleDto>> GetAllDailySalesUnpaidAsync(DateTime date);
-
+    Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date, BranchOption branch);
+    Task<List<DailySaleDto>> GetAllDailySalesUnpaidAsync(DateTime date, BranchOption branch);
+    Task<List<DailySaleDto>> GetAllCollectionAsync(DateTime date, BranchOption branch);
     Task<decimal> GetAllDailyInvoiceAsync(DateTime date);
     Task<decimal> GetAllDailyNonVoiceAsync(DateTime date);
 
