@@ -1,4 +1,6 @@
-﻿namespace GenstarXKulayInventorySystem.Server.Model;
+﻿using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+
+namespace GenstarXKulayInventorySystem.Server.Model;
 
 public class DailySaleReport:BaseEntity
 {
@@ -27,5 +29,5 @@ public class DailySaleReport:BaseEntity
     public decimal TotalCashOnHand { get; set; }
     public string Notes { get; set; } = string.Empty;
     public string PreparedBy { get; set; } = string.Empty;
-
+    public BranchOption Branch { get; set; }
 }
