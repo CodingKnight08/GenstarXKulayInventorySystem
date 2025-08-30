@@ -1,6 +1,7 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
@@ -13,10 +14,10 @@ public class DailySaleReportController : ControllerBase
         _dailySaleReportService = dailySaleReportService;
     }
 
-    [HttpGet("all")]
-    public async Task<ActionResult<List<DailySaleReportDto>>> GetAllReports()
+    [HttpGet("all/{branch}")]
+    public async Task<ActionResult<List<DailySaleReportDto>>> GetAllReports(BranchOption branch)
     {
-        var reports = await _dailySaleReportService.GetAllDailyReportAsync();
+        var reports = await _dailySaleReportService.GetAllDailyReportAsync(branch);
         return Ok(reports);
     }
 

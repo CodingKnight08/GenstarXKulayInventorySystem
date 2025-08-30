@@ -1,6 +1,7 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
@@ -45,21 +46,30 @@ public class SalesController : ControllerBase
         return Ok(sales);
     }
 
-    [HttpGet("all/paid/{date}")]
-    public async Task<ActionResult<List<DailySaleDto>>> GetAllPaidSalesByDate(DateTime date)
+    [HttpGet("all/paid/{date}/{branch}")]
+    public async Task<ActionResult<List<DailySaleDto>>> GetAllPaidSalesByDate(DateTime date,BranchOption branch)
     {
-        var sales = await _saleService.GetAllDailySalesPaidAsync(date);
+        var sales = await _saleService.GetAllDailySalesPaidAsync(date,branch);
         if (sales == null || sales.Count == 0)
             return NotFound($"No paid sales found for {date:yyyy-MM-dd}.");
         return Ok(sales);
     }
 
-    [HttpGet("all/unpaid/{date}")]
-    public async Task<ActionResult<List<DailySaleDto>>> GetAllUnpaidSalesByDate(DateTime date)
+    [HttpGet("all/unpaid/{date}/{branch}")]
+    public async Task<ActionResult<List<DailySaleDto>>> GetAllUnpaidSalesByDate(DateTime date, BranchOption branch)
     {
-        var sales = await _saleService.GetAllDailySalesUnpaidAsync(date);
+        var sales = await _saleService.GetAllDailySalesUnpaidAsync(date,branch);
         if (sales == null || sales.Count == 0)
             return NotFound($"No unpaid sales found for {date:yyyy-MM-dd}.");
+        return Ok(sales);
+    }
+
+    [HttpGet("all/collection/{date}/{branch}")]
+    public async Task<ActionResult<List<DailySaleDto>>> GetAllCollectionSalesByDate(DateTime date, BranchOption branch)
+    {
+        var sales = await _saleService.GetAllCollectionAsync(date,branch);
+        if (sales == null || sales.Count == 0)
+            return NotFound($"No collection sales found for {date:yyyy-MM-dd}.");
         return Ok(sales);
     }
 

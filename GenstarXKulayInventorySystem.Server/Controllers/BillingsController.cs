@@ -1,6 +1,7 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
@@ -19,6 +20,14 @@ public class BillingsController : ControllerBase
         var billings = await _billingService.GetAllBillingAsync();
         return Ok(billings);
     }
+
+    [HttpGet("all/expenses/{date}/{branch}")]
+    public async Task<ActionResult<List<BillingDto>>> GetAllDailyExpenses(DateTime date, BillingBranch branch)
+    {
+        var billings = await _billingService.GetAllExpensesBillingPerDay(date, branch);
+        return Ok(billings);
+    }
+
     [HttpGet("operational/{id:int}")]
     public async Task<ActionResult<BillingDto>> GetBillingById(int id)
     {
