@@ -12,13 +12,14 @@
                     <MudTextField Placeholder="Enter Client Name" Label="Client Name" @bind-Value="Sale.NameOfClient" ReadOnly=true />
                 </MudItem>
                 <MudItem xl="2">
-                    <MudSelect T="PaymentMethod?" @bind-Value="Sale.PaymentType" Label="Payment Method">
+                    <MudSelect T="PaymentMethod?" @bind-Value="Sale.PaymentType" Label="Payment Method" Placeholder="Please Select Payment Method">
                         @foreach (var method in Enum.GetValues(typeof(PaymentMethod)).Cast<PaymentMethod>())
                         {
-                            <MudSelectItem T="PaymentMethod" Value="@method">
+                            <MudSelectItem T="PaymentMethod?" Value="@method">
                                 @method.ToString()
                             </MudSelectItem>
                         }
+                         <MudSelectItem T="PaymentMethod?" Value="null">N/A</MudSelectItem>
                     </MudSelect>
                 </MudItem>
                 <MudItem xl="2">

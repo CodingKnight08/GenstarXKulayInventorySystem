@@ -17,6 +17,7 @@ public partial class EditDailySale
     protected override async Task OnInitializedAsync()
     {
         await LoadSaleItems();
+        
     }
 
     protected async Task LoadSaleItems()

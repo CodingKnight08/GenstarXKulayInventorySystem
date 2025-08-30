@@ -92,8 +92,9 @@ public partial class CreateDailySale
                 {
                     Sale.PaymentTermsOption = PaymentTermsOption.Today;
                 }
-                
-            
+          
+
+
 
                 var response = await HttpClient.PostAsJsonAsync("api/sales", Sale);
             response.EnsureSuccessStatusCode();
@@ -103,8 +104,10 @@ public partial class CreateDailySale
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to create sale with error, {ex.Message}";
+            Snackbar.Add("Sale already exists (reciept no.) or an error occurred while creating the sale.", Severity.Error);
+            ErrorMessage = $"Failed to create sale with error, {ex.Message}";   
             Logger.LogError(ex, "Error occurred creating sale");
+            NavigationManager.NavigateTo("/sales");
         }
 
       
