@@ -88,6 +88,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
     dbContext.Database.Migrate();
+    await dbContext.SeedUser();
 }
 
 // Middleware pipeline  
