@@ -1,5 +1,6 @@
 ﻿using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Identity;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Model;
 
@@ -12,6 +13,7 @@ public class User: IdentityUser
     public string? UpdatedBy { get; set; }
     public DateTime? DeletedAt { get; set; }
     public UserRole Role { get; set; } = UserRole.User;
+    public BranchOption  Branch { get;set; }
 }
 
 
