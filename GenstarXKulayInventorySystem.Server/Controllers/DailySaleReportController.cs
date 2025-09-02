@@ -58,4 +58,27 @@ public class DailySaleReportController : ControllerBase
             return NotFound("Report not found.");
         return Ok();
     }
+
+
+
+    //Summary Report routes
+
+    [HttpGet("all/invoice/{date}/{branch}")]
+    public async Task<ActionResult<List<DailySaleDto>>> GetAllInvoiceSummary(DateTime date, BranchOption branch)
+    {
+        var invoiceSales = await _dailySaleReportService.GetAllDailySaleInvoice(date, branch);
+        if (invoiceSales == null || invoiceSales.Count == 0)
+            return NotFound($"No invoice sales found for {date:yyyy-MM-dd}.");
+        return Ok(invoiceSales);
+    }
+
+    [HttpGet("all/noninvoice/{date}/{branch}")]
+    public async Task<ActionResult<decimal>> GetAllNonInvoiceSummary(DateTime date, BranchOption branch)
+    {
+        var nonInvoiceSale = await _dailySaleReportService.GetAllDailySaleNonInvoice(date, branch);
+        if (nonInvoiceSale == null || nonInvoiceSale.Count == 0)
+            return NotFound($"No non-invoice sales found for {date:yyyy-MM-dd}.");
+        return Ok(nonInvoiceSale);
+    }
+
 }
