@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -55,6 +56,7 @@ public class DailySaleReportService : IDailySaleReportService
 
     }
 
+   
 
     public async Task<bool> AddReportAsync(DailySaleReportDto reportDto)
     {
@@ -127,6 +129,51 @@ public class DailySaleReportService : IDailySaleReportService
             return false;
         }
     }
+
+    public async Task<List<DailySaleDto>> GetAllDailySaleInvoice(DateTime date, BranchOption branch)
+    {
+        var start = date.Date;
+        var end = start.AddDays(1);
+
+        var paidDailySales = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(ds => !ds.IsDeleted
+                      && ds.Branch == branch
+                      && ds.SalesOption == PurchaseRecieptOption.BIR
+                      && ds.UpdatedAt == null
+                      && ds.PaymentType != null
+                      && ds.DateOfSales >= start
+                      && ds.DateOfSales < end)
+            .ToListAsync();
+
+        if (paidDailySales.Count == 0)
+            return new List<DailySaleDto>();
+
+        return _mapper.Map<List<DailySaleDto>>(paidDailySales);
+    }
+    public async Task<List<DailySaleDto>> GetAllDailySaleNonInvoice(DateTime date, BranchOption branch)
+    {
+        var start = date.Date;
+        var end = start.AddDays(1);
+
+        var paidDailySales = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(ds => !ds.IsDeleted
+                      && ds.Branch == branch
+                      && ds.SalesOption == PurchaseRecieptOption.NonBIR
+                      && ds.UpdatedAt == null
+                      && ds.PaymentType != null
+                      && ds.DateOfSales >= start
+                      && ds.DateOfSales < end)
+            .ToListAsync();
+
+        if (paidDailySales.Count == 0)
+            return new List<DailySaleDto>();
+
+        return _mapper.Map<List<DailySaleDto>>(paidDailySales);
+    }
 }
 
 public interface IDailySaleReportService
@@ -136,4 +183,8 @@ public interface IDailySaleReportService
     Task<bool> AddReportAsync(DailySaleReportDto reportDto);
     Task<bool> UpdateReportAsync(DailySaleReportDto reportDto);
     Task<bool> DeleteReportAsync(int id);
+
+
+    Task<List<DailySaleDto>> GetAllDailySaleInvoice(DateTime date, BranchOption branch);
+    Task<List<DailySaleDto>> GetAllDailySaleNonInvoice(DateTime date, BranchOption branch);
 }
