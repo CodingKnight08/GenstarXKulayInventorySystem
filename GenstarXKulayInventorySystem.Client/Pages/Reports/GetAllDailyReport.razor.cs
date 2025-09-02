@@ -49,9 +49,9 @@ public partial class GetAllDailyReport
             IsLoading = false;
         }
     }
-    private async Task OnBranchChanged(BranchOption newBranch)
+    private async Task OnBranchChanged(BranchOption branch)
     {
-        SelectedBranch = newBranch;
+        SelectedBranch = branch;
         await LoadDailySaleReports();
     }
 
@@ -69,5 +69,10 @@ public partial class GetAllDailyReport
                StateHasChanged();
            }
         }
+    }
+
+    protected void ViewReport(int id)
+    {
+        NavigationManager.NavigateTo($"/reports/view/{id}");
     }
 }
