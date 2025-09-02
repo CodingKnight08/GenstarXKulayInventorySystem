@@ -1,0 +1,42 @@
+﻿@if (!IsLoading)
+{
+
+    <MudCard Elevation="0" Class="w-100">
+        <MudText Typo="Typo.h6" Align="Align.Center">Invoice Summary</MudText>
+    </MudCard>
+    <MudTable Items="ChargeSales" Dense="true" Hover="true" Bordered="true" RowsPerPage="6">
+        <HeaderContent>
+            <MudTh>Sale Number</MudTh>
+            <MudTh>Reciept Number</MudTh>
+            <MudTh>Reciept Type</MudTh>
+            <MudTh>Payment Terms</MudTh>
+            <MudTh>Total Amount</MudTh>
+
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.SalesNumber</MudTd>
+            <MudTd>@context.RecieptReference</MudTd>
+            <MudTd>@context.SalesOption</MudTd>
+            <MudTd>@context.PaymentTermsOption.ToString()</MudTd>
+            <MudTd>@(context.TotalAmount?.ToString("₱0.00") ?? "₱0.00")</MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Align="Align.Center" Typo="Typo.subtitle1">No Charge Sales</MudText>
+        </NoRecordsContent>
+        <PagerContent>
+            <MudTablePager HorizontalAlignment="HorizontalAlignment.Right" />
+        </PagerContent>
+    </MudTable>
+
+    <MudCard Elevation="0" Class="w-auto d-flex flex-row justify-content-end mt-4">
+        <MudText Typo="Typo.subtitle1" Align="Align.Right">Total Charge Sales: ₱ <strong class="text-decoration-underline">@TotalAmount.ToString("F2")</strong> </MudText>
+    </MudCard>
+
+}
+else
+{
+    <MudCard Elevation="0" Class="w-100 d-flex flex-column gap-2 justify-content-center align-items-center h-25">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Medium" Class="m-5" />
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="m-2">Loading</MudText>
+    </MudCard>
+}

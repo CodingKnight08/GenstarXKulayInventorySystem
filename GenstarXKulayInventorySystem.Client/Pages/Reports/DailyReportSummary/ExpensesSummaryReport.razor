@@ -1,0 +1,44 @@
+﻿@if (!IsLoading)
+{
+
+    <MudCard Elevation="0" Class="w-100">
+        <MudText Typo="Typo.h6" Align="Align.Center">Expenses Summary</MudText>
+    </MudCard>
+    <MudTable Items="Expenses" Dense="true" Hover="true" Bordered="true" RowsPerPage="6">
+        <HeaderContent>
+            <MudTh>Billing Number</MudTh>
+            <MudTh>Billing Number</MudTh>
+            <MudTh>Category</MudTh>
+            <MudTh>Date of Billing</MudTh>
+            <MudTh>Payment Method</MudTh>
+            <MudTh>Total Amount</MudTh>
+
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.BillingNumber</MudTd>
+            <MudTd>@context.BillingName</MudTd>
+            <MudTd>@context.Category</MudTd>
+            <MudTd>@context.DateOfBilling.ToString("MMMM dd, yyyy")</MudTd>
+            <MudTd>@context.PaymentMethod</MudTd>
+            <MudTd>@context.Amount.ToString("₱0.00")</MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Align="Align.Center" Typo="Typo.subtitle1">No Expenses</MudText>
+        </NoRecordsContent>
+        <PagerContent>
+            <MudTablePager HorizontalAlignment="HorizontalAlignment.Right" />
+        </PagerContent>
+    </MudTable>
+
+    <MudCard Elevation="0" Class="w-auto d-flex flex-row justify-content-end mt-4">
+        <MudText Typo="Typo.subtitle1" Align="Align.Right">Total Expenses: ₱ <strong class="text-decoration-underline">@TotalExpenses.ToString("F2")</strong> </MudText>
+    </MudCard>
+
+}
+else
+{
+    <MudCard Elevation="0" Class="w-100 d-flex flex-column gap-2 justify-content-center align-items-center h-25">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Medium" Class="m-5" />
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="m-2">Loading</MudText>
+    </MudCard>
+}
