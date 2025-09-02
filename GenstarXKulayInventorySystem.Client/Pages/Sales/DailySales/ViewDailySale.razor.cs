@@ -18,7 +18,7 @@ public partial class ViewDailySale
     protected DailySaleDto EditableSale { get; set; } = new DailySaleDto();
     protected bool IsLoading { get; set; } = false;
     protected bool IsEdit { get; set; } = false;
-    protected bool IsSameDate => Sales.DateOfSales.Date == UtilitiesHelper.GetPhilippineTime().Date;
+    protected bool IsSameDate => Sales.DateOfSales.Date == UtilitiesHelper.GetPhilippineTime().Date || Sales.PaymentType == null;
     protected override async Task OnInitializedAsync()
     {
         await LoadSale();
@@ -64,7 +64,13 @@ public partial class ViewDailySale
                 Branch = Sales.Branch,
                 RecieptReference = Sales.RecieptReference,
                 DateOfSales = Sales.DateOfSales,
-                TotalAmount = Sales.TotalAmount
+                TotalAmount = Sales.TotalAmount,
+                PaymentTermsOption = Sales.PaymentTermsOption,
+                CreatedAt = Sales.CreatedAt,
+                CustomPaymentTermsOption = Sales.CustomPaymentTermsOption,
+                ExpectedPaymentDate = Sales.ExpectedPaymentDate,
+                SaleItems = Sales.SaleItems
+
             };
         }
         IsEdit = !IsEdit;

@@ -1,0 +1,80 @@
+﻿@page "/reports/view/{ReportId:int}"
+@using GenstarXKulayInventorySystem.Client.Pages.Reports.DailyReportSummary
+<MudMainContent Class="w-auto h-100 d-flex flex-column gap-3">
+    <MudCard Elevation="0" Class="w-100 d-flex px-4">
+        <MudBreadcrumbs Items="_items" />
+        <MudText Typo="Typo.h4" Align="Align.Center"> Daily Sale Report Information </MudText>
+        <MudCard Elevation="0" Class="w-100 d-flex flex-row align-items-center justify-content-end">
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Disabled="IsLoading" OnClick="DeleteReport" />
+        </MudCard>
+    </MudCard>
+
+    @if (IsLoading)
+    {
+        <MudCard Elevation="0" Class="w-100 d-flex flex-column align-items-center justify-content-center gap-3">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Class="m-5" />
+            <MudText Typo="Typo.h6" Align="Align.Center" Class="m-2">Loading...</MudText>
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Elevation="0" Class="w-100 p-4 h-100">
+            <MudGrid Spacing="5">
+                <MudItem xl="6">
+                    <MudText Typo="Typo.subtitle1">Branch: <strong class="text-decoration-underline">@GetBranchDisplayName(DailySaleReport.Branch)</strong> </MudText>
+                </MudItem>
+                <MudItem xl="6">
+                    <MudText Typo="Typo.subtitle1" Align="Align.Right">Date of Report: <strong class="text-decoration-underline">@DailySaleReport.Date?.ToString("MMMM dd, yyyy") </strong></MudText>
+                </MudItem>
+                <MudItem xl="3">
+                    <MudText>Cash-In: <strong class="text-decoration-underline">₱ @DailySaleReport.CashIn</strong></MudText>
+                </MudItem>
+                <MudItem xl="3">
+                    <MudText>Beginning Balance: <strong class="text-decoration-underline">₱ @DailySaleReport.BeginningBalance</strong></MudText>
+                </MudItem>
+                <MudItem xl="3">
+                    <MudText>Total Sales: <strong class="text-decoration-underline">₱ @DailySaleReport.TotalSales</strong></MudText>
+                </MudItem>
+                <MudItem xl="3">
+                    <MudText>Total Expenses: <strong class="text-decoration-underline">₱ @DailySaleReport.TotalExpenses</strong></MudText>
+                </MudItem>
+                <MudItem xl="6">
+                    <MudText Typo="Typo.subtitle1">Prepared By: <strong class="text-decoration-underline">@DailySaleReport.PreparedBy</strong></MudText>
+                </MudItem>
+                <MudItem xl="6">
+                    <MudTextField @bind-Value="DailySaleReport.Notes" Label="Notes" MaxLines="3" Placeholder="No notes" ReadOnly=true/>
+                </MudItem>   
+            </MudGrid>
+            <MudCard Elevation="0" Class="mt-4">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                    <MudTabPanel Text="Invoices">
+                        <MudCard Elevation="0" Class="w-100">
+                            <InvoiceSummaryReport Branch="DailySaleReport.Branch" ReportDate="DailySaleReport.Date.GetValueOrDefault()" />
+                        </MudCard>
+                       
+                    </MudTabPanel>
+                    <MudTabPanel Text="Non-Voice">
+                        <MudCard Elevation="0" Class="w-100">
+                            <NonVoiceSummaryReport Branch="DailySaleReport.Branch" ReportDate="DailySaleReport.Date.GetValueOrDefault()" />
+                        </MudCard>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Charge Sales">
+                        <MudCard Elevation="0" Class="w-100">
+                            <ChargeSaleSummaryReport Branch="DailySaleReport.Branch" ReportDate="DailySaleReport.Date.GetValueOrDefault()" />
+                        </MudCard>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Collection">
+                        <MudCard Elevation="0" Class="100">
+                            <CollectionSummaryReport Branch="DailySaleReport.Branch" ReportDate="DailySaleReport.Date.GetValueOrDefault()" />
+                        </MudCard>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Expenses">
+                        <MudCard Elevation="0" Class="w-100">
+                            <ExpensesSummaryReport Branch="DailySaleReport.Branch" ReportDate="DailySaleReport.Date.GetValueOrDefault()" />
+                        </MudCard>
+                    </MudTabPanel>
+                </MudTabs>
+            </MudCard>
+        </MudCard>
+    }
+</MudMainContent>

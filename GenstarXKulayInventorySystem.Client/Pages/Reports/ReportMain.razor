@@ -1,5 +1,13 @@
-﻿<h3>ReportMain</h3>
+﻿@page "/reports"
 
-@code {
+<MudMainContent Class="w-auto h-100">
 
-}
+    <MudPaper Elevation="0" Class="w-100 my-3">
+        <MudText Typo="Typo.h6" Align="Align.Center">Daily Reports</MudText>
+    </MudPaper>
+
+   <MudCard Elevation="0" Class="w-100 ">
+        <GetAllDailyReport />
+   </MudCard>
+    
+</MudMainContent>

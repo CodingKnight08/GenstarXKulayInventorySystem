@@ -1,0 +1,65 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+<MudCard Elevation="0" Class="w-100 d-flex flex-row align-items-center justify-between p-4 mb-4">
+    <MudGrid Spacing="16">
+        <MudItem xl="2">
+            <MudSelect T="BranchOption"
+                       Value="SelectedBranch"
+                       Label="Branch"
+                       Class="me-4"
+                       ValueChanged="OnBranchChanged"
+                       FullWidth=false>
+                @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
+                {
+                    <MudSelectItem T="BranchOption" Value="@branch">@branch.ToString()</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xl="10" Class="d-flex flex-row justify-content-end">
+            <MudButton StartIcon="@Icons.Material.Filled.InsertDriveFile"
+                       Variant="Variant.Filled"
+                       Size="Size.Small"
+                       OnClick="CreateReport"
+                       Color="Color.Info">
+                Add Report
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+
+</MudCard>
+    @if (IsLoading)
+    {
+        <MudCard Elevation="0" Class="w-100 h-25 d-flex flex-column justify-content-center align-items-center">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Class="m-5" />
+            <MudText Typo="Typo.h6" Align="Align.Center" Class="m-2">Loading...</MudText>
+        </MudCard>
+    }
+    else
+    {
+        
+
+        <MudTable Items="DailySaleReports" Bordered="true" Dense=true Hover=true Class="mx-2 mt-4 bg-transparent">
+        
+            <HeaderContent>
+            <MudTh>Date</MudTh>
+            <MudTh>Cash In</MudTh>
+            <MudTh>Total Cash</MudTh>
+            <MudTh>Total Expenses</MudTh>
+            <MudTh>Charge Sales</MudTh>
+            <MudTh>Action</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Date?.ToString("MMMM dd, yyyy")</MudTd>
+            <MudTd DataLabel="Cash In">₱@($"{context.CashIn:N2}")</MudTd>
+            <MudTd DataLabel="Total Cash">₱@($"{context.TotalCash:N2}")</MudTd>
+            <MudTd DataLabel="Total Expenses">₱@($"{context.TotalExpenses:N2}")</MudTd>
+            <MudTd DataLabel="Charge Sales">₱@($"{context.ChargeSales:N2}")</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small" OnClick="() =>ViewReport(context.Id)"/>
+            </MudTd>
+
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.subtitle1" Class="m-2 text-danger">No records to display.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+    }

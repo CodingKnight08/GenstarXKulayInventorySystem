@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Sales.DailySales;
@@ -29,6 +30,7 @@ public partial class CreateDailySale
     protected override async Task OnInitializedAsync()
     {
         await LoadClients();
+        Sale.PaymentTermsOption = PaymentTermsOption.SevenDays;
     }
 
     protected async Task LoadClients()
@@ -85,8 +87,16 @@ public partial class CreateDailySale
 
                 }
             }
+           
+                if(Sale.PaymentType != null)
+                {
+                    Sale.PaymentTermsOption = PaymentTermsOption.Today;
+                }
+          
 
-            var response = await HttpClient.PostAsJsonAsync("api/sales", Sale);
+
+
+                var response = await HttpClient.PostAsJsonAsync("api/sales", Sale);
             response.EnsureSuccessStatusCode();
 
             Snackbar.Add("Sale created successfully!", Severity.Success);
@@ -94,9 +104,13 @@ public partial class CreateDailySale
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to create sale with error, {ex.Message}";
+            Snackbar.Add("Sale already exists (reciept no.) or an error occurred while creating the sale.", Severity.Error);
+            ErrorMessage = $"Failed to create sale with error, {ex.Message}";   
             Logger.LogError(ex, "Error occurred creating sale");
+            NavigationManager.NavigateTo("/sales");
         }
+
+      
         finally
         {
             IsLoading = false;
@@ -146,6 +160,6 @@ public partial class CreateDailySale
         Sale.SaleItems = saleItems; // 🔗 Bind sale items to DailySaleDto
     }
 
- 
 
+    
 }

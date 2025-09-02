@@ -78,6 +78,7 @@ builder.Services.AddScoped<IBillingService, BillingService>();
 builder.Services.AddScoped<ISalesService, SalesService>();
 builder.Services.AddScoped<ISaleItemService, SaleItemService>();
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
 
 
 var app = builder.Build(); // Build must happen BEFORE using app.Services

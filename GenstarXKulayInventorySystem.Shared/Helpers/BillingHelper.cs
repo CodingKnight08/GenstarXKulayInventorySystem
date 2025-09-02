@@ -14,6 +14,7 @@ public class BillingHelper
         Cellphone,
         SchoolSupplies,
         Other,
+        Foods,
     }
 
     public enum BillingBranch

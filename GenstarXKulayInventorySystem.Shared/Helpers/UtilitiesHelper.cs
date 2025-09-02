@@ -81,6 +81,7 @@ public static class UtilitiesHelper
         DebitCard,
         BankTransfer,
         MobilePayment,
+        BankCheque,
         Other
     }
 

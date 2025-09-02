@@ -50,6 +50,8 @@ public class AutoMapperProfile: Profile
         _ = CreateMap<Client, ClientDto>()
                  .ForMember(dest => dest.DailySales, opt => opt.MapFrom(src => src.DailySales))
                  .ReverseMap();
+
+        _ = CreateMap<DailySaleReport, DailySaleReportDto>().ReverseMap();
     }
 
     private List<InvolvePaintsDto>? DeserializeInvolvePaints(string datalistJson)
