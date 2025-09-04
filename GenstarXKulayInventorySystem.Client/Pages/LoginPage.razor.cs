@@ -55,7 +55,10 @@ public partial class LoginPage
         }
     }
 
-
+    protected void Register()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
 
 
 
