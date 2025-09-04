@@ -86,10 +86,18 @@ var app = builder.Build(); // Build must happen BEFORE using app.Services
 // Apply migrations to create/update database automatically
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+    var services = scope.ServiceProvider; // 👈 this was missing
+
+    var dbContext = services.GetRequiredService<InventoryDbContext>();
     dbContext.Database.Migrate();
-    await dbContext.SeedUser();
+
+    var userManager = services.GetRequiredService<UserManager<User>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    await InventoryDbContext.SeedUserAsync(userManager, roleManager);
+
 }
+
 
 // Middleware pipeline  
 if (app.Environment.IsDevelopment())
