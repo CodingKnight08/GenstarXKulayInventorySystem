@@ -2,9 +2,29 @@
 @page "/"
 @layout LoginLayout
 
-<MudPaper Height="100vh" Width="100vw" Class="bg-secondary d-flex flex-column align-items-center justify-content-center">
-    <MudCard Elevation="25" Square=true style="min-width:20%;height:50%;background-color:white;" Class="border-2 rounded-3 d-flex flex-column align-items-center justify-content-center">
-        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-5">Inventory System</MudText>
+<MudPaper Height="100vh" Width="100vw"
+    Class="d-flex flex-column align-items-center justify-content-center"
+    Style="background-image: url('/bg-image.jpg'); background-size: cover; background-position: center;">
+
+    <MudCard Elevation="25" Square=true style="min-width:20%;height:50%;background-color:white;" Class="p-3 border-2 rounded-3 d-flex flex-column align-items-center justify-content-start">
+        <div class="w-100 h-25 d-flex flex-row mb-3">
+            <div class="w-50 h-100"
+                 style="background-image:url('/Genstar.png');
+                background-repeat:no-repeat;
+                background-position:center;
+                background-size:contain;">
+            </div>
+
+            <div class="w-50 h-100"
+                 style="background-image:url('/Kulay.jpg');
+                background-repeat:no-repeat;
+                background-position:center;
+                background-size:contain;">
+            </div>
+        </div>
+
+
+        <h4 class="fw-bold text-info">Inventory System</h4>
         <div class="d-flex flex-row align-items-center mb-3">
             <span class="material-icons me-2" style="font-size:2rem;">person</span>
             <input type="text" class="form-control flex-grow-1" placeholder="Username"  @bind-value="User.Username"/>
@@ -22,7 +42,7 @@
             <small class="text-danger mb-2">Password is required.</small>
         }
         <MudButton Style="width:70%;background-color:#0cc54c;" class="rounded-3 mb-3 p-1 text-white fw-bold" OnClick="Login">Login</MudButton>
-        <MudButton Style="width:70%;" Class="rounded-3 p-1">Sign-up</MudButton>
+        <MudButton Style="width:70%;background-color: #1973E0;" Class="rounded-3 p-1 text-white fw-bold" Variant="Variant.Filled" OnClick="Register">Sign-up</MudButton>
     </MudCard>
 </MudPaper>
 

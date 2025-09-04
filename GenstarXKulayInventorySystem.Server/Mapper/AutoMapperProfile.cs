@@ -15,10 +15,8 @@ public class AutoMapperProfile: Profile
     };
     public AutoMapperProfile()
     {
-        _ =CreateMap<User, UserDto>()
-            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
-            .ReverseMap()
-            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
+        _ =CreateMap<User, UserDto>().ReverseMap();
+    
         _ = CreateMap<BaseEntity, BaseEntityDto>()
             .ReverseMap();
 
@@ -52,6 +50,7 @@ public class AutoMapperProfile: Profile
                  .ReverseMap();
 
         _ = CreateMap<DailySaleReport, DailySaleReportDto>().ReverseMap();
+        _ = CreateMap<Registration, RegistrationDto>().ReverseMap();
     }
 
     private List<InvolvePaintsDto>? DeserializeInvolvePaints(string datalistJson)

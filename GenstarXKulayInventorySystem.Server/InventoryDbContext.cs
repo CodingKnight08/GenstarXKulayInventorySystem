@@ -1,6 +1,9 @@
 ﻿using GenstarXKulayInventorySystem.Server.Model;
+using GenstarXKulayInventorySystem.Shared.DTOS;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server;
 
@@ -183,4 +186,30 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<SaleItem> SaleItems { get; set; }
     public DbSet<Client> Clients { get; set; }
     public DbSet<DailySaleReport> DailySaleReports { get; set; }
+    public DbSet<Registration> Registrations { get; set; }
+
+    public async Task SeedUser()
+    {
+        User user = new User
+        {
+            UserName = "ITAdministrator",
+            NormalizedUserName = "ITADMINISTRATOR",
+            Email = "genstarkulay@gmail.com",
+            EmailConfirmed = true,
+            LockoutEnabled = false,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            Role = UserRole.Admin,
+            Branch = BranchOption.GeneralSantosCity
+
+        };
+
+        if(!Users.Any(u => u.UserName == user.UserName))
+        {
+            var password = new PasswordHasher<User>();
+            var hashed = password.HashPassword(user, "Administrator@2025");
+            user.PasswordHash = hashed;
+            await Users.AddAsync(user);
+            await SaveChangesAsync();
+        }
+    }
 }
