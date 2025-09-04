@@ -186,6 +186,7 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<SaleItem> SaleItems { get; set; }
     public DbSet<Client> Clients { get; set; }
     public DbSet<DailySaleReport> DailySaleReports { get; set; }
+    public DbSet<Registration> Registrations { get; set; }
 
     public async Task SeedUser()
     {
