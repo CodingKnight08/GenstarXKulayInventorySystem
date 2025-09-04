@@ -73,12 +73,9 @@ public class AuthenticationService: IAuthenticationService
     public async Task<bool> LoginAsync(LoginDto loginDto)
     {
         var result = await _signInManager.PasswordSignInAsync(loginDto.Username, loginDto.Password, false, false);
-        if (result.Succeeded)
-        {
-            return false; // Replace with token if JWT
-        }
-        return true;
+        return result.Succeeded;
     }
+
 
     public async Task<List<RegistrationDto>> GetAllRegistrationsAsync()
     {

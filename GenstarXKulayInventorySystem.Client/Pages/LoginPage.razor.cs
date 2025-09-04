@@ -18,13 +18,7 @@ public partial class LoginPage
     protected bool ShowValidation { get; set; } = false;
     protected bool IsUsernameInvalid => string.IsNullOrWhiteSpace(User.Username);
     protected bool IsPasswordInvalid => string.IsNullOrWhiteSpace(User.Password);
-    protected override async Task OnInitializedAsync()
-    {
-
-        User.Username = "admin";
-        User.Password = "admin123";
-        await Task.CompletedTask;
-    }
+   
     protected private async Task Login()
     {
         ShowValidation = true;
