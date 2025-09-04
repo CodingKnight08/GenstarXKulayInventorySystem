@@ -154,30 +154,36 @@ public class AuthenticationService: IAuthenticationService
 
     public async Task<bool> ApproveApplicant(int id)
     {
-               try
+        try
         {
-            var registrant = await _context.Registrations.FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted && !r.IsApproved);
+            var registrant = await _context.Registrations
+                .FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted && !r.IsApproved);
+
             if (registrant == null)
-            {
                 return false;
-            }
+
             var user = new User
             {
                 UserName = registrant.FullName,
                 Email = registrant.Email,
-                Role = UserRole.User,
+                Role = UserRole.User,   
                 Branch = registrant.Branch,
                 PhoneNumber = registrant.ContactNumber,
             };
+
             var result = await _userManager.CreateAsync(user, registrant.Password);
             if (!result.Succeeded)
             {
                 _logger.LogWarning("Failed to create user for registrant: {Id}", id);
                 return false;
             }
+
+            await _userManager.AddToRoleAsync(user, "User");
+
             registrant.IsApproved = true;
             registrant.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
             _context.Registrations.Update(registrant);
+
             int saveResult = await _context.SaveChangesAsync();
             return saveResult > 0;
         }
@@ -187,6 +193,7 @@ public class AuthenticationService: IAuthenticationService
             return false;
         }
     }
+
 }
 
 public interface IAuthenticationService
