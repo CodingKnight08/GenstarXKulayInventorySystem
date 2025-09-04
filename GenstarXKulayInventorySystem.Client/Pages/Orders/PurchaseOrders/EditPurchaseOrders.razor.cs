@@ -123,7 +123,7 @@ public partial class EditPurchaseOrders
 
         return Task.FromResult(matches);
     }
-    protected async Task OnSupplierChanged(string value)
+    protected void OnSupplierChanged(string value)
     {
         SupplierName = value;
 
