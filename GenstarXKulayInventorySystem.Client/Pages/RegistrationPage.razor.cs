@@ -42,20 +42,21 @@ public partial class RegistrationPage
         if (string.IsNullOrWhiteSpace(NewRegistrant.Email))
         {
             _emailError = "Email is required!";
-            return true;
+            return false;
         }
-        // Simple Regex for email format check
         if (!System.Text.RegularExpressions.Regex.IsMatch(
             NewRegistrant.Email,
             @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase))
         {
             _emailError = "Invalid email format!";
-            return true;
+            return false;
         }
 
-        return false; 
+        _emailError = string.Empty; // ✅ clear error when valid
+        return true;
     }
+
     private bool ValidateUserName()
     {
         if (string.IsNullOrWhiteSpace(NewRegistrant.FullName))
@@ -63,44 +64,43 @@ public partial class RegistrationPage
             _userNameError = "Full Name is required!";
             return false;
         }
-        else
-        {
-            _userNameError = string.Empty;
-            return true;
-        }
+
+        _userNameError = string.Empty; // ✅ clear when valid
+        return true;
     }
+
     private bool ValidatePassword()
     {
-        if(string.IsNullOrWhiteSpace(NewRegistrant.Password) || string.IsNullOrWhiteSpace(NewRegistrant.ConfirmPassword))
+        if (string.IsNullOrWhiteSpace(NewRegistrant.Password) || string.IsNullOrWhiteSpace(NewRegistrant.ConfirmPassword))
         {
             _passwordError = "Password and Confirm Password are required!";
             return false;
         }
-        else if(NewRegistrant.Password != NewRegistrant.ConfirmPassword)
+        if (NewRegistrant.Password != NewRegistrant.ConfirmPassword)
         {
             _passwordError = "Password and Confirm Password do not match!";
             return false;
         }
-        else if(NewRegistrant.Password.Length < 6 || NewRegistrant.ConfirmPassword.Length < 6)
+        if (NewRegistrant.Password.Length < 6)
         {
             _passwordError = "Password must be at least 6 characters long!";
             return false;
         }
-        else{
-            _passwordError = string.Empty;
-            return true;
-        }
+
+        _passwordError = string.Empty; // ✅ clear when valid
+        return true;
     }
+
 
     protected async Task SubmitUser()
     {
+        var isEmailValid = ValidateEmail();
+        var isPasswordValid = ValidatePassword();
+        var isUserNameValid = ValidateUserName();
 
-        ValidateEmail();
-        ValidatePassword();
-        ValidateUserName();
-        try
+        if (isEmailValid && isPasswordValid && isUserNameValid)
         {
-            if (string.IsNullOrWhiteSpace(_emailError) && string.IsNullOrWhiteSpace(_passwordError))
+            try
             {
                 var response = await HttpClient.PostAsJsonAsync("api/authentication/register", NewRegistrant);
 
@@ -115,14 +115,15 @@ public partial class RegistrationPage
                     Snackbar.Add("Registration failed. " + error, Severity.Error);
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "An error occurred during registration.");
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "An error occurred during registration.");
+            }
         }
     }
 
- 
+
+
 
 
 }
