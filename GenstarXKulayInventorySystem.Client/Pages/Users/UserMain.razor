@@ -1,0 +1,16 @@
+﻿@page "/users"
+
+<MudMainContent Class="w-auto h-100">
+    <MudTabs Elevation="0" Class="px-3 w-100 mt-3">
+        <MudTabPanel Text="System Users" Icon="@Icons.Material.Filled.Groups" IconColor="Color.Info">
+            <MudCard Class="w-100 h-75">
+                <GetAllUsers />
+            </MudCard>
+        </MudTabPanel>
+        <MudTabPanel Text="Applicants" Icon="@Icons.Material.Filled.GroupOff" IconColor="Color.Warning">
+            <MudCard Elevation="0" Class="w-100 h-75">
+                <GetAllRegistrants />
+            </MudCard>
+        </MudTabPanel>
+    </MudTabs>
+</MudMainContent>

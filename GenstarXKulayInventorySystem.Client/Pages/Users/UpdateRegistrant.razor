@@ -1,0 +1,13 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.subtitle1" Align="Align.Center">
+            Are you sure you want to approve <strong class="text-danger">@FullName </strong>?
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Filled" OnClick="Cancel" >Cancel</MudButton>
+        <MudButton Color="Color.Success" 
+        StartIcon="@Icons.Material.Filled.PersonAdd" 
+        Variant="Variant.Filled" OnClick="RegisterApplicant">Approve</MudButton>
+    </DialogActions>
+</MudDialog>

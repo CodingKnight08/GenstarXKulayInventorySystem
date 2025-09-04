@@ -1,0 +1,37 @@
+﻿@using GenstarXKulayInventorySystem.Shared.DTOS
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="6">
+            <MudItem xl="12">
+                <MudTextField @bind-Value="User.Username" ReadOnly=true Label="Username" />
+            </MudItem>
+            <MudItem xl="12">
+                <MudTextField @bind-Value="User.Email" ReadOnly=true Label="Email" />
+            </MudItem>
+            <MudItem xl="12">
+                <MudSelect T="UserRole" @bind-Value="User.Role" Label="Role">
+                    @foreach (var role in Enum.GetValues<UserRole>())
+                    {
+                        <MudSelectItem Value="role">@role</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xl="12">
+                <MudSelect T="BranchOption" @bind-Value="User.Branch" Label="Branch">
+                    @foreach (var branch in Enum.GetValues<BranchOption>())
+                    {
+                        <MudSelectItem Value="branch">@branch</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+
+        </MudGrid>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Default" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="UpdateUserAsync">Update</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,34 @@
+﻿<MudCard Elevation="0" Class="w-100 d-flex">
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="m-2">System Users</MudText>
+</MudCard>
+
+@if (IsLoading)
+{
+    <MudCard Elevation="0" Class="w-100 h-75 d-flex justify-center align-center justify-content-center">
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        <MudText Typo="Typo.subtitle1" Align="Align.Center" >Loading</MudText>
+    </MudCard>
+}
+else
+{
+    <MudTable Items="Users" Hover=true Bordered=true Dense=true>
+        <HeaderContent>
+            <MudTh>Username</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Role</MudTh>
+            <MudTh>Branch</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Username</MudTd>
+            <MudTd>@context.Email</MudTd>
+            <MudTd>@context.Role</MudTd>
+            <MudTd>@context.Branch</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Success" Size="Size.Small" OnClick="() => UpdateAsync(context)" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" />
+
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}

@@ -1,0 +1,134 @@
+﻿@layout LoginLayout
+@page "/register"
+@using System.ComponentModel.DataAnnotations
+
+
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<MudPaper Height="100vh" Width="100vw"
+          Class="d-flex flex-column align-items-center justify-content-center"
+          Style="background-image: url('/bg-image.jpg'); background-size: cover; background-position: center;">
+    <div class="card shadow-lg p-4 rounded-4" style="width: 400px;">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold text-primary">Create Account</h3>
+            <p class="text-muted">Please fill in the details below</p>
+        </div>
+        <MudForm @ref="_form" Model="NewRegistrant">
+
+            <!-- Username -->
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label fw-semibold">Username</label>
+                <span style="border-radius:5px; border:1px solid #E1E2E3;" class="py-2">
+                    <MudTextField T="string"
+                                  Variant="Variant.Text"
+                                  @bind-Value="NewRegistrant.FullName"
+                                  Placeholder="Enter Username"
+                                  Class="px-3 py-1"
+                                  />
+                </span>
+                @if(string.IsNullOrWhiteSpace(_userNameError))
+                {
+                    <small class="text-danger mt-1">Username is required.</small>
+                }
+            </div>
+
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label fw-semibold">Branch</label>
+               <select class="form-select" @bind="NewRegistrant.Branch">
+                    @foreach (var branch in Enum.GetValues<BranchOption>())
+                    {
+                        <option value="@branch">@branch</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label fw-semibold">Email</label>
+                <span style="border-radius:5px; border:1px solid #E1E2E3;" class="py-2">
+                    <MudTextField Variant="Variant.Text"
+                                  @bind-Value="NewRegistrant.Email"
+                                  Placeholder="Enter Email"
+                                  Class="px-3 py-1"
+                                   />
+                </span>
+                @if (!string.IsNullOrWhiteSpace(_emailError))
+                {
+                    <small class="text-danger mt-1">@_emailError</small>
+                }
+            </div>
+
+            <!-- Contact Number -->
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label fw-semibold">Contact Number</label>
+                <span style="border-radius:5px; border:1px solid #E1E2E3;" class="py-2">
+                    <MudTextField Variant="Variant.Text"
+                                  @bind-Value="NewRegistrant.ContactNumber"
+                                  Mask="@(new PatternMask("0000 000 0000"))"
+                                  Class="px-3 py-1"
+                             />
+                </span>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label fw-semibold">Password</label>
+                <span style="border-radius:5px; border:1px solid #E1E2E3;" class="py-2">
+                    <MudTextField T="string"
+                                  Class="px-3 py-1"
+                                  Variant="Variant.Text"
+                                  @bind-Value="NewRegistrant.Password"
+                                  InputType="@passwordInputType"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@passwordIcon"
+                                  AdornmentColor="Color.Info"
+                                  OnAdornmentClick="TogglePassword"
+                                  
+                                    />
+                </span>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="mb-3 d-flex flex-column">
+                <label class="form-label fw-semibold">Confirm Password</label>
+                <span style="border-radius:5px; border:1px solid #E1E2E3;" class="py-2">
+                    <MudTextField T="string"
+                                  Class="px-3 py-1"
+                                  Variant="Variant.Text"
+                                  @bind-Value="NewRegistrant.ConfirmPassword"
+                                  InputType="@confirmInputType"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@confirmPasswordIcon"
+                                  AdornmentColor="Color.Info"
+                                  OnAdornmentClick="ToggleConfirmPassword"
+                                   />
+                </span>
+                @if (!string.IsNullOrWhiteSpace(_passwordError))
+                {
+                    <small class="text-danger mt-1">@_passwordError</small>
+                }
+            </div>
+
+            <!-- Submit -->
+            <MudButton Class="fw-bold bg-primary text-white"
+                       FullWidth="true"
+                       Variant="Variant.Filled"
+                       OnClick="SubmitUser"
+                       Disabled="!IsValid" 
+                       Size="Size.Medium">
+                REGISTER
+            </MudButton>
+
+        </MudForm>
+
+
+
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                Already have an account? <a href="/" class="text-decoration-none">Login</a>
+            </small>
+        </div>
+    </div>
+</MudPaper>
+
