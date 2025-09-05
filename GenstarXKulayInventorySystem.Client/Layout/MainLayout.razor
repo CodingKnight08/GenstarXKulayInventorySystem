@@ -1,4 +1,7 @@
 ﻿@using MudBlazor
+@using System.IdentityModel.Tokens.Jwt;
+@using Blazored.LocalStorage;
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @inherits LayoutComponentBase
 <MudThemeProvider Theme="@MyCustomTheme"/>
 <MudPopoverProvider />
@@ -15,7 +18,7 @@
         Inventory System
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen">
-        <NavMenu />
+        <NavMenu Branch="userBranch.GetValueOrDefault()" />
     </MudDrawer>
     <div class="w-100 vh-100">
         @Body
@@ -27,6 +30,32 @@
 @code {
     bool _drawerOpen = true;
 
+    private BranchOption? userBranch;
+    [Inject] UserState UserState { get; set; } = default!;
+    [Inject] ILocalStorageService LocalStorage { get; set; } = default!;
+    [Inject] NavigationManager NavigationManager { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+
+            var branchClaim = jwt.Claims.FirstOrDefault(c => c.Type == "Branch")?.Value;
+            if (Enum.TryParse<BranchOption>(branchClaim, out var branch))
+            {
+                userBranch = branch;
+                UserState.SetBranch(branch);
+            }
+
+            // Optional: redirect if logged in
+            if (NavigationManager.Uri.EndsWith("/"))
+                NavigationManager.NavigateTo("/dashboard", forceLoad: true);
+        }
+    }
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
