@@ -9,7 +9,6 @@ public class SalesHostedService : IHostedService, IDisposable
     private readonly ILogger<SalesHostedService> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
     private Timer? _timer = null;
-    private int _executionCount = 0;
     private bool _isProcessing = false;
 
     public SalesHostedService(ILogger<SalesHostedService> logger, IServiceScopeFactory scopeFactory)

@@ -1,5 +1,6 @@
 using Blazored.LocalStorage;
 using GenstarXKulayInventorySystem.Client;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
@@ -37,5 +38,8 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.ShowCloseIcon = true;
 });
 builder.Services.AddScoped<UserState>();
+builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
+builder.Services.AddAuthorizationCore();
+
 
 await builder.Build().RunAsync();

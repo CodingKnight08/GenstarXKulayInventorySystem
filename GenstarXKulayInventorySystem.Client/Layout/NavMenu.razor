@@ -1,5 +1,8 @@
 ﻿@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Authorization
 @using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 <MudNavMenu>
     <div class="w-100 h-50 mb-4"
@@ -25,7 +28,10 @@
     </MudNavGroup>
 
     <MudNavGroup Icon="@Icons.Material.Filled.Settings" IconColor="@Color.Info" Title="Settings" >
-        <MudNavLink Href="/users" Match="NavLinkMatch.Prefix">Users</MudNavLink>
+        <AuthorizeView Roles="Admin">
+            <MudNavLink Href="/users" Match="NavLinkMatch.Prefix">Users</MudNavLink>
+        </AuthorizeView>
+
         <MudNavLink Href="/security" Match="NavLinkMatch.Prefix">Security</MudNavLink>
     </MudNavGroup>
     
