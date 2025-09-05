@@ -1,8 +1,11 @@
-﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+﻿using Blazored.LocalStorage;
+using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using System.Text.Json;
 using static System.Net.WebRequestMethods;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace GenstarXKulayInventorySystem.Client.Pages;
 
@@ -11,6 +14,7 @@ public partial class LoginPage
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected HttpClient Http { get; set; } = default!;
     [Inject] protected ILogger<LoginPage> Logger { get; set; } = default!;
+    [Inject] protected ILocalStorageService LocalStorage { get; set; } = default!;
 
 
     protected LoginDto User { get; set; } = new LoginDto();
@@ -18,7 +22,25 @@ public partial class LoginPage
     protected bool ShowValidation { get; set; } = false;
     protected bool IsUsernameInvalid => string.IsNullOrWhiteSpace(User.Username);
     protected bool IsPasswordInvalid => string.IsNullOrWhiteSpace(User.Password);
-   
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            if (JwtIsValid(token))
+            {
+                NavigationManager.NavigateTo("/dashboard", forceLoad: true);
+            }
+            else
+            {
+                await LocalStorage.RemoveItemAsync("authToken"); 
+            }
+        }
+    }
+
+
     protected private async Task Login()
     {
         ShowValidation = true;
@@ -34,8 +56,17 @@ public partial class LoginPage
 
             if (response.IsSuccessStatusCode)
             {
-                // Success: Redirect
-                NavigationManager.NavigateTo("/dashboard");
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<LoginResponseDto>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (!string.IsNullOrEmpty(result?.Token))
+                {
+                    await LocalStorage.SetItemAsync("authToken", result.Token);
+                    NavigationManager.NavigateTo("/dashboard", forceLoad: true);
+                }
             }
             else
             {
@@ -54,7 +85,21 @@ public partial class LoginPage
         NavigationManager.NavigateTo("/register");
     }
 
+    private bool JwtIsValid(string token)
+    {
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
 
+            // JWT expiration is in UTC
+            return jwt.ValidTo > DateTime.UtcNow;
+        }
+        catch
+        {
+            return false; // token was invalid or corrupt
+        }
+    }
 
 }
 

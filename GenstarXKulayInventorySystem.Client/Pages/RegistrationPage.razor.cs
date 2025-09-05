@@ -1,4 +1,5 @@
-﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+﻿using Blazored.LocalStorage;
+using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
@@ -11,6 +12,7 @@ public partial class RegistrationPage
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected ILogger<RegistrationPage> Logger { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private ILocalStorageService LocalStorageService { get; set; } = default!;
     protected RegistrationDto NewRegistrant { get; set; } = new RegistrationDto();
     private bool showPassword;
     private bool showConfirm;
@@ -35,7 +37,16 @@ public partial class RegistrationPage
     !string.IsNullOrWhiteSpace(NewRegistrant.Password) &&
     !string.IsNullOrWhiteSpace(NewRegistrant.ConfirmPassword);
 
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await LocalStorageService.GetItemAsync<string>("authToken");
 
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            // user already logged in -> redirect
+            NavigationManager.NavigateTo("/dashboard", forceLoad: true);
+        }
+    }
 
     private bool ValidateEmail()
     {
