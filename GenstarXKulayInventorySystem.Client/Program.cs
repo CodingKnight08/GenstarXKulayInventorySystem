@@ -1,17 +1,34 @@
+using Blazored.LocalStorage;
 using GenstarXKulayInventorySystem.Client;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
+using System.Net.Http.Json;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient
+
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddTransient<AuthorizationMessageHandler>();
+
+var settingsFile = builder.HostEnvironment.IsDevelopment()
+    ? "appsettings.Development.json"
+    : "appsettings.json";
+
+using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
+var config = await http.GetFromJsonAsync<Dictionary<string, string>>(settingsFile);
+
+var apiBaseUrl = config?["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress;
+
+builder.Services.AddHttpClient("ServerAPI", client =>
 {
-    BaseAddress = new Uri("https://localhost:7153")
-});
+    client.BaseAddress = new Uri(apiBaseUrl);
+}).AddHttpMessageHandler<AuthorizationMessageHandler>();
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ServerAPI"));
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
@@ -20,5 +37,9 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.VisibleStateDuration = 3000;
     config.SnackbarConfiguration.ShowCloseIcon = true;
 });
+builder.Services.AddScoped<UserState>();
+builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
+builder.Services.AddAuthorizationCore();
+
 
 await builder.Build().RunAsync();

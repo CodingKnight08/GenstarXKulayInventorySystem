@@ -1,9 +1,17 @@
-﻿@using MudBlazor
+﻿@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 <MudNavMenu>
-    <MudCard Class="h-75 bg-success">
-
-    </MudCard>
-    <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+    <div class="w-100 h-50 mb-4"
+         style="background-image:url(@Url);
+                background-repeat:no-repeat;
+                background-position:center;
+                background-size:contain;">
+     </div>
+    <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" >Dashboard</MudNavLink>
     <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Products</MudNavLink>
     <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
     <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
@@ -20,11 +28,48 @@
     </MudNavGroup>
 
     <MudNavGroup Icon="@Icons.Material.Filled.Settings" IconColor="@Color.Info" Title="Settings" >
-        <MudNavLink Href="/users" Match="NavLinkMatch.Prefix">Users</MudNavLink>
+        <AuthorizeView Roles="Admin">
+            <MudNavLink Href="/users" Match="NavLinkMatch.Prefix">Users</MudNavLink>
+        </AuthorizeView>
+
         <MudNavLink Href="/security" Match="NavLinkMatch.Prefix">Security</MudNavLink>
     </MudNavGroup>
     
+    <MudCard Elevation="0" Class="d-flex align-items-center justify-content-center mt-5">
+        <MudButton 
+        Size="Size.Small" 
+        StartIcon="@Icons.Material.Filled.Logout" 
+        Variant="Variant.Filled" 
+        Color="Color.Tertiary" OnClick="Logout">Logout</MudButton>
+    </MudCard>
+   
 </MudNavMenu>
+
+@code{
+    [Parameter] public BranchOption Branch { get; set; }
+    [Inject] ILocalStorageService LocalStorage { get; set; } = default!;
+    [Inject] NavigationManager Navigation { get; set; } = default!;
+    private string Url { get; set; } = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        Url = Branch switch
+        {
+            BranchOption.GeneralSantosCity => "Genstar.png",
+            BranchOption.Polomolok => "Kulay.jpg",
+            BranchOption.Warehouse => "Warehouse.jpg",
+            _ => "images/default.jpg" // fallback if no match
+        };
+    }
+
+
+    protected async Task Logout()
+    {
+        await LocalStorage.RemoveItemAsync("authToken");
+        await LocalStorage.ClearAsync();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}
 
 
 

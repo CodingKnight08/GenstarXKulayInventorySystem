@@ -10,10 +10,19 @@ namespace GenstarXKulayInventorySystem.Server.Controllers;
 public class AuthenticationController : ControllerBase
 {
     private readonly IAuthenticationService _authService;
+    private readonly UserManager<User> _userManager;
+    private readonly SignInManager<User> _signInManager;
+    private readonly JwtService _jwtService;
 
-    public AuthenticationController(IAuthenticationService authService)
+
+    public AuthenticationController(IAuthenticationService authService, UserManager<User> userManager,
+        SignInManager<User> signInManager,
+        JwtService jwtService)
     {
         _authService = authService;
+        _userManager = userManager;
+        _jwtService = jwtService;
+        _signInManager = signInManager;
     }
 
     [HttpGet("all/applicants")]
@@ -69,10 +78,19 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto loginDto)
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto, [FromServices] JwtService jwtService)
     {
-        var token = await _authService.LoginAsync(loginDto);
-        return token ? Ok(token) : Unauthorized("Invalid credentials.");
+        var user = await _userManager.FindByNameAsync(loginDto.Username);
+        if (user == null) return Unauthorized("Invalid username or password.");
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+        if (!result.Succeeded) return Unauthorized("Invalid username or password.");
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var token = jwtService.GenerateToken(user, roles);
+
+        return Ok(new { Token = token });
     }
+
 
 }

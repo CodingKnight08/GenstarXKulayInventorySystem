@@ -188,28 +188,41 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<DailySaleReport> DailySaleReports { get; set; }
     public DbSet<Registration> Registrations { get; set; }
 
-    public async Task SeedUser()
+    public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {
-        User user = new User
+        // 1. Ensure roles exist
+        string[] roleNames = { "Admin", "Secratary", "User" };
+        foreach (var roleName in roleNames)
         {
-            UserName = "ITAdministrator",
-            NormalizedUserName = "ITADMINISTRATOR",
-            Email = "genstarkulay@gmail.com",
-            EmailConfirmed = true,
-            LockoutEnabled = false,
-            SecurityStamp = Guid.NewGuid().ToString(),
-            Role = UserRole.Admin,
-            Branch = BranchOption.GeneralSantosCity
+            if (!await roleManager.RoleExistsAsync(roleName))
+            {
+                await roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+        }
 
-        };
-
-        if(!Users.Any(u => u.UserName == user.UserName))
+        // 2. Check if Admin user exists
+        var user = await userManager.FindByNameAsync("ITAdministrator");
+        if (user == null)
         {
-            var password = new PasswordHasher<User>();
-            var hashed = password.HashPassword(user, "Administrator@2025");
-            user.PasswordHash = hashed;
-            await Users.AddAsync(user);
-            await SaveChangesAsync();
+            user = new User
+            {
+                UserName = "ITAdministrator",
+                Email = "genstarkulay@gmail.com",
+                EmailConfirmed = true,
+                Role = UserRole.Admin,   
+                NormalizedUserName="ITADMINISTRATOR",
+                Branch = BranchOption.GeneralSantosCity
+            };
+
+            // Create user with password
+            var result = await userManager.CreateAsync(user, "Administrator@2025");
+
+            if (result.Succeeded)
+            {
+                // 3. Assign role in AspNetUserRoles
+                await userManager.AddToRoleAsync(user, "Admin");
+            }
         }
     }
+
 }

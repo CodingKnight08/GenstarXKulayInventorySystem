@@ -5,6 +5,9 @@ using GenstarXKulayInventorySystem.Server.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,13 +18,40 @@ builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>
-        policy.WithOrigins("https://localhost:7035")
+       policy.WithOrigins(
+            "https://localhost:7035", // Dev client
+            "https://genstarkulay-001-site1.qtempurl.com", // Temp hosting URL
+            "https://yourdomain.com" // Final production domain
+        )
               .AllowAnyMethod()
               .AllowAnyHeader());
 });
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<InventoryDbContext>()
     .AddDefaultTokenProviders();
+
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
+    };
+});
+
+builder.Services.AddAuthorization();
 
 // Swagger/OpenAPI configuration  
 builder.Services.AddEndpointsApiExplorer();
@@ -79,6 +109,8 @@ builder.Services.AddScoped<ISalesService, SalesService>();
 builder.Services.AddScoped<ISaleItemService, SaleItemService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
+builder.Services.AddScoped<JwtService>();
+    
 
 
 var app = builder.Build(); // Build must happen BEFORE using app.Services
@@ -86,10 +118,18 @@ var app = builder.Build(); // Build must happen BEFORE using app.Services
 // Apply migrations to create/update database automatically
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+    var services = scope.ServiceProvider; // 👈 this was missing
+
+    var dbContext = services.GetRequiredService<InventoryDbContext>();
     dbContext.Database.Migrate();
-    await dbContext.SeedUser();
+
+    var userManager = services.GetRequiredService<UserManager<User>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    await InventoryDbContext.SeedUserAsync(userManager, roleManager);
+
 }
+
 
 // Middleware pipeline  
 if (app.Environment.IsDevelopment())
