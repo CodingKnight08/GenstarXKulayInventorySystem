@@ -29,7 +29,7 @@ jobs:
         username: genstarkulay-001
         password: genstarxkulay@2025
         local-dir: ./publish/
-        server-dir: /
+        server-dir: /inventory/
 
     - name: Verify site is live
       run: |
