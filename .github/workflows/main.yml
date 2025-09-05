@@ -18,7 +18,7 @@ jobs:
         dotnet-version: '8.0.x' # or 6.0 depending on your project
 
     - name: Publish app
-      run: dotnet publish -c Release -o ./publish
+      run: dotnet publish ./GenstarXKulayInventorySystem.Server/GenstarXKulayInventorySystem.Server.csproj -c Release -o ./publish
 
     - name: FTP Deploy
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -27,4 +27,11 @@ jobs:
         username: genstarkulay-001
         password: genstarxkulay@2025
         local-dir: ./publish/
-        server-dir: /inventory/
+        server-dir: /
+
+    - name: Verify site is live
+      run: |
+        sleep 20
+        curl -I http://genstarkulay-001-site1.qtempurl.com/
+        
+    
