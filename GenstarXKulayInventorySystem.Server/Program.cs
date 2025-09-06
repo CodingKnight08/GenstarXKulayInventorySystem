@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowClient", policy =>
        policy.WithOrigins(
             "https://localhost:7035", // Dev client
-            "https://genstarkulay-001-site1.qtempurl.com", // Temp hosting URL
+            "http://codeknight-001-site1.ktempurl.com/", // Temp hosting URL
             "https://yourdomain.com" // Final production domain
         )
               .AllowAnyMethod()
