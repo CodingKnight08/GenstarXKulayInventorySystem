@@ -57,7 +57,7 @@ public class AuthenticationService: IAuthenticationService
             }
 
             var registrant = _mapper.Map<Registration>(registration);
-            registrant.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            registrant.CreatedAt = DateTime.UtcNow;
             await _context.Registrations.AddAsync(registrant);
             int result = await _context.SaveChangesAsync();
             return result > 0;
@@ -117,7 +117,7 @@ public class AuthenticationService: IAuthenticationService
             existingRegistrant.Password = registrationDto.Password;
             existingRegistrant.ConfirmPassword = registrationDto.ConfirmPassword;
             existingRegistrant.IsApproved = registrationDto.IsApproved;
-            existingRegistrant.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            existingRegistrant.UpdatedAt = DateTime.UtcNow;
             _context.Registrations.Update(existingRegistrant);
             int result = await _context.SaveChangesAsync();
             return result > 0;
@@ -181,7 +181,7 @@ public class AuthenticationService: IAuthenticationService
             await _userManager.AddToRoleAsync(user, "User");
 
             registrant.IsApproved = true;
-            registrant.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            registrant.UpdatedAt = DateTime.UtcNow;
             _context.Registrations.Update(registrant);
 
             int saveResult = await _context.SaveChangesAsync();
