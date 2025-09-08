@@ -68,8 +68,8 @@ public class DailySaleReportService : IDailySaleReportService
                 return false; 
             }
             var report = _mapper.Map<DailySaleReport>(reportDto);
-            report.Date = UtilitiesHelper.GetPhilippineTime();
-            report.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            report.Date = DateTime.UtcNow;
+            report.CreatedAt = DateTime.UtcNow;
             report.CreatedBy = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
 
             _ = await _context.DailySaleReports.AddAsync(report);
@@ -95,7 +95,7 @@ public class DailySaleReportService : IDailySaleReportService
             }
             // Map updated fields from DTO to entity
             _mapper.Map(reportDto, existingReport);
-            existingReport.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            existingReport.UpdatedAt = DateTime.UtcNow;
             existingReport.UpdatedBy = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
             _context.DailySaleReports.Update(existingReport);
             int result = await _context.SaveChangesAsync();
@@ -118,7 +118,7 @@ public class DailySaleReportService : IDailySaleReportService
                 return false; // Report not found
             }
             existingReport.IsDeleted = true;
-            existingReport.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+            existingReport.DeletedAt = DateTime.UtcNow;
             _context.DailySaleReports.Update(existingReport);
             int result = await _context.SaveChangesAsync();
             return result > 0;
