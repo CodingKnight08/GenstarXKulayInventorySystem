@@ -30,7 +30,7 @@ public class ClientService: IClientService
 
     public async Task<List<ClientDto>> GetAllClientsAsync(BranchOption branch)
     {
-        List<Client> clients = await _context.Clients
+        List<GenstarXKulayInventorySystem.Server.Model.Client> clients = await _context.Clients
             .AsNoTracking()
             .AsSplitQuery()
             .Where(c => !c.IsDeleted && c.Branch == branch)
@@ -65,7 +65,7 @@ public class ClientService: IClientService
                 return null; // or existingClient.Id if you want to return the existing Id
             }
 
-            var client = _mapper.Map<Client>(clientDto);
+            var client = _mapper.Map<GenstarXKulayInventorySystem.Server.Model.Client>(clientDto);
             client.CreatedBy = GetCurrentUsername();
             client.CreatedAt = UtilitiesHelper.GetPhilippineTime();
 
