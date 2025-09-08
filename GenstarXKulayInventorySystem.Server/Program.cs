@@ -104,8 +104,26 @@ builder.Services.Configure<IdentityOptions>(options =>
 //        });
 //}, ServiceLifetime.Scoped);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                       ?? builder.Configuration["DefaultConnection"];
+var dbUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+string connectionString;
+
+if (!string.IsNullOrEmpty(dbUrl))
+{
+    // Railway provides DATABASE_URL in the format:
+    // postgresql://username:password@host:port/dbname
+    var uri = new Uri(dbUrl);
+    var userInfo = uri.UserInfo.Split(':');
+
+    connectionString =
+        $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+}
+else
+{
+    // 👇 Local fallback - this comes from appsettings.Development.json
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+
 
 builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 {
