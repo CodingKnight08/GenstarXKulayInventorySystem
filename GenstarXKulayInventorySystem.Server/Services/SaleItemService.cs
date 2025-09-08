@@ -74,7 +74,7 @@ public class SaleItemService:ISaleItemService
                 return false;
             }
             var saleItem = _mapper.Map<SaleItem>(saleItemDto);
-            saleItem.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            saleItem.CreatedAt = DateTime.UtcNow;
             saleItem.CreatedBy = GetCurrentUsername();
             _ = await _context.SaleItems.AddAsync(saleItem);
             int result = await _context.SaveChangesAsync();
@@ -97,7 +97,7 @@ public class SaleItemService:ISaleItemService
         try
         {
             var saleItems = _mapper.Map<SaleItem>(saleItem);
-            saleItem.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            saleItem.UpdatedAt = DateTime.UtcNow;
             saleItem.UpdatedBy = GetCurrentUsername();
             _ = _context.SaleItems.Update(saleItems);
             int result = await _context.SaveChangesAsync();
@@ -115,7 +115,7 @@ public class SaleItemService:ISaleItemService
         var entity = new SaleItem
         {
             Id = saleItem.Id,
-            UpdatedAt = UtilitiesHelper.GetPhilippineTime(),
+            UpdatedAt = DateTime.UtcNow,
             UpdatedBy = GetCurrentUsername(),
             IsDeducted = true
         };
@@ -139,7 +139,7 @@ public class SaleItemService:ISaleItemService
         try
         {
             existingSaleItem.IsDeleted = true;
-            existingSaleItem.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+            existingSaleItem.DeletedAt = DateTime.UtcNow;
             _ = _context.SaleItems.Update(existingSaleItem);
             int result = await _context.SaveChangesAsync();
             return result > 0;
