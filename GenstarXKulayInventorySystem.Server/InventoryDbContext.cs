@@ -134,7 +134,7 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(si => si.ProductPricingOption).HasConversion<int>();
             entity.Property(si => si.PaintCategory).HasConversion<int>();
         });
-        modelBuilder.Entity<Client>(entity =>
+        modelBuilder.Entity<GenstarXKulayInventorySystem.Server.Model.Client>(entity =>
         {
             entity.Property(c => c.ClientName).HasMaxLength(200).IsRequired();
             entity.Property(c => c.Address).HasMaxLength(500);
@@ -184,7 +184,7 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<PurchaseOrderBilling> PurchaseOrderBillings { get; set; }
     public DbSet<DailySale> DailySales { get; set; } 
     public DbSet<SaleItem> SaleItems { get; set; }
-    public DbSet<Client> Clients { get; set; }
+    public DbSet<GenstarXKulayInventorySystem.Server.Model.Client> Clients { get; set; }
     public DbSet<DailySaleReport> DailySaleReports { get; set; }
     public DbSet<Registration> Registrations { get; set; }
 
