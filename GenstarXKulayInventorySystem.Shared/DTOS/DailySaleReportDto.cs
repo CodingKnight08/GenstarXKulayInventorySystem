@@ -6,7 +6,7 @@ namespace GenstarXKulayInventorySystem.Shared.DTOS;
 public class DailySaleReportDto: BaseEntityDto
 {
     public int Id { get; set; }
-    public DateTime? Date { get; set; } = UtilitiesHelper.GetPhilippineTime();
+    public DateTime? Date { get; set; } = DateTime.UtcNow;
     public decimal? CashIn { get; set; }
     public decimal? TotalSalesToday { get; set; }
     public decimal? BeginningBalance { get; set; }
