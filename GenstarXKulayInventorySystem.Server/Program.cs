@@ -106,23 +106,9 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 var dbUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
-string connectionString;
-
-if (!string.IsNullOrEmpty(dbUrl))
-{
-    // Railway provides DATABASE_URL in the format:
-    // postgresql://username:password@host:port/dbname
-    var uri = new Uri(dbUrl);
-    var userInfo = uri.UserInfo.Split(':');
-
-    connectionString =
-        $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-}
-else
-{
-    // 👇 Local fallback - this comes from appsettings.Development.json
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-}
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                    ?? Environment.GetEnvironmentVariable("DATABASE_URL")
+                    ?? "Host=localhost;Database=GenstarInventory;Username=postgres;Password=1234";
 
 
 builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
@@ -189,6 +175,9 @@ app.UseCors("AllowClient");
 app.UseAuthentication();
 
 app.UseAuthorization();
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
+app.MapFallbackToFile("index.html");
 
 app.MapControllers();
 
