@@ -157,7 +157,7 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
                     entity.ItemDescription = dto.ItemDescription;
                     entity.IsRecieved = dto.IsRecieved;
                     entity.UpdatedBy = GetCurrentUsername();
-                    entity.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+                    entity.UpdatedAt = DateTime.UtcNow;
                     if (dto.IsRecieved && entity.ProductId.HasValue && entity.Product != null)
                     {
                         entity.Product.Quantity += dto.ItemQuantity;

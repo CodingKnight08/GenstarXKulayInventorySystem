@@ -58,7 +58,7 @@ public class SupplierService:ISupplierService
                 return false;
             var supplier = _mapper.Map<Supplier>(supplierDto);
             supplier.CreatedBy = GetCurrentUsername();
-            supplier.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            supplier.CreatedAt = DateTime.UtcNow;
             await _context.Suppliers.AddAsync(supplier);
             int result = await _context.SaveChangesAsync();
             return result > 0;
@@ -82,7 +82,7 @@ public class SupplierService:ISupplierService
 
             var supplier = _mapper.Map<Supplier>(supplierDto);
             supplier.CreatedBy = GetCurrentUsername();
-            supplier.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            supplier.CreatedAt = DateTime.UtcNow;
 
             await _context.Suppliers.AddAsync(supplier);
             int result = await _context.SaveChangesAsync();
@@ -113,7 +113,7 @@ public class SupplierService:ISupplierService
         {
             var supplier = _mapper.Map<Supplier>(supplierDto);
             supplier.UpdatedBy = GetCurrentUsername();
-            supplier.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            supplier.UpdatedAt = DateTime.UtcNow;
             _context.Suppliers.Update(supplier);
             int result = await _context.SaveChangesAsync();
             return result > 0;
@@ -136,7 +136,7 @@ public class SupplierService:ISupplierService
         {
             supplier.IsDeleted = true;
             
-            supplier.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+            supplier.DeletedAt = DateTime.UtcNow;
             _context.Suppliers.Update(supplier);
             await _context.SaveChangesAsync();
             return true;

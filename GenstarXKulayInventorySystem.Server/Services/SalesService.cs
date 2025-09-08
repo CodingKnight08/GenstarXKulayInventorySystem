@@ -38,7 +38,7 @@ public class SalesService:ISalesService
         List<DailySale> dailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(e => !e.IsDeleted && e.DateOfSales.Date == UtilitiesHelper.GetPhilippineTime().Date)
+            .Where(e => !e.IsDeleted && e.DateOfSales.Date == DateTime.UtcNow.Date)
             .OrderByDescending(e => e.DateOfSales)
             .ToListAsync();
         if(dailySales == null || dailySales.Count == 0)
@@ -75,12 +75,12 @@ public class SalesService:ISalesService
     {
         DateTime startDate = range switch
         {
-            DateRangeOption.OneWeek => UtilitiesHelper.GetPhilippineTime().AddDays(-7),
-            DateRangeOption.OneMonth => UtilitiesHelper.GetPhilippineTime().AddMonths(-1),
-            DateRangeOption.TwoMonths => UtilitiesHelper.GetPhilippineTime().AddMonths(-2),
-            DateRangeOption.ThreeMonths => UtilitiesHelper.GetPhilippineTime().AddMonths(-3),
-            DateRangeOption.OneYear => UtilitiesHelper.GetPhilippineTime().AddYears(-1),
-            _ => UtilitiesHelper.GetPhilippineTime() 
+            DateRangeOption.OneWeek => DateTime.UtcNow.AddDays(-7),
+            DateRangeOption.OneMonth => DateTime.UtcNow.AddMonths(-1),
+            DateRangeOption.TwoMonths => DateTime.UtcNow.AddMonths(-2),
+            DateRangeOption.ThreeMonths => DateTime.UtcNow.AddMonths(-3),
+            DateRangeOption.OneYear => DateTime.UtcNow.AddYears(-1),
+            _ => DateTime.UtcNow 
         };
 
         var dailySales = await _context.DailySales
@@ -208,13 +208,13 @@ public class SalesService:ISalesService
                 return false;
             }
             var sale = _mapper.Map<DailySale>(saleDto);
-            sale.DateOfSales = UtilitiesHelper.GetPhilippineTime();
-            sale.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            sale.DateOfSales = DateTime.UtcNow;
+            sale.CreatedAt = DateTime.UtcNow;
             sale.CreatedBy = GetCurrentUsername();
             sale.TotalAmount = saleDto.SaleItems.Sum(x => (x.ItemPrice) * (x.Quantity));
             sale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
-                UtilitiesHelper.GetPhilippineTime(),
+                DateTime.UtcNow,
                 saleDto.CustomPaymentTermsOption ?? 0);
             _ = await _context.DailySales.AddAsync(sale);
             _ = await _context.SaveChangesAsync();
@@ -242,7 +242,7 @@ public class SalesService:ISalesService
             // Map top-level props
             _mapper.Map(saleDto, existingSale);
 
-            existingSale.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            existingSale.UpdatedAt = DateTime.UtcNow;
             existingSale.UpdatedBy = GetCurrentUsername();
             existingSale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
@@ -269,7 +269,7 @@ public class SalesService:ISalesService
         try
         {
             existingSale.IsDeleted = true;
-            existingSale.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+            existingSale.DeletedAt = DateTime.UtcNow;
             _ = _context.DailySales.Update(existingSale);
             int result = await _context.SaveChangesAsync();
             return result > 0;

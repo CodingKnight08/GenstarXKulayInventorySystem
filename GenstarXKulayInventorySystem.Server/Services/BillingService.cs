@@ -99,10 +99,10 @@ public class BillingService:IBillingService
             var billing = _mapper.Map<Billing>(billingDto);
             if (billing.IsPaid)
             {
-                billing.DatePaid = UtilitiesHelper.GetPhilippineTime();
+                billing.DatePaid = DateTime.UtcNow;
             }
             billing.CreatedBy = GetCurrentUsername();
-            billing.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            billing.CreatedAt = DateTime.UtcNow;
             _ = await _context.Billings.AddAsync(billing);
             _ =await _context.SaveChangesAsync();
             string code = billingDto.Category switch
@@ -144,10 +144,10 @@ public class BillingService:IBillingService
             var billing = _mapper.Map<Billing>(billingDto);
             if (billingDto.IsPaid)
             {
-                billing.DatePaid = UtilitiesHelper.GetPhilippineTime();
+                billing.DatePaid = DateTime.UtcNow;
             }
             billing.UpdatedBy = GetCurrentUsername();
-            billing.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            billing.UpdatedAt = DateTime.UtcNow;
             _context.Billings.Update(billing);
             await _context.SaveChangesAsync();
             return true;
@@ -167,7 +167,7 @@ public class BillingService:IBillingService
             if (billing == null)
                 return false;
             billing.IsDeleted = true;
-            billing.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+            billing.DeletedAt = DateTime.UtcNow;
             _context.Billings.Update(billing);
             await _context.SaveChangesAsync();
             return true;
@@ -213,7 +213,7 @@ public class BillingService:IBillingService
         {
             var billing = _mapper.Map<PurchaseOrderBilling>(purchaseOrderBilling);
             billing.CreatedBy = GetCurrentUsername();
-            billing.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            billing.CreatedAt = DateTime.UtcNow;
             billing.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 billing.PaymentTermsOption,
                 billing.PurchaseOrderBillingDate,
@@ -251,7 +251,7 @@ public class BillingService:IBillingService
                 return false;
             var billing = _mapper.Map<PurchaseOrderBilling>(purchaseOrderBilling);
             billing.UpdatedBy = GetCurrentUsername();
-            billing.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            billing.UpdatedAt = DateTime.UtcNow;
             int customDay = purchaseOrderBilling.CustomPaymentTermsOption ?? 0;
             billing.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 billing.PaymentTermsOption,
@@ -277,7 +277,7 @@ public class BillingService:IBillingService
             if (purchaseOrderBilling == null)
                 return false;
             purchaseOrderBilling.IsDeleted = true;
-            purchaseOrderBilling.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+            purchaseOrderBilling.DeletedAt = DateTime.UtcNow;
             _context.PurchaseOrderBillings.Update(purchaseOrderBilling);
             await _context.SaveChangesAsync();
             return true;

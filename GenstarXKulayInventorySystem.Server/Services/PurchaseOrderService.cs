@@ -80,7 +80,7 @@ public class PurchaseOrderService:IPurchaseOrderService
                 return false;
             var purchaseOrder = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
             purchaseOrder.CreatedBy = GetCurrentUsername();
-            purchaseOrder.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            purchaseOrder.CreatedAt = DateTime.UtcNow;
             purchaseOrder.AssumeTotalAmount = purchaseOrderDto.PurchaseOrderItems.Sum(item => (item.ItemAmount ?? 0) * item.ItemQuantity);
             foreach (var item in purchaseOrder.PurchaseOrderItems)
             {
@@ -118,7 +118,7 @@ public class PurchaseOrderService:IPurchaseOrderService
         {
             // Update purchase order basic fields
             existingPurchaseOrder.UpdatedBy = GetCurrentUsername();
-            existingPurchaseOrder.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            existingPurchaseOrder.UpdatedAt = DateTime.UtcNow;
             existingPurchaseOrder.PurchaseOrderNumber = purchaseOrderDto.PurchaseOrderNumber;
             existingPurchaseOrder.PurchaseOrderDate = purchaseOrderDto.PurchaseOrderDate;
             existingPurchaseOrder.ExpectedDeliveryDate = purchaseOrderDto.ExpectedDeliveryDate;
@@ -133,7 +133,7 @@ public class PurchaseOrderService:IPurchaseOrderService
                 var billingDto = new PurchaseOrderBillingDto
                 {
                     PurchaseOrderId = existingPurchaseOrder.Id,
-                    PurchaseOrderBillingDate = UtilitiesHelper.GetPhilippineTime(),
+                    PurchaseOrderBillingDate = DateTime.UtcNow,
                     AmountToBePaid = purchaseOrderDto.PurchaseOrderItems
                                 .Where(i => i.IsRecieved)
                                 .Sum(i => (i.ItemAmount ?? 0) * i.ItemQuantity),
@@ -166,7 +166,7 @@ public class PurchaseOrderService:IPurchaseOrderService
                         .Sum(i => (i.ItemAmount ?? 0) * i.ItemQuantity);
 
                     existingBilling.UpdatedBy = GetCurrentUsername();
-                    existingBilling.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+                    existingBilling.UpdatedAt = DateTime.UtcNow;
 
                     _context.PurchaseOrderBillings.Update(existingBilling);
                     await _context.SaveChangesAsync();
@@ -195,13 +195,13 @@ public class PurchaseOrderService:IPurchaseOrderService
         {
             // Soft delete the purchase order
             purchaseOrder.IsDeleted = true;
-            purchaseOrder.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+            purchaseOrder.DeletedAt = DateTime.UtcNow;
 
             // Soft delete each associated purchase order item
             foreach (var item in purchaseOrder.PurchaseOrderItems.Where(i => !i.IsDeleted))
             {
                 item.IsDeleted = true;
-                item.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+                item.DeletedAt = DateTime.UtcNow;
             }
 
             _context.PurchaseOrders.Update(purchaseOrder);

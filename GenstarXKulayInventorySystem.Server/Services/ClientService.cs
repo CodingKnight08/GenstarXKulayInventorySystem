@@ -67,7 +67,7 @@ public class ClientService: IClientService
 
             var client = _mapper.Map<GenstarXKulayInventorySystem.Server.Model.Client>(clientDto);
             client.CreatedBy = GetCurrentUsername();
-            client.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            client.CreatedAt = DateTime.UtcNow;
 
             await _context.Clients.AddAsync(client);
             await _context.SaveChangesAsync();
@@ -90,7 +90,7 @@ public class ClientService: IClientService
                 return false;
 
             existingClient.UpdatedBy = GetCurrentUsername();
-            existingClient.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            existingClient.UpdatedAt = DateTime.UtcNow;
 
             _mapper.Map(clientDto, existingClient);
             await _context.SaveChangesAsync();
@@ -108,7 +108,7 @@ public class ClientService: IClientService
         var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == id);
         if (client == null) return false;
         client.IsDeleted = true;
-        client.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+        client.DeletedAt = DateTime.UtcNow;
         _context.Clients.Update(client);
         await _context.SaveChangesAsync();
         return true;

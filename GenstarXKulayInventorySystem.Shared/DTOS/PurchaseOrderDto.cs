@@ -11,7 +11,7 @@ public class PurchaseOrderDto:BaseEntityDto
     public PurchaseShipToOption PurchaseShipToOption { get; set; } = PurchaseShipToOption.GeneralSantosCity;
     public PurchaseRecieptOption PurchaseRecieptOption { get; set; } = PurchaseRecieptOption.NonBIR;
     public string? Remarks { get; set; }
-    public DateTime PurchaseOrderDate { get; set; } = DateTime.Now;
+    public DateTime PurchaseOrderDate { get; set; } = DateTime.UtcNow;
     public DateTime? ExpectedDeliveryDate { get; set; }
     public bool IsRecieved { get; set; } = false;
     public PurchaseRecieveOption PurchaseRecieveOption { get; set; } = PurchaseRecieveOption.Pending;
