@@ -104,12 +104,22 @@ builder.Services.Configure<IdentityOptions>(options =>
 //        });
 //}, ServiceLifetime.Scoped);
 
-var dbUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+string connectionString;
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                    ?? Environment.GetEnvironmentVariable("DATABASE_URL")
-                    ?? "Host=localhost;Database=GenstarInventory;Username=postgres;Password=1234";
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    // Convert DATABASE_URL to Npgsql format
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':');
 
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};Pooling=true;Trust Server Certificate=true;";
+}
+else
+{
+    // fallback to local
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
 
 builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 {
@@ -118,6 +128,7 @@ builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
         npgsqlOptions.EnableRetryOnFailure();
     });
 }, ServiceLifetime.Scoped);
+
 
 
 builder.Services.AddHostedService<SalesHostedService>();
