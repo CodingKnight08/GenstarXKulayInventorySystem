@@ -5,6 +5,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+using System.Security.Claims;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 
@@ -27,7 +28,11 @@ public class ProductService:IProductService
 
     private string GetCurrentUsername()
     {
-        return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
+        var user = _httpContextAccessor.HttpContext?.User;
+        if (user == null) return "Unknown";
+
+        var usernameClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
+        return usernameClaim?.Value ?? "Unknown";
     }
     //Product Methods
     public async Task<List<ProductDto>> GetAllAsync(int brandId)
@@ -69,7 +74,7 @@ public class ProductService:IProductService
                 return false;
 
             productDto.CreatedBy = GetCurrentUsername();
-            productDto.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+            productDto.CreatedAt = DateTime.UtcNow;
             productDto.ActualQuantity = productDto.Quantity;
             var product = _mapper.Map<Product>(productDto);
             _context.Products.Add(product);
@@ -96,7 +101,7 @@ public class ProductService:IProductService
             if (existingProduct == null)
                 return false;
 
-            existingProduct.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+            existingProduct.UpdatedAt = DateTime.UtcNow;
             existingProduct.Quantity = (int)Math.Floor(productDto.ActualQuantity);
 
             _mapper.Map(productDto, existingProduct);
@@ -120,7 +125,7 @@ public class ProductService:IProductService
         if (product == null)
             return false;
         product.IsDeleted = true;
-        product.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+        product.DeletedAt = DateTime.UtcNow;
         _context.Products.Update(product);
         await _context.SaveChangesAsync();
         return true;
@@ -160,7 +165,7 @@ public class ProductService:IProductService
             return false;
         }
         brandDto.CreatedBy = GetCurrentUsername();
-        brandDto.CreatedAt = UtilitiesHelper.GetPhilippineTime();
+        brandDto.CreatedAt = DateTime.UtcNow;
         var brand = _mapper.Map<ProductBrand>(brandDto);
         _ = _context.ProductBrands.Add(brand);
         await _context.SaveChangesAsync();
@@ -174,7 +179,7 @@ public class ProductService:IProductService
             return false;
 
         existingBrand.UpdatedBy = GetCurrentUsername();
-        existingBrand.UpdatedAt = UtilitiesHelper.GetPhilippineTime();
+        existingBrand.UpdatedAt = DateTime.UtcNow;
         _mapper.Map(brandDto, existingBrand);
         await _context.SaveChangesAsync();
         return true;
@@ -187,7 +192,7 @@ public class ProductService:IProductService
             return false;
 
         
-        brand.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+        brand.DeletedAt = DateTime.UtcNow;
         brand.IsDeleted = true;
 
         var associatedProducts = await _context.Products
@@ -197,7 +202,7 @@ public class ProductService:IProductService
         foreach (var product in associatedProducts)
         {
             product.IsDeleted = true;
-            product.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+            product.DeletedAt = DateTime.UtcNow;
         }
         _context.Products.UpdateRange(associatedProducts);
         _context.ProductBrands.Update(brand);
@@ -257,7 +262,7 @@ public class ProductService:IProductService
 
        
         category.IsDeleted = true;
-        category.DeletedAt = UtilitiesHelper.GetPhilippineTime();
+        category.DeletedAt = DateTime.UtcNow;
         _context.ProductCategories.Update(category);
 
         // Find products that reference this category
