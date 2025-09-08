@@ -1,4 +1,3 @@
-
 name: Deploy to SmarterASP.NET via FTP
 
 on:
@@ -18,23 +17,25 @@ jobs:
       with:
         dotnet-version: '8.0.x' # or 6.0 depending on your project
 
-    - name: Publish Server project
-      run: dotnet publish GenstarXKulayInventorySystem.Server/GenstarXKulayInventorySystem.Server.csproj -c Release -o ./publish
+    - name: Publish Server (includes Client + Shared)
+      run: dotnet publish GenstarXKulayInventorySystem.Server/GenstarXKulayInventorySystem.Server.csproj -c Release -o ./publish -r win-x64 --self-contained false
+
 
 
 
     - name: FTP Deploy
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        server: win1027.site4now.net
-        username: genstarkulay-001
-        password: genstarxkulay@2025
+        server: win6030.site4now.net
+        username: codeknight-001
+        password: P@ssw0rd!@#$
         local-dir: ./publish/
-        server-dir: /inventory/
+        server-dir: /wwwroot/
+        dangerous-clean-slate: true
 
     - name: Verify site is live
       run: |
         sleep 20
-        curl -I http://genstarkulay-001-site1.qtempurl.com/
+        curl -I http://codeknight-001-site1.ktempurl.com/
         
     
