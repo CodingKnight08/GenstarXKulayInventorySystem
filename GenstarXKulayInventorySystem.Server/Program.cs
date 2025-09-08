@@ -11,8 +11,17 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT");
+
+if (!string.IsNullOrEmpty(port))
+{
+    // Running on Railway or another PaaS
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 // Add services to the container  
 builder.Services.AddControllers();
+
 
 // Enable CORS to allow calls from your Blazor WebAssembly client  
 builder.Services.AddCors(options =>
@@ -84,17 +93,27 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 
 
-// Register DbContextFactory (with retry on failure)
+// Register DbContextFactory (with retry on failure) MSSQL
+//builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
+//{
+//    options.UseSqlServer(
+//        builder.Configuration.GetConnectionString("DefaultConnection"),
+//        sqlOptions =>
+//        {
+//            sqlOptions.EnableRetryOnFailure();
+//        });
+//}, ServiceLifetime.Scoped);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                       ?? builder.Configuration["DefaultConnection"];
+
 builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 {
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions =>
-        {
-            sqlOptions.EnableRetryOnFailure();
-        });
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+    {
+        npgsqlOptions.EnableRetryOnFailure();
+    });
 }, ServiceLifetime.Scoped);
-
 
 
 builder.Services.AddHostedService<SalesHostedService>();
@@ -129,6 +148,7 @@ using (var scope = app.Services.CreateScope())
     await InventoryDbContext.SeedUserAsync(userManager, roleManager);
 
 }
+
 
 
 // Middleware pipeline  

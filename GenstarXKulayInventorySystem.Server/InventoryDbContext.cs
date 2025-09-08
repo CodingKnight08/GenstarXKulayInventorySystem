@@ -32,12 +32,12 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(p => p.ProductCategoryId)
                   .OnDelete(DeleteBehavior.SetNull);
 
-            entity.Property(p => p.Size).HasPrecision(18, 2);
-            entity.Property(p => p.CostPrice).HasPrecision(18, 2);
-            entity.Property(p => p.RetailPrice).HasPrecision(18, 2);
-            entity.Property(p => p.WholesalePrice).HasPrecision(18, 2);
-            entity.Property(p => p.ActualQuantity).HasPrecision(18, 4);
-            entity.Property(p => p.BufferStocks).HasPrecision(18, 4);
+            entity.Property(p => p.Size).HasColumnType("numeric(18,2)");
+            entity.Property(p => p.CostPrice).HasColumnType("numeric(18,2)");
+            entity.Property(p => p.RetailPrice).HasColumnType("numeric(18,2)");
+            entity.Property(p => p.WholesalePrice).HasColumnType("numeric(18,2)");
+            entity.Property(p => p.ActualQuantity).HasColumnType("numeric(18,2)");
+            entity.Property(p => p.BufferStocks).HasColumnType("numeric(18,2)");
         });
 
         // PurchaseOrder → Supplier, PurchaseOrderItems
@@ -53,7 +53,7 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(poi => poi.PurchaseOrderId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.Property(po => po.AssumeTotalAmount).HasPrecision(18, 2);
+            entity.Property(po => po.AssumeTotalAmount).HasColumnType("numeric(18,2)");
             entity.Property(po => po.PurchaseShipToOption).HasConversion<int>();
             entity.Property(po => po.PurchaseRecieptOption).HasConversion<int>();
             entity.Property(po => po.PurchaseRecieveOption).HasConversion<int>();
@@ -73,15 +73,15 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(poi => poi.ProductBrandId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.Property(poi => poi.ItemAmount).HasPrecision(18, 2);
+            entity.Property(poi => poi.ItemAmount).HasColumnType("numeric(18,2)");
             entity.Property(poi => poi.PurchaseItemMeasurementOption).HasConversion<int>();
         });
 
         modelBuilder.Entity<Billing>(entity =>
         {
           
-            entity.Property(b => b.Amount).HasPrecision(18, 2);
-            entity.Property(b => b.DiscountAmount).HasPrecision(18, 2);
+            entity.Property(b => b.Amount).HasColumnType("numeric(18,2)");
+            entity.Property(b => b.DiscountAmount).HasColumnType("numeric(18,2)");
             entity.Property(b => b.Category).HasConversion<int>();
         });
         modelBuilder.Entity<PurchaseOrderBilling>(entity =>
@@ -91,9 +91,9 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(pob => pob.PurchaseOrderId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.Property(pob => pob.AmountToBePaid).HasPrecision(18, 2);
-            entity.Property(pob => pob.AmountPaid).HasPrecision(18, 2);
-            entity.Property(pob => pob.DiscountAmount).HasPrecision(18, 2);
+            entity.Property(pob => pob.AmountToBePaid).HasColumnType("numeric(18,2)");
+            entity.Property(pob => pob.AmountPaid).HasColumnType("numeric(18,2)");
+            entity.Property(pob => pob.DiscountAmount).HasColumnType("numeric(18,2)");
 
             entity.Property(pob => pob.BillingBranch).HasConversion<int>();
             entity.Property(pob => pob.PaymentMethod).HasConversion<int>();
@@ -107,7 +107,7 @@ public class InventoryDbContext: IdentityDbContext<User>
              .HasForeignKey(ds => ds.ClientId)
              .OnDelete(DeleteBehavior.SetNull);
 
-            entity.Property(ds => ds.TotalAmount).HasPrecision(18, 2);
+            entity.Property(ds => ds.TotalAmount).HasColumnType("numeric(18,2)");
 
         });
         modelBuilder.Entity<SaleItem>(entity =>
@@ -125,8 +125,8 @@ public class InventoryDbContext: IdentityDbContext<User>
            
 
             // Decimal precision
-            entity.Property(si => si.ItemPrice).HasPrecision(18, 2);
-            entity.Property(si => si.Size).HasPrecision(18, 2);
+            entity.Property(si => si.ItemPrice).HasColumnType("numeric(18,2)");
+            entity.Property(si => si.Size).HasColumnType("numeric(18,2)");
 
             // Enum conversions
             entity.Property(si => si.BranchPurchased).HasConversion<int>();
@@ -143,27 +143,27 @@ public class InventoryDbContext: IdentityDbContext<User>
 
         modelBuilder.Entity<DailySaleReport>(entity =>
         {
-            entity.Property(dsr => dsr.CashIn).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.TotalSalesToday).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.BeginningBalance).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.InvoiceCash).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.InvoiceChecks).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.NonInvoiceCash).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.NonInvoiceChecks).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.TotalCash).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.TotalChecks).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.TotalSales).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.ChargeSales).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.CollectionCash).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.CollectionChecks).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.Transportation).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.Foods).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.SalaryAndAdvances).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.Commissions).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.Supplies).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.Others).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.TotalExpenses).HasPrecision(18, 2);
-            entity.Property(dsr => dsr.TotalCashOnHand).HasPrecision(18, 2);
+            entity.Property(dsr => dsr.CashIn).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.TotalSalesToday).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.BeginningBalance).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.InvoiceCash).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.InvoiceChecks).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.NonInvoiceCash).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.NonInvoiceChecks).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.TotalCash).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.TotalChecks).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.TotalSales).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.ChargeSales).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.CollectionCash).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.CollectionChecks).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.Transportation).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.Foods).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.SalaryAndAdvances).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.Commissions).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.Supplies).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.Others).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.TotalExpenses).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.TotalCashOnHand).HasColumnType("numeric(18,2)");
 
 
         });

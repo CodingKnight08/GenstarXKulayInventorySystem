@@ -185,7 +185,7 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
             var purchaseOrderIds = dtos.Select(dto => dto.Id).ToList();
 
             var itemsToUpdate = await _context.PurchaseOrderItems
-                .Where(item => purchaseOrderIds.Contains(item.PurchaseOrderId) && !item.IsDeleted)
+                .Where(item => purchaseOrderIds.Contains(item.PurchaseOrderId.Value) && !item.IsDeleted)
                 .ToListAsync();
 
             if (!itemsToUpdate.Any())
