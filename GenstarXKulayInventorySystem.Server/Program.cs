@@ -29,7 +29,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowClient", policy =>
        policy.WithOrigins(
             "https://localhost:7035", // Dev client
-            "http://codeknight-001-site1.ktempurl.com/", // Temp hosting URL
+            "https://genstarxkulayinventorysystem-production.up.railway.app", // Temp hosting URL
             "https://yourdomain.com" // Final production domain
         )
               .AllowAnyMethod()
