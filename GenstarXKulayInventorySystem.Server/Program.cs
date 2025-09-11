@@ -29,8 +29,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowClient", policy =>
        policy.WithOrigins(
             "https://localhost:7035", // Dev client
-            "https://genstarxkulayinventorysystem-production.up.railway.app", // Temp hosting URL
-            "https://helpful-gentleness-production.up.railway.app/" // Final production domain
+            "https://genstarxkulayinventorysystem-production.up.railway.app", 
+            "https://helpful-gentleness-production.up.railway.app" 
         )
               .AllowAnyMethod()
               .AllowAnyHeader());
