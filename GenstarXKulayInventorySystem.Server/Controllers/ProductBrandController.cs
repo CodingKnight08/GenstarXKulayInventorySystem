@@ -7,7 +7,7 @@ using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize]
+[Authorize]
 public class ProductBrandController : ControllerBase
 {
     private readonly IProductService _productService;
@@ -16,10 +16,17 @@ public class ProductBrandController : ControllerBase
         _productService = productService;
     }
     [HttpGet("all")]
-    public async Task<ActionResult<List<ProductBrandDto>>> GetAll()
+    public async Task<ActionResult<List<ProductBrandDto>>> GetAll([FromQuery] int skip, [FromQuery] int take)
     {
-        var brands = await _productService.GetAllBrandsAsync();
+        var brands = await _productService.GetAllBrandsAsync(take, skip);
         return Ok(brands);
+    }
+
+    [HttpGet("all/count")]
+    public async Task<ActionResult<int>> GetBrandCount()
+    {
+        var count = await _productService.GetAllBrandCount();
+        return count;
     }
 
     [HttpGet("all/brands/{branch}")]
