@@ -9,6 +9,8 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands;
 public partial class ViewBrand
 {
     [Parameter] public int BrandId { get; set; }
+    [Parameter, SupplyParameterFromQuery] public int Skip { get; set; }
+    [Parameter, SupplyParameterFromQuery] public int Take { get; set; }
     [Inject] public HttpClient HttpClient { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     protected ProductBrandDto Brand { get; set; } = new ProductBrandDto();
@@ -18,6 +20,7 @@ public partial class ViewBrand
 
     protected bool IsLoading = false;
     protected string? ErrorMessage { get; set; }
+    protected List<BreadcrumbItem> items = new();
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
@@ -25,15 +28,16 @@ public partial class ViewBrand
         await LoadBrandAsync();
         await LoadProductsAsync();
         await LoadCategoriesAsync();
+        items =
+        [
+            new("Products", href: $"/products?skip={Skip}&take={Take}"),
+            new("Brand Detail", href: "#", disabled: true),
+        ];
         await Task.Delay(1000);
 
         IsLoading = false;
     }
-    protected List<BreadcrumbItem> items =
-   [
-       new("Products", href: "/products"),
-        new("Brand Detail", href: "#", disabled:true),
-   ];
+    
 
 
     protected async Task LoadBrandAsync()
