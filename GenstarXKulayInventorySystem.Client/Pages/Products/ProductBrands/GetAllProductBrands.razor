@@ -1,24 +1,32 @@
-﻿@layout MainLayout
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using GenstarXKulayInventorySystem.Shared.DTOS;
+@layout MainLayout
+@attribute [Authorize]
+<AuthorizeView Roles="Admin,Secretary">
+    <div class="d-flex justify-content-end mb-3">
 
-<div class="d-flex justify-content-end mb-3">
-    <MudButton Variant="Variant.Filled"
-               Color="Color.Primary"
-               StartIcon="@Icons.Material.Filled.Add"
-               OnClick="CreateProductBrand"
-    >
-        Add Brand
-    </MudButton>
-</div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="CreateProductBrand">
+            Add Brand
+        </MudButton>
+    </div>
+</AuthorizeView>
+
 <MudPaper Class="d-flex flex-column flex-grow-1" Style="height: 100%;">
 
     
-    <MudTable Items="ProductBrands"
+    <MudTable T="ProductBrandDto"
+              ServerData="LoadServerData"
+              @ref="brandsTable"
               Dense="true"
               Hover="true"
               Bordered="true"
-              Class="flex-grow-1" 
-              
-    >
+              Class="flex-grow-1"
+              RowsPerPage="10">
+
 
         <HeaderContent>
             <MudTh>Brand Name</MudTh>
@@ -47,9 +55,13 @@
                                />
             </MudTd>
         </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.h5" Align="Align.Center" Color="Color.Error">No Brands</MudText>
+        </NoRecordsContent>
         <PagerContent>
-            <MudTablePager/>
+            <MudTablePager />
         </PagerContent>
+        
     </MudTable>
 </MudPaper>
 

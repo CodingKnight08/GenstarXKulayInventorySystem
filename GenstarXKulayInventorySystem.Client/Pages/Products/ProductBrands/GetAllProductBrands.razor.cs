@@ -7,32 +7,76 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands;
 
 public partial class GetAllProductBrands
 {
+    [Parameter] public int? Skip { get; set; }
+    [Parameter] public int? Take { get; set; }
     [Inject] public HttpClient HttpClient { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     protected List<ProductBrandDto> ProductBrands { get; set; } = new();
     protected bool IsLoading { get; set; } = true;
+    protected int PageSkip { get; set; }
+    protected int PageTake { get; set; }
+    private int Count { get; set; }
+    private MudTable<ProductBrandDto>? brandsTable;
+
+
     protected string? ErrorMessage { get; set; }
 
     protected override async Task OnInitializedAsync()
+     
     {
+        PageSkip = Skip ?? 10;
+        PageTake = Take ?? 10;
+
         await LoadProductBrandsAsync();
+    }
+
+
+    private async Task<TableData<ProductBrandDto>> LoadServerData(TableState state, CancellationToken cancellationToken)
+    {
+        IsLoading = true;
+        try
+        {
+
+            PageSkip = state.Page * state.PageSize;
+            PageTake = state.PageSize;
+
+            var response = await HttpClient.GetAsync($"api/productbrand/all?skip={PageSkip}&take={PageTake}");
+            response.EnsureSuccessStatusCode();
+
+            var brands = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>() ?? new();
+
+            return new TableData<ProductBrandDto>
+            {
+                Items = brands,
+                TotalItems = Count
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching product brands: {ex.Message}");
+            return new TableData<ProductBrandDto>
+            {
+                Items = new List<ProductBrandDto>(),
+                TotalItems = 0
+            };
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private async Task LoadProductBrandsAsync()
     {
-        IsLoading = true;
-        ErrorMessage = null;
-
+        
         try
         {
-            var response = await HttpClient.GetAsync("api/productbrand/all");
+            var response = await HttpClient.GetAsync("api/productbrand/all/count");
 
             response.EnsureSuccessStatusCode();
 
-            var brands = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>();
-
-            ProductBrands = brands ?? new List<ProductBrandDto>();
+            Count = await response.Content.ReadFromJsonAsync<int>();
         }
         catch (Exception ex)
         {
@@ -40,7 +84,7 @@ public partial class GetAllProductBrands
             ErrorMessage = "Failed to load product brands. Please try again later.";
         }
 
-        IsLoading = false;
+        
     }
 
     protected async Task CreateProductBrand()
@@ -54,6 +98,10 @@ public partial class GetAllProductBrands
             if (result is not null && !result.Canceled && result.Data is ProductBrandDto)
             {
                 await LoadProductBrandsAsync();
+                if (brandsTable is not null)
+            {
+                await brandsTable.ReloadServerData();
+            }
                 StateHasChanged();
             }
         }
@@ -73,8 +121,10 @@ public partial class GetAllProductBrands
 
             if (result is not null && !result.Canceled)
             {
-                await LoadProductBrandsAsync();
-                StateHasChanged();
+                if (brandsTable is not null)
+                {
+                    await brandsTable.ReloadServerData();
+                }
             }
         }
     }
@@ -91,15 +141,17 @@ public partial class GetAllProductBrands
             var result = await dialogRef.Result;
             if (result is not null && !result.Canceled)
             {
-                await LoadProductBrandsAsync();
-                StateHasChanged();
+                if (brandsTable is not null)
+                {
+                    await brandsTable.ReloadServerData();
+                }
             }
         }
     }
     protected void ViewBrands(int brandId)
     {
-        NavigationManager.NavigateTo($"/productbrand/{brandId}");
-        
+        NavigationManager.NavigateTo($"/productbrand/{brandId}?skip={PageSkip}&take={PageTake}");
+
     }
 }
 
