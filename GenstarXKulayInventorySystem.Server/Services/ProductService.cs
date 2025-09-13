@@ -132,10 +132,14 @@ public class ProductService:IProductService
     }
 
     //ProductBrand Methods
-
-    public async Task<List<ProductBrandDto>> GetAllBrandsAsync()
+    public async Task<int> GetAllBrandCount()
     {
         var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted ).ToListAsync() ?? new List<ProductBrand>();
+        return brands.Count();
+    }
+    public async Task<List<ProductBrandDto>> GetAllBrandsAsync(int take, int skip)
+    {
+        var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted ).Skip(skip).Take(take).OrderBy(p => p.BrandName).ToListAsync() ?? new List<ProductBrand>();
         return brands.Select(brand => _mapper.Map<ProductBrandDto>(brand)).ToList();
     }
 
@@ -294,8 +298,8 @@ public interface IProductService
     Task<bool> UpdateAsync(ProductDto productDto);
     Task<bool> DeleteAsync(int id);
 
-
-    Task<List<ProductBrandDto>> GetAllBrandsAsync();
+    Task<int> GetAllBrandCount();
+    Task<List<ProductBrandDto>> GetAllBrandsAsync(int take, int skip);
     Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync(BranchOption branch);
     Task<ProductBrandDto?> GetBrandByIdAsync(int id);
     Task<bool> AddBrandAsync(ProductBrandDto brandDto);

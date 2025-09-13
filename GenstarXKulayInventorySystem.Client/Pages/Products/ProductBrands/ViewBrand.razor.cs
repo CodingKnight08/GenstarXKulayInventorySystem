@@ -18,6 +18,7 @@ public partial class ViewBrand
 
     protected bool IsLoading = false;
     protected string? ErrorMessage { get; set; }
+    protected List<BreadcrumbItem> items = new();
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
@@ -25,15 +26,16 @@ public partial class ViewBrand
         await LoadBrandAsync();
         await LoadProductsAsync();
         await LoadCategoriesAsync();
+        items =
+        [
+            new("Products", href: $"/products"),
+            new("Brand Detail", href: "#", disabled: true),
+        ];
         await Task.Delay(1000);
 
         IsLoading = false;
     }
-    protected List<BreadcrumbItem> items =
-   [
-       new("Products", href: "/products"),
-        new("Brand Detail", href: "#", disabled:true),
-   ];
+    
 
 
     protected async Task LoadBrandAsync()
