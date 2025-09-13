@@ -7,59 +7,31 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands;
 
 public partial class GetAllProductBrands
 {
-    [Parameter] public int? Skip { get; set; }
-    [Parameter] public int? Take { get; set; }
+  
+    [Inject] protected ILogger<GetAllProductBrands> Logger { get; set; } = default!;
     [Inject] public HttpClient HttpClient { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     protected List<ProductBrandDto> ProductBrands { get; set; } = new();
     protected bool IsLoading { get; set; } = true;
-    protected int PageSkip { get; set; }
-    protected int PageTake { get; set; }
+    private MudDataGrid<ProductBrandDto>? brandsGrid;
     private int Count { get; set; }
-    private MudTable<ProductBrandDto>? brandsTable;
-
 
     protected string? ErrorMessage { get; set; }
+    private int PageSkip { get; set; } = 0;
+    private int PageTake { get; set; } = 10;
+    private int CurrentPage { get; set; }
 
     protected override async Task OnInitializedAsync()
-     
     {
-        PageSkip = Skip ?? 10;
-        PageTake = Take ?? 10;
-
-        await LoadProductBrandsAsync();
-    }
-
-
-    private async Task<TableData<ProductBrandDto>> LoadServerData(TableState state, CancellationToken cancellationToken)
-    {
-        IsLoading = true;
         try
         {
 
-            PageSkip = state.Page * state.PageSize;
-            PageTake = state.PageSize;
-
-            var response = await HttpClient.GetAsync($"api/productbrand/all?skip={PageSkip}&take={PageTake}");
-            response.EnsureSuccessStatusCode();
-
-            var brands = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>() ?? new();
-
-            return new TableData<ProductBrandDto>
-            {
-                Items = brands,
-                TotalItems = Count
-            };
+            await LoadProductBrandsAsync(); // load Count if needed
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error fetching product brands: {ex.Message}");
-            return new TableData<ProductBrandDto>
-            {
-                Items = new List<ProductBrandDto>(),
-                TotalItems = 0
-            };
+            Logger.LogError($"An error occured upon initialization: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -67,9 +39,59 @@ public partial class GetAllProductBrands
         }
     }
 
+
+    protected void OnPageChanged(int page)
+    {
+        CurrentPage = page;
+        PageSkip = CurrentPage * PageTake;
+        StateHasChanged();
+    }
+    protected void OnRowsPerPageChanged(int newPageSize)
+    {
+        PageTake = newPageSize;
+        CurrentPage = 0; 
+        PageSkip = 0;
+    }
+
+    private async Task<GridData<ProductBrandDto>> ServerLoadData(GridState<ProductBrandDto> state)
+    {
+        try
+        {
+            // figure out skip/take from grid state
+            var skip = state.Page * state.PageSize;
+            var take = state.PageSize;
+
+            // fetch paged items
+            var response = await HttpClient.GetAsync($"api/productbrand/all?skip={skip}&take={take}");
+            response.EnsureSuccessStatusCode();
+            var items = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>() ?? new();
+
+
+
+            return new GridData<ProductBrandDto>
+            {
+                Items = items,
+                TotalItems = Count
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error loading product brands: {ex.Message}");
+            return new GridData<ProductBrandDto>
+            {
+                Items = new List<ProductBrandDto>(),
+                TotalItems = 0
+            };
+        }
+    }
+
+
+
+
+
     private async Task LoadProductBrandsAsync()
     {
-        
+        IsLoading = true;
         try
         {
             var response = await HttpClient.GetAsync("api/productbrand/all/count");
@@ -87,6 +109,7 @@ public partial class GetAllProductBrands
         
     }
 
+    
     protected async Task CreateProductBrand()
     {
         var dialogRef = await DialogService.ShowAsync<CreateProductBrand>("Create Product Brand");
@@ -98,10 +121,7 @@ public partial class GetAllProductBrands
             if (result is not null && !result.Canceled && result.Data is ProductBrandDto)
             {
                 await LoadProductBrandsAsync();
-                if (brandsTable is not null)
-            {
-                await brandsTable.ReloadServerData();
-            }
+            
                 StateHasChanged();
             }
         }
@@ -121,10 +141,7 @@ public partial class GetAllProductBrands
 
             if (result is not null && !result.Canceled)
             {
-                if (brandsTable is not null)
-                {
-                    await brandsTable.ReloadServerData();
-                }
+              
             }
         }
     }
@@ -141,17 +158,14 @@ public partial class GetAllProductBrands
             var result = await dialogRef.Result;
             if (result is not null && !result.Canceled)
             {
-                if (brandsTable is not null)
-                {
-                    await brandsTable.ReloadServerData();
-                }
+                
             }
         }
     }
     protected void ViewBrands(int brandId)
     {
-        NavigationManager.NavigateTo($"/productbrand/{brandId}?skip={PageSkip}&take={PageTake}");
-
+        NavigationManager.NavigateTo($"/productbrand/{brandId}");
     }
+
 }
 

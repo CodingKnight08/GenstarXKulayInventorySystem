@@ -15,53 +15,63 @@
     </div>
 </AuthorizeView>
 
-<MudPaper Class="d-flex flex-column flex-grow-1" Style="height: 100%;">
+<MudPaper Elevation="0" Class="d-flex flex-column flex-grow-1 h-auto">
 
-    
-    <MudTable T="ProductBrandDto"
-              ServerData="LoadServerData"
-              @ref="brandsTable"
-              Dense="true"
-              Hover="true"
-              Bordered="true"
-              Class="flex-grow-1"
-              RowsPerPage="10">
+@if (!IsLoading)
+    {
+
+            <MudDataGrid
+                
+                ServerData="ServerLoadData"
+                @ref="brandsGrid"
+                T="ProductBrandDto" 
+                Dense="true"
+                Hover="true"
+                CurrentPage="@CurrentPage"
+                RowsPerPage="@PageTake"
+                CurrentPageChanged="OnPageChanged"
+                RowsPerPageChanged="OnRowsPerPageChanged"
+                Bordered="true"
+                Breakpoint="Breakpoint.Sm"
+            
+            >
+                <Columns>
+                    <PropertyColumn Property="b => b.BrandName" Title="Brand Name">
+                        <CellTemplate Context="cell">
+                            <MudText Typo="Typo.body1" Class="fw-bold">
+                                @cell.Item.BrandName
+                            </MudText>
+                        </CellTemplate>
+                    </PropertyColumn>
+                <PropertyColumn Property="b => b.Description" Title="Description" />
+                <TemplateColumn Title="Actions">
+                        <CellTemplate Context="brand">
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                           Color="Color.Primary"
+                                           OnClick="() => ViewBrands(brand.Item.Id)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Success"
+                                           OnClick="() => UpdateProductBrand(brand.Item.Id)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           OnClick="() => DeleteProductBrand(brand.Item.Id)" />
+                        </CellTemplate>
+                    </TemplateColumn>
 
 
-        <HeaderContent>
-            <MudTh>Brand Name</MudTh>
-            <MudTh>Description</MudTh>
-            <MudTh>Actions</MudTh>
-        </HeaderContent>
-
-        <RowTemplate>
-            <MudTd Class="fw-bold fs-5">@context.BrandName</MudTd>
-            <MudTd>@context.Description</MudTd>
-            <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                               Color="Color.Primary"
-                               Variant="Variant.Text"
-                               OnClick="() => ViewBrands(context.Id)"
-                                />
-                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                               Color="Color.Success"
-                               Variant="Variant.Text"
-                               OnClick="() => UpdateProductBrand(context.Id)"
-                                />  
-                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                               Color="Color.Error"
-                               Variant="Variant.Text"
-                               OnClick="() => DeleteProductBrand(context.Id)"
-                               />
-            </MudTd>
-        </RowTemplate>
-        <NoRecordsContent>
-            <MudText Typo="Typo.h5" Align="Align.Center" Color="Color.Error">No Brands</MudText>
-        </NoRecordsContent>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager ShowPageNumber=true T="ProductBrandDto" PageSizeOptions=@(new int[] { 5, 10, 20 }) />
+                </PagerContent>
+            </MudDataGrid>
         
-    </MudTable>
+    }
+    else
+    {
+        <MudCard Elevation="10" Class="d-flex flex-column align-items-center justify-content-center gap-2">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Medium" Rounded=true  />    
+            <MudText Typo="Typo.h6" Align="Align.Center">Loading..</MudText>
+        </MudCard>
+    }
 </MudPaper>
 
