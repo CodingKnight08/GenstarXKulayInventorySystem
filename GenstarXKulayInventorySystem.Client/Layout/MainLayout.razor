@@ -1,8 +1,10 @@
-﻿@using MudBlazor
+﻿@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
 @using System.IdentityModel.Tokens.Jwt;
 @using Blazored.LocalStorage;
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @inherits LayoutComponentBase
+@attribute [Authorize]
 <MudThemeProvider Theme="@MyCustomTheme"/>
 <MudPopoverProvider />
 
