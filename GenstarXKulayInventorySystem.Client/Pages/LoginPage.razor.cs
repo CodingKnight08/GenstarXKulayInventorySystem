@@ -15,6 +15,7 @@ public partial class LoginPage
     [Inject] protected HttpClient Http { get; set; } = default!;
     [Inject] protected ILogger<LoginPage> Logger { get; set; } = default!;
     [Inject] protected ILocalStorageService LocalStorage { get; set; } = default!;
+    [Inject] protected ISnackbar SnackBar { get; set; } = default!;
 
 
     protected LoginDto User { get; set; } = new LoginDto();
@@ -41,44 +42,53 @@ public partial class LoginPage
     }
 
 
-    protected private async Task Login()
+    private async Task Login()
     {
         ShowValidation = true;
 
-        if (string.IsNullOrWhiteSpace(User.Username) || string.IsNullOrWhiteSpace(User.Password))
+        if (string.IsNullOrWhiteSpace(User?.Username) || string.IsNullOrWhiteSpace(User?.Password))
             return;
 
         try
         {
             var response = await Http.PostAsJsonAsync("api/authentication/login", User);
 
-
-
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<LoginResponseDto>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var error = await response.Content.ReadAsStringAsync();
 
-                if (!string.IsNullOrEmpty(result?.Token))
-                {
-                    await LocalStorage.SetItemAsync("authToken", result.Token);
-                    NavigationManager.NavigateTo("/dashboard", forceLoad: true);
-                }
+                // Invalid login → redirect home and show error
+                await LocalStorage.RemoveItemAsync("authToken");
+
+                SnackBar.Add("Invalid username or password.", Severity.Error);
+                Logger.LogWarning("Login failed: {Error}", error);
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<LoginResponseDto>(
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (result is not null && !string.IsNullOrEmpty(result.Token))
+            {
+                await LocalStorage.SetItemAsync("authToken", result.Token);
+                NavigationManager.NavigateTo("/dashboard", forceLoad: true);
             }
             else
             {
-                var error = await response.Content.ReadAsStringAsync();
-                Logger.LogError("Login failed: {Error}", error);
+                // No token returned from backend → treat as failed login
+                await LocalStorage.RemoveItemAsync("authToken");
+                NavigationManager.NavigateTo("/", forceLoad: true);
+
+                SnackBar.Add("Login failed: no token returned.", Severity.Error);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "An error occurred while attempting to log in.");
+            SnackBar.Add("An unexpected error occurred. Please try again.", Severity.Error);
         }
     }
+
 
     protected void Register()
     {
