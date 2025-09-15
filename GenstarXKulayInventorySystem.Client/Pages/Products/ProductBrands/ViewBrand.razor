@@ -1,6 +1,8 @@
 ﻿@page "/productbrand/{brandId:int}"
 @using GenstarXKulayInventorySystem.Shared.DTOS;
-
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
 <PageTitle>View Product Brand</PageTitle>
 
 
@@ -35,6 +37,7 @@
             </MudGrid>
         </MudCardContent>
     </MudCard>
+    <AuthorizeView Roles="Admin, Secretary, User">
     <MudText Typo="Typo.h4" Align="Align.Center">Products</MudText>
         <div class="d-flex justify-content-end mb-3 me-3">
             <MudButton Variant="Variant.Filled"
@@ -45,6 +48,7 @@
                 Add Product
             </MudButton>
         </div>
+    </AuthorizeView>
     <!-- Product Table -->
     <MudCard Elevation="0">
        
@@ -112,11 +116,15 @@
                                            OnClick="() => DeleteProduct(context.Id)"/>
                     </MudTd>
                 </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Align="Align.Center" Color="Color.Error">No Products</MudText>
+                </NoRecordsContent>
                 <PagerContent>
                    <MudTablePager />
                 </PagerContent>
             </MudTable>
         </MudCardContent>
     </MudCard> 
+   
     }
 </MudMainContent>
