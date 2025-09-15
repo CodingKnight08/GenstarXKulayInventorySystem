@@ -4,9 +4,11 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Security.Claims;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static MudBlazor.Icons.Custom;
 
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -49,10 +51,38 @@ public class ProductService:IProductService
     }
     public async Task<List<ProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch)
     {
-        var products = await _context.Products.AsNoTracking().AsSplitQuery()
-            .Where(p => p.BrandId == brandId && p.Branch == branch && !p.IsDeleted && p.ActualQuantity > p.BufferStocks).ToListAsync() ?? new List<Product>();
+        var products = await _context.Products
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(p => p.BrandId == brandId
+                     && p.Branch == branch
+                     && !p.IsDeleted
+                     && p.ActualQuantity > p.BufferStocks)
+            .ToListAsync();
+
+        if (products.Count == 0)
+            return new List<ProductDto>();
+
         return products.Select(product => _mapper.Map<ProductDto>(product)).ToList();
     }
+
+    public async Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take)
+    {
+        var products = await _context.Products
+           .AsNoTracking()
+           .AsSplitQuery()
+           .Where(p => p.BrandId == brandId
+                    && p.Branch == branch
+                    && !p.IsDeleted
+                    )
+           .ToListAsync();
+
+        if (products.Count == 0)
+            return new List<ProductDto>();
+
+        return _mapper.Map<List<ProductDto>>(products).ToList();
+    }
+
     public async Task<ProductDto?> GetByIdAsync(int id)
     {
         var product = await _context.Products
@@ -293,6 +323,7 @@ public interface IProductService
 {
     Task<List<ProductDto>> GetAllAsync(int brandId);
     Task<List<ProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
+    Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take);
     Task<ProductDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(ProductDto productDto);
     Task<bool> UpdateAsync(ProductDto productDto);

@@ -1,11 +1,13 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ProductController : ControllerBase
 {
@@ -32,7 +34,7 @@ public class ProductController : ControllerBase
             var products = await _productService.GetAllProductByBrandAndBranch(brandId, branch);
 
             if (products == null || !products.Any())
-                return NotFound("No products found for the selected brand and branch.");
+                return new List<ProductDto>();
 
             return Ok(products);
         }
@@ -41,6 +43,25 @@ public class ProductController : ControllerBase
             return StatusCode(500, $"Error retrieving products: {ex.Message}");
         }
     }
+
+    [HttpGet("all/products/by/{brandId:int}/{branch}")]
+    public async Task<ActionResult<List<ProductDto>>> GetAllProductByBrandAndBranch(int brandId,BranchOption branch, [FromQuery] int skip = 0,[FromQuery] int take = 10)
+    {
+        try
+        {
+            var products = await _productService.GetAllProductsAsyncByBranch(brandId, branch, skip, take);
+
+            if (products == null || !products.Any())
+                return Ok(new List<ProductDto>());
+
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error in retrieving products: {ex.Message}");
+        }
+    }
+
 
     // GET: api/products/5
     [HttpGet("{id}")]
