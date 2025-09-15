@@ -12,8 +12,9 @@
 
      @if (IsLoading)
     {
-        <div class="d-flex justify-center align-center" style="height: 300px;">
+        <div class="d-flex flex-column justify-content-center align-items-center gap-2" style="height: 300px;">
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+            <MudText Align="Align.Center" Color="Color.Primary">Loading</MudText>
         </div>
     }
     else
@@ -76,7 +77,6 @@
                     <MudTh>Capital Price</MudTh>
                     <MudTh>Retail Price</MudTh>
                     <MudTh>Wholesale Price</MudTh>
-                    <MudTh>Branch</MudTh>
                     <MudTh>Actions</MudTh>
                 </HeaderContent>
                 <RowTemplate>
@@ -104,7 +104,6 @@
                     <MudTd DataLabel="Capital"> ₱ @context.CostPrice</MudTd>
                     <MudTd DataLabel="RetailPrice"> ₱@context.RetailPrice</MudTd>
                     <MudTd DataLabel="Wholesale"> ₱@context.WholesalePrice</MudTd>
-                    <MudTd DataLabel="Branch">@context.Branch.ToString()</MudTd>
                     <MudTd DataLabel="Action">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Color="Color.Success"
