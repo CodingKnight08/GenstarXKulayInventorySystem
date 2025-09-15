@@ -1,5 +1,5 @@
 ﻿@page "/productbrand/{brandId:int}"
-
+@using GenstarXKulayInventorySystem.Shared.DTOS;
 
 <PageTitle>View Product Brand</PageTitle>
 
@@ -49,7 +49,18 @@
     <MudCard Elevation="0">
        
         <MudCardContent>
-            <MudTable Items="@Products" Hover="true" Bordered="true" Dense="true" HorizontalScrollbar=true >
+            <MudTable 
+                T="ProductDto"
+                @ref="productTable" 
+                ServerData="ServerLoadData" 
+                Hover="true" 
+                Bordered="true"
+                Dense="true" 
+                CurrentPage="@CurrentPage"
+                RowsPerPage="@PageTake"
+                CurrentPageChanged="OnPageChanged"
+                RowsPerPageChanged="OnRowsPerPageChanged"
+                HorizontalScrollbar=true >
                 <HeaderContent>
                     <MudTh>Product Name</MudTh>
                     <MudTh>Size</MudTh>
