@@ -28,7 +28,9 @@ public partial class CreateProduct
                                 || NewProduct.CostPrice > NewProduct.WholesalePrice
                                 || NewProduct.RetailPrice < NewProduct.CostPrice
                                 || NewProduct.RetailPrice < NewProduct.WholesalePrice
+                                || NewProduct.BufferStocks == null
                                 || NewProduct.BufferStocks == 0;
+                        
 
 
     protected override async Task OnInitializedAsync()

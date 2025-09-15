@@ -1,6 +1,9 @@
 ﻿@using System.Globalization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
-
+@attribute [Authorize]
+<AuthorizeView Roles="Admin, Secretary, User">
 <MudDialog>
     <DialogContent>
         <MudGrid Spacing="2">
@@ -160,6 +163,7 @@
         <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="Submit" Disabled=@IsDisabled>Save</MudButton>
     </DialogActions>
 </MudDialog>
+</AuthorizeView>
 
 @code{
     private CultureInfo _en = new("en-US");
