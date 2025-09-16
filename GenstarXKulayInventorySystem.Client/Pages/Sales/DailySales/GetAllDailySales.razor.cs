@@ -13,6 +13,7 @@ public partial class GetAllDailySales
     [Inject] protected ILogger<GetAllDailySales> Logger { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
 
     protected List<DailySaleDto> Sales { get; set; } = new List<DailySaleDto>();
     protected bool IsLoading { get; set; } = false;
@@ -31,7 +32,17 @@ public partial class GetAllDailySales
             var response = await HttpClient.GetAsync("api/sales/all");
             response.EnsureSuccessStatusCode();
             var sales = await response.Content.ReadFromJsonAsync<List<DailySaleDto>>();
+            if(sales != null || sales.Count() == 0)
+            {
+                foreach (var sale in sales)
+                {
+                    sale.DateOfSales = UtilitiesHelper.ConvertUtcToPhilippineTime(sale.DateOfSales);
+                }
+            }
+            
             Sales = sales ?? new List<DailySaleDto>();
+
+            
         }
         catch (Exception ex) {
 
@@ -40,7 +51,7 @@ public partial class GetAllDailySales
         }
         finally
         {
-            await Task.Delay(2000);
+            await Task.Delay(1000);
             IsLoading = false;
         }
     }
