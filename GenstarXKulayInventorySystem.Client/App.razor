@@ -2,13 +2,18 @@
 @inject NavigationManager Navigation
 
 <CascadingAuthenticationState>
+    <MudThemeProvider Theme="@MyCustomTheme" />
+
+    <MudPopoverProvider />
+    <MudDialogProvider />
+    <MudSnackbarProvider />
+
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-                <NotAuthorized>
-                    @if (!context.User.Identity?.IsAuthenticated ?? true)
+                <NotAuthorized Context="authContext">
+                    @if (!(authContext.User.Identity?.IsAuthenticated ?? false))
                     {
-                        <!-- redirect anonymous users to "/" (login page) -->
                         Navigation.NavigateTo("/", forceLoad: true);
                     }
                     else
@@ -35,3 +40,24 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    MudTheme MyCustomTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = Colors.Blue.Default,
+            Secondary = Colors.Green.Accent4,
+            AppbarBackground = Colors.Blue.Lighten2,
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = Colors.Blue.Lighten1
+        },
+        LayoutProperties = new LayoutProperties()
+        {
+            DrawerWidthLeft = "260px",
+            DrawerWidthRight = "300px"
+        }
+    };
+}
