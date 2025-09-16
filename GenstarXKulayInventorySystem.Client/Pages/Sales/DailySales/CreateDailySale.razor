@@ -56,7 +56,9 @@
                 <MudSelect T="BranchOption"
                            Value="Sale.Branch"
                            ValueChanged="OnBranchChanged"
-                           Label="Branch">
+                           Label="Branch"
+                           ReadOnly=true>
+                                         
                     @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
                     {
                         <MudSelectItem T="BranchOption" Value="@branch">
@@ -65,12 +67,16 @@
                     }
                 </MudSelect>
             </MudItem>
-            <MudItem xl="3">
-                <MudTextField @bind-Value="Sale.RecieptReference"
-                              T="string"
-                              Placeholder="Enter Receipt No."
-                              Label="Receipt No." />
-            </MudItem>
+          
+                <MudItem xl="3">
+                    <MudTextField @bind-Value="Sale.RecieptReference"
+                                  T="string"
+                                  Placeholder="Enter Receipt No."
+                                  Label="Receipt No."
+                                  />
+                </MudItem>
+            
+
             @if(Sale.PaymentType == null)
             {
                 

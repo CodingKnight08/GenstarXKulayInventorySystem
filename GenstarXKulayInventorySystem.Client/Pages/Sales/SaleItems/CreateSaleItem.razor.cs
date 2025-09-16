@@ -39,7 +39,7 @@ public partial class CreateSaleItem
 
         try
         {
-            var response = await HttpClient.GetAsync("api/productbrand/all");
+            var response = await HttpClient.GetAsync("api/productbrand/all/brandnames");
             response.EnsureSuccessStatusCode();
             var brands = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>();
             ProductBrands = brands ?? new List<ProductBrandDto>();

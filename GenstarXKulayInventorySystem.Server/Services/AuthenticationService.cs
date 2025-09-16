@@ -15,14 +15,16 @@ public class AuthenticationService: IAuthenticationService
     private readonly InventoryDbContext _context;
     private readonly ILogger<AuthenticationService> _logger;
     private readonly IMapper _mapper;
+    private readonly JwtService _jwtService;
 
-    public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, InventoryDbContext context, IMapper mapper, ILogger<AuthenticationService> logger)
+    public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, InventoryDbContext context, IMapper mapper, ILogger<AuthenticationService> logger, JwtService jwtService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _context = context;
         _mapper = mapper;
         _logger = logger;
+        _jwtService = jwtService;
     }
 
     public async Task<List<UserDto>> GetAllUsersAsync()
@@ -70,10 +72,23 @@ public class AuthenticationService: IAuthenticationService
         }
     }
 
-    public async Task<bool> LoginAsync(LoginDto loginDto)
+    public async Task<string?> LoginAsync(LoginDto loginDto)
     {
-        var result = await _signInManager.PasswordSignInAsync(loginDto.Username, loginDto.Password, false, false);
-        return result.Succeeded;
+        // 1️⃣ Find the user by username
+        var user = await _userManager.FindByNameAsync(loginDto.Username);
+        if (user == null) return null;
+
+        // 2️⃣ Verify password
+        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+        if (!result.Succeeded) return null;
+
+        // 3️⃣ Get user roles
+        var roles = await _userManager.GetRolesAsync(user);
+
+        // 4️⃣ Generate JWT with proper role claims
+        var token = _jwtService.GenerateToken(user);
+
+        return token;
     }
 
 
@@ -201,7 +216,7 @@ public interface IAuthenticationService
     Task<List<UserDto>> GetAllUsersAsync();
     Task<bool> RegisterUser(RegistrationDto registration);
     Task<bool> RegisterAsync(RegistrationDto registerDto);
-    Task<bool> LoginAsync(LoginDto loginDto);
+    Task<string?> LoginAsync(LoginDto loginDto);
     Task<bool> UpdateUser(UserDto userDto);
 
     Task<List<RegistrationDto>> GetAllRegistrationsAsync();

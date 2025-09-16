@@ -78,16 +78,11 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto, [FromServices] JwtService jwtService)
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
-        var user = await _userManager.FindByNameAsync(loginDto.Username);
-        if (user == null) return Unauthorized("Invalid username or password.");
-
-        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
-        if (!result.Succeeded) return Unauthorized("Invalid username or password.");
-
-        var roles = await _userManager.GetRolesAsync(user);
-        var token = jwtService.GenerateToken(user, roles);
+        var token = await _authService.LoginAsync(loginDto);
+        if (token == null)
+            return Unauthorized();
 
         return Ok(new { Token = token });
     }
