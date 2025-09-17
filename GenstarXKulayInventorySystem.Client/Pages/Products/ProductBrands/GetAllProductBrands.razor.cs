@@ -105,7 +105,7 @@ public partial class GetAllProductBrands
             Console.Error.WriteLine($"Error fetching product brands: {ex.Message}");
             ErrorMessage = "Failed to load product brands. Please try again later.";
         }
-
+        IsLoading = false;
         
     }
 
