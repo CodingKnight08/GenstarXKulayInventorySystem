@@ -27,7 +27,6 @@ public partial class ViewBrand
     protected int PageTake { get; set; } = 10;
     protected int CurrentPage { get; set; }
     protected int Count { get; set; }
-    protected bool IsDataLoading { get; set; }
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
