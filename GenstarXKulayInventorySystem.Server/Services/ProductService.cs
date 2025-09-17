@@ -58,6 +58,7 @@ public class ProductService:IProductService
                      && p.Branch == branch
                      && !p.IsDeleted
                      && p.ActualQuantity > p.BufferStocks)
+            .OrderBy(p => p.ProductName)
             .ToListAsync();
 
         if (products.Count == 0)
