@@ -58,6 +58,7 @@ public class ProductService:IProductService
                      && p.Branch == branch
                      && !p.IsDeleted
                      && p.ActualQuantity > p.BufferStocks)
+            .OrderBy(p => p.ProductName)
             .ToListAsync();
 
         if (products.Count == 0)
@@ -83,6 +84,11 @@ public class ProductService:IProductService
         return _mapper.Map<List<ProductDto>>(products).ToList();
     }
 
+    public async Task<int> GetProductCountAsync(int brandId, BranchOption branch)
+    {
+        var products = await _context.Products.AsNoTracking().AsSplitQuery().Where(p => p.BrandId == brandId && p.Branch == branch && !p.IsDeleted).ToListAsync();
+        return products.Count();
+    }
     public async Task<ProductDto?> GetByIdAsync(int id)
     {
         var product = await _context.Products
@@ -329,6 +335,7 @@ public interface IProductService
     Task<List<ProductDto>> GetAllAsync(int brandId);
     Task<List<ProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
     Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take);
+    Task<int> GetProductCountAsync(int brandId, BranchOption branch);
     Task<ProductDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(ProductDto productDto);
     Task<bool> UpdateAsync(ProductDto productDto);

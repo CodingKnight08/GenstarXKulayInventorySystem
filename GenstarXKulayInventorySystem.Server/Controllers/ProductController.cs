@@ -43,6 +43,49 @@ public class ProductController : ControllerBase
             return StatusCode(500, $"Error retrieving products: {ex.Message}");
         }
     }
+    [HttpGet("paged/by/{brandId:int}/{branch}")]
+    public async Task<ActionResult<ProductPageResultDto<ProductDto>>> GetProductsByBrandAndBranchPaged(
+    int brandId,
+    BranchOption branch,
+    [FromQuery] int skip = 0,
+    [FromQuery] int take = 10)
+    {
+        try
+        {
+            var products = await _productService.GetAllProductByBrandAndBranch(brandId, branch);
+
+            if (products == null || !products.Any())
+                return new ProductPageResultDto<ProductDto> { Products = new(), TotalCount = 0 };
+
+            var total = products.Count;
+            var pagedItems = products.Skip(skip).Take(take).ToList();
+
+            return Ok(new ProductPageResultDto<ProductDto>
+            {
+                Products = pagedItems,
+                TotalCount = total
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
+        }
+    }
+
+
+    [HttpGet("count/{brandId:int}/{branch}")]
+    public async Task<ActionResult<int>> GetProductCount(int brandId, BranchOption branch)
+    {
+        try
+        {
+            int count = await _productService.GetProductCountAsync(brandId, branch);
+            return Ok(count);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
+        }
+    }
 
     [HttpGet("all/products/by/{brandId:int}/{branch}")]
     public async Task<ActionResult<List<ProductDto>>> GetAllProductByBrandAndBranch(int brandId,BranchOption branch, [FromQuery] int skip = 0,[FromQuery] int take = 10)

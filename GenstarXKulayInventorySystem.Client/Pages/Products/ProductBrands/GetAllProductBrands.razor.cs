@@ -121,7 +121,7 @@ public partial class GetAllProductBrands
             if (result is not null && !result.Canceled && result.Data is ProductBrandDto)
             {
                 await LoadProductBrandsAsync();
-            
+                await ReloadGridAsync();
                 StateHasChanged();
             }
         }
@@ -141,7 +141,7 @@ public partial class GetAllProductBrands
 
             if (result is not null && !result.Canceled)
             {
-              
+                await ReloadGridAsync();
             }
         }
     }
@@ -158,7 +158,9 @@ public partial class GetAllProductBrands
             var result = await dialogRef.Result;
             if (result is not null && !result.Canceled)
             {
-                
+                await LoadProductBrandsAsync();
+                await ReloadGridAsync();
+                StateHasChanged();
             }
         }
     }
@@ -166,6 +168,16 @@ public partial class GetAllProductBrands
     {
         NavigationManager.NavigateTo($"/productbrand/{brandId}");
     }
+
+
+    private async Task ReloadGridAsync()
+    {
+        if (brandsGrid is not null)
+        {
+            await brandsGrid.ReloadServerData();
+        }
+    }
+
 
 }
 
