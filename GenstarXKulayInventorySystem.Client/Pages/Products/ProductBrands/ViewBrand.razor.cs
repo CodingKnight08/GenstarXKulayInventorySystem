@@ -32,7 +32,7 @@ public partial class ViewBrand
         IsLoading = true;
         Branch = UserState.Branch ?? BranchOption.Warehouse;
         await LoadBrandAsync();
-        await LoadProductsAsync();
+        //await LoadProductsAsync();
         await LoadCategoriesAsync();
         items =
         [
@@ -66,10 +66,10 @@ public partial class ViewBrand
     {
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/by/{BrandId}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/count/{BrandId}/{Branch}");
             response.EnsureSuccessStatusCode();
-            var products = await response.Content.ReadFromJsonAsync<List<ProductDto>>() ?? new List<ProductDto>();
-            Count = products.Count;
+            Count = await response.Content.ReadFromJsonAsync<int>();
+
         }
         catch (Exception ex)
         {
@@ -82,33 +82,34 @@ public partial class ViewBrand
     {
         try
         {
-            PageSkip = state.Page * state.PageSize;
-            PageTake = state.PageSize;
+            var skip = state.Page * state.PageSize;
+            var take = state.PageSize;
 
             var response = await HttpClient.GetAsync(
-                $"api/product/all/products/by/{BrandId}/{Branch}?skip={PageSkip}&take={PageTake}");
+                $"api/product/paged/by/{BrandId}/{Branch}?skip={skip}&take={take}",
+                cancellationToken);
 
             response.EnsureSuccessStatusCode();
 
-            Products = await response.Content.ReadFromJsonAsync<List<ProductDto>>()
-                       ?? new List<ProductDto>();
+            var result = await response.Content.ReadFromJsonAsync<ProductPageResultDto<ProductDto>>(cancellationToken: cancellationToken);
+
+            if (result is null)
+                return new TableData<ProductDto> { Items = new List<ProductDto>(), TotalItems = 0 };
 
             return new TableData<ProductDto>
             {
-                Items = Products,
-                TotalItems = Count 
+                Items = result.Products,
+                TotalItems = result.TotalCount
             };
         }
         catch (Exception ex)
         {
             Logger.LogError($"Error loading products: {ex.Message}");
-            return new TableData<ProductDto>
-            {
-                Items = new List<ProductDto>(),
-                TotalItems = 0
-            };
+            return new TableData<ProductDto> { Items = new List<ProductDto>(), TotalItems = 0 };
         }
     }
+
+
     protected void OnPageChanged(int page)
     {
         CurrentPage = page;
