@@ -51,7 +51,11 @@
         </div>
     </AuthorizeView>
     <!-- Product Table -->
-    <MudCard Elevation="0">
+        @if (!IsDataLoading)
+        {
+            
+        
+        <MudCard Elevation="0">
        
         <MudCardContent>
             <MudTable 
@@ -61,10 +65,6 @@
                 Hover="true" 
                 Bordered="true"
                 Dense="true" 
-                CurrentPage="@CurrentPage"
-                RowsPerPage="@PageTake"
-                CurrentPageChanged="OnPageChanged"
-                RowsPerPageChanged="OnRowsPerPageChanged"
                 HorizontalScrollbar=true >
                 <HeaderContent>
                     <MudTh>Product Name</MudTh>
@@ -119,11 +119,19 @@
                     <MudText Align="Align.Center" Color="Color.Error">No Products</MudText>
                 </NoRecordsContent>
                 <PagerContent>
-                   <MudTablePager />
+                   <MudTablePager HorizontalAlignment="HorizontalAlignment.Center" PageSizeOptions="@(new int[] {5,10,20} )" />
                 </PagerContent>
             </MudTable>
         </MudCardContent>
-    </MudCard> 
-   
+            </MudCard>
+        }
+        else
+        {
+            <MudCard Elevation="10" Class="d-flex flex-column align-items-center justify-content-center gap-2">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Medium" Rounded=true />
+                <MudText Typo="Typo.h6" Align="Align.Center">Loading Data</MudText>
+            </MudCard>
+        }
+
     }
 </MudMainContent>
