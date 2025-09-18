@@ -1,6 +1,7 @@
 ﻿using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,16 +14,20 @@ public class AuthenticationController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly JwtService _jwtService;
+    private readonly ILogger<AuthenticationController> _logger;
 
 
     public AuthenticationController(IAuthenticationService authService, UserManager<User> userManager,
         SignInManager<User> signInManager,
-        JwtService jwtService)
+        JwtService jwtService,
+        ILogger<AuthenticationController> logger
+        )
     {
         _authService = authService;
         _userManager = userManager;
         _jwtService = jwtService;
         _signInManager = signInManager;
+        _logger = logger;
     }
 
     [HttpGet("all/applicants")]
@@ -87,5 +92,25 @@ public class AuthenticationController : ControllerBase
         return Ok(new { Token = token });
     }
 
+    [HttpDelete("remove")]
+    public async Task<IActionResult> Remove([FromBody] UserDto userDto)
+    {
+        if (userDto == null || string.IsNullOrWhiteSpace(userDto.Username))
+            return BadRequest("Invalid user data.");
 
+        try
+        {
+            var result = await _authService.DeleteUser(userDto);
+
+            if (!result)
+                return NotFound($"User '{userDto.Username}' not found or already deleted.");
+
+            return Ok(new { message = $"User '{userDto.Username}' was soft deleted successfully." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting user: {Username}", userDto.Username);
+            return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the user.");
+        }
+    }
 }
