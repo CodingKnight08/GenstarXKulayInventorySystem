@@ -12,6 +12,9 @@
                 background-size:contain;">
      </div>
     <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" >Dashboard</MudNavLink>
+    <AuthorizeView Roles="Admin,Secretary,User">
+
+    
     <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Products</MudNavLink>
     <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
     <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
@@ -34,6 +37,7 @@
 
         <MudNavLink Href="/security" Match="NavLinkMatch.Prefix">Security</MudNavLink>
     </MudNavGroup>
+    </AuthorizeView>
     
     <MudCard Elevation="0" Class="d-flex align-items-center justify-content-center mt-5">
         <MudButton 
