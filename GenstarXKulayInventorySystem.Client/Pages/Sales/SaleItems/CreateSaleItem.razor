@@ -18,17 +18,21 @@
                          />
             </MudItem>
             <MudItem xl="5">
-               
+
                 <MudAutocomplete T="ProductDto"
                                  Label="Item Name"
-                                 Value="SelectedProductFromList"
-                                 Text="@SelectedProduct"
-                                 ToStringFunc="p => p?.ProductNameAndUnit"
                                  SearchFunc="SearchProductsDto"
+                                 ToStringFunc="p => p?.ProductNameAndUnit"
                                  ValueChanged="OnProductSelectDto"
                                  TextChanged="OnProductTyped"
+                                 Text="@SelectedProduct"
                                  Clearable="true"
-                                 Dense="true" />
+                                 Dense="true"
+                                 CoerceText="false"
+                                 CoerceValue="false"
+                                 ResetValueOnEmptyText="false" />
+
+
 
 
             </MudItem>

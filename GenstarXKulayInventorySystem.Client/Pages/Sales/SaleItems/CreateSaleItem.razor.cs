@@ -115,6 +115,7 @@ public partial class CreateSaleItem
         if (product is null) return;
 
         SelectedProductFromList = product;
+        SelectedProduct = product.ProductNameAndUnit; // keep textbox synced
         SaleItemDto.ProductId = product.Id;
         SaleItemDto.ItemName = product.ProductNameAndUnit;
 
@@ -123,22 +124,27 @@ public partial class CreateSaleItem
 
     protected void OnProductTyped(string text)
     {
-        
         SelectedProduct = text;
         SaleItemDto.ItemName = text;
 
-        // Reset ProductId if no match
         var matchedProduct = Products.FirstOrDefault(e =>
             !string.IsNullOrWhiteSpace(e.ProductNameAndUnit) &&
             string.Equals(e.ProductNameAndUnit, text, StringComparison.OrdinalIgnoreCase));
 
-        SaleItemDto.ProductId = matchedProduct?.Id;  // null if custom
-        SelectedProductFromList = matchedProduct ?? new ProductDto();
-        if(SelectedProductFromList is not null)
+        if (matchedProduct != null)
         {
+            SaleItemDto.ProductId = matchedProduct.Id;
+            SelectedProductFromList = matchedProduct;
             OnWholeSaleChanged(IsWholeSale);
         }
+        else
+        {
+            SaleItemDto.ProductId = null;
+            SelectedProductFromList = null;
+        }
     }
+
+
 
 
     protected async Task OnBrandSelect(string brand) {
