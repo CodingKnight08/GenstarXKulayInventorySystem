@@ -1,5 +1,6 @@
 ﻿@using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems.PaintIncluded
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+@using GenstarXKulayInventorySystem.Shared.DTOS;
 <MudDialog>
     <DialogContent>
         <MudGrid>
@@ -17,20 +18,19 @@
                          />
             </MudItem>
             <MudItem xl="5">
-                 <MudAutocomplete T="string"
+               
+                <MudAutocomplete T="ProductDto"
                                  Label="Item Name"
-                                 @bind-Value="SelectedProduct"
-                                 SearchFunc="SearchProducts"
-                                 Dense="true"
-                                 Clearable="true"
-                                 CoerceText="true"
-                                 CoerceValue="true"
-                                 Placeholder="Enter Item Name"
-                                 Variant="Variant.Text"
-                                 Required=true
-                                 ShowProgressIndicator="IsProductLoading"
+                                 Value="SelectedProductFromList"
+                                 Text="@SelectedProduct"
+                                 ToStringFunc="p => p?.ProductNameAndUnit"
+                                 SearchFunc="SearchProductsDto"
+                                 ValueChanged="OnProductSelectDto"
                                  TextChanged="OnProductTyped"
-                                  />
+                                 Clearable="true"
+                                 Dense="true" />
+
+
             </MudItem>
 
             <MudItem xl="3">

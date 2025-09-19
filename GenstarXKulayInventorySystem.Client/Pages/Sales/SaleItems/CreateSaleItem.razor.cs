@@ -95,29 +95,30 @@ public partial class CreateSaleItem
 
         return Task.FromResult(result);
     }
-
-
-    protected Task<IEnumerable<string>> SearchProducts(string value, CancellationToken cancellationToken)
-    { if (Products is null || !Products.Any()) 
-            return Task.FromResult(Enumerable.Empty<string>()); 
-        var result = Products
-            .Where(p => !string.IsNullOrWhiteSpace(p.ProductName) 
-            && (string.IsNullOrWhiteSpace(value) || p.ProductName
-            .Contains(value, StringComparison.OrdinalIgnoreCase))).Select(p => p.ProductName);
-        return Task.FromResult(result); }
-
-    protected void OnProductSelect(string product)
+    
+    protected Task<IEnumerable<ProductDto>> SearchProductsDto(string value, CancellationToken cancellationToken)
     {
-        // Called when user picks from the list
-        var matchedProduct = Products.FirstOrDefault(e =>
-            !string.IsNullOrWhiteSpace(e.ProductName) &&
-            string.Equals(e.ProductName, product, StringComparison.OrdinalIgnoreCase));
+        if (Products is null || !Products.Any())
+            return Task.FromResult(Enumerable.Empty<ProductDto>());
 
-        if (matchedProduct != null)
-        {
-            SaleItemDto.ProductId = matchedProduct.Id;
-            SaleItemDto.ItemName = matchedProduct.ProductName;
-        }
+        var result = Products
+            .Where(p => string.IsNullOrWhiteSpace(value) ||
+                        p.ProductNameAndUnit.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(p => p.Id)         
+            .Select(g => g.First());
+
+        return Task.FromResult(result);
+    }
+
+    protected void OnProductSelectDto(ProductDto product)
+    {
+        if (product is null) return;
+
+        SelectedProductFromList = product;
+        SaleItemDto.ProductId = product.Id;
+        SaleItemDto.ItemName = product.ProductNameAndUnit;
+
+        OnWholeSaleChanged(IsWholeSale);
     }
 
     protected void OnProductTyped(string text)
@@ -128,8 +129,8 @@ public partial class CreateSaleItem
 
         // Reset ProductId if no match
         var matchedProduct = Products.FirstOrDefault(e =>
-            !string.IsNullOrWhiteSpace(e.ProductName) &&
-            string.Equals(e.ProductName, text, StringComparison.OrdinalIgnoreCase));
+            !string.IsNullOrWhiteSpace(e.ProductNameAndUnit) &&
+            string.Equals(e.ProductNameAndUnit, text, StringComparison.OrdinalIgnoreCase));
 
         SaleItemDto.ProductId = matchedProduct?.Id;  // null if custom
         SelectedProductFromList = matchedProduct ?? new ProductDto();
