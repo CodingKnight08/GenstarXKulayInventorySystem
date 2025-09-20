@@ -1,18 +1,12 @@
-﻿@using MudBlazor
+﻿@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
 @using System.IdentityModel.Tokens.Jwt;
 @using Blazored.LocalStorage;
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @inherits LayoutComponentBase
-<MudThemeProvider Theme="@MyCustomTheme"/>
-<MudPopoverProvider />
+@attribute [Authorize]
 
-
-<MudDialogProvider />
-
-@* Needed for snackbars *@
-<MudSnackbarProvider />
-
-<MudLayout >
+<MudLayout>
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         Inventory System
@@ -22,11 +16,9 @@
     </MudDrawer>
     <div class="w-100 vh-100">
         @Body
-
     </div>
-        
-    
 </MudLayout>
+
 @code {
     bool _drawerOpen = true;
 
@@ -44,6 +36,11 @@
             var handler = new JwtSecurityTokenHandler();
             var jwt = handler.ReadJwtToken(token);
 
+            foreach (var claim in jwt.Claims)
+            {
+                Console.WriteLine($"CLAIM: {claim.Type} = {claim.Value}");
+            }
+
             var branchClaim = jwt.Claims.FirstOrDefault(c => c.Type == "Branch")?.Value;
             if (Enum.TryParse<BranchOption>(branchClaim, out var branch))
             {
@@ -51,32 +48,10 @@
                 UserState.SetBranch(branch);
             }
 
-            // Optional: redirect if logged in
             if (NavigationManager.Uri.EndsWith("/"))
                 NavigationManager.NavigateTo("/dashboard", forceLoad: true);
         }
     }
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-    MudTheme MyCustomTheme = new MudTheme()
-    {
-        PaletteLight = new PaletteLight()
-        {
-            Primary = Colors.Blue.Default,
-            Secondary = Colors.Green.Accent4,
-            AppbarBackground = Colors.Blue.Lighten2,
-        },
-        PaletteDark = new PaletteDark()
-        {
-            Primary = Colors.Blue.Lighten1
-        },
 
-        LayoutProperties = new LayoutProperties()
-        {
-            DrawerWidthLeft = "260px",
-            DrawerWidthRight = "300px"
-        }
-    };
+    void DrawerToggle() => _drawerOpen = !_drawerOpen;
 }

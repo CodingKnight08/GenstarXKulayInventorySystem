@@ -12,7 +12,6 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 
-builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddTransient<AuthorizationMessageHandler>();
 
 var settingsFile = builder.HostEnvironment.IsDevelopment()
@@ -38,8 +37,13 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.ShowCloseIcon = true;
 });
 builder.Services.AddScoped<UserState>();
-builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
+builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
+
+
 
 
 await builder.Build().RunAsync();
+        

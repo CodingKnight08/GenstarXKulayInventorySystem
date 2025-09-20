@@ -2,11 +2,12 @@
 using GenstarXKulayInventorySystem.Server.Mapper;
 using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Server.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,8 +30,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowClient", policy =>
        policy.WithOrigins(
             "https://localhost:7035", // Dev client
-            "https://genstarxkulayinventorysystem-production.up.railway.app", // Temp hosting URL
-            "https://yourdomain.com" // Final production domain
+            "https://genstarxkulayinventorysystem-production.up.railway.app", 
+            "https://helpful-gentleness-production.up.railway.app" 
         )
               .AllowAnyMethod()
               .AllowAnyHeader());
@@ -54,11 +55,15 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
 
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+
+        RoleClaimType = ClaimTypes.Role, // ✅ Ensure this matches your JWT
+        NameClaimType = ClaimTypes.Name
     };
 });
+
 
 builder.Services.AddAuthorization();
 

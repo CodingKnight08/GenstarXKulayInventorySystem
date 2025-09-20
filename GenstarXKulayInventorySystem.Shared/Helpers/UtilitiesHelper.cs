@@ -11,7 +11,35 @@ public static class UtilitiesHelper
         var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
         return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
     }
+    public static DateTime ConvertPhilippineToUtc(DateTime philippineTime)
+    {
+        TimeZoneInfo phZone;
 
+        try
+        {
+            phZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            phZone = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
+        }
+
+        return TimeZoneInfo.ConvertTimeToUtc(philippineTime, phZone);
+    }
+
+
+    private static readonly TimeZoneInfo PhilippineTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila"); // PHT is same as Singapore Standard Time
+
+    public static DateTime ConvertUtcToPhilippineTime(DateTime utcDateTime)
+    {
+        if (utcDateTime.Kind == DateTimeKind.Unspecified)
+        {
+            utcDateTime = DateTime.SpecifyKind(utcDateTime, DateTimeKind.Utc);
+        }
+
+        return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, PhilippineTimeZone);
+    }
 
     public static decimal ConvertItems(
      decimal size,
