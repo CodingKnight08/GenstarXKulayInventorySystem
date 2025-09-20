@@ -1,5 +1,6 @@
 ﻿using GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrderItems;
 using GenstarXKulayInventorySystem.Shared.DTOS;
+using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
@@ -15,6 +16,7 @@ public partial class CreatePurchaseOrders
     [CascadingParameter] protected IMudDialogInstance MudDialogService { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected ILogger<CreatePurchaseOrders> Logger { get; set; } = default!;
+    [Inject] private UserState UserState { get; set; } = default!;
 
     protected GetAllToBeAddedPurchaseOrderItems PurchaseOrderItemComponent { get; set; } = default!;
     protected List<SupplierDto> Suppliers { get; set; } = new List<SupplierDto>();
@@ -32,6 +34,7 @@ public partial class CreatePurchaseOrders
     {
         IsLoading = true;
         await LoadSuppliers();
+        NewPurchaseOrder.PurchaseShipToOption = UtilitiesHelper.GetPurchaseToShipOption(UserState.Branch.GetValueOrDefault());
         IsLoading = false;
     }
 
@@ -106,7 +109,7 @@ public partial class CreatePurchaseOrders
 
             NewPurchaseOrder.SupplierId = selectedSupplier.Id;
             NewPurchaseOrder.PurchaseOrderDate = NewPurchaseOrder.PurchaseOrderDate == default
-                ? DateTime.Now
+                ? DateTime.UtcNow
                 : NewPurchaseOrder.PurchaseOrderDate;
             NewPurchaseOrder.PurchaseOrderItems = PurchaseOrderItems;
             var response = await HttpClient.PostAsJsonAsync("api/purchaseorder", NewPurchaseOrder);

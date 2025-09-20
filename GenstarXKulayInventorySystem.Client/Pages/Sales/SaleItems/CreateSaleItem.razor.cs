@@ -115,7 +115,7 @@ public partial class CreateSaleItem
         if (product is null) return;
 
         SelectedProductFromList = product;
-        SelectedProduct = product.ProductNameAndUnit; // keep textbox synced
+        SelectedProduct = product.ProductNameAndUnit;
         SaleItemDto.ProductId = product.Id;
         SaleItemDto.ItemName = product.ProductNameAndUnit;
 

@@ -1,4 +1,6 @@
 ﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Shared.Helpers;
@@ -88,6 +90,28 @@ public static class UtilitiesHelper
         return totalSize;
     }
 
+    public static BillingBranch GetBillingBranch(BranchOption branchOption)
+    {
+        return branchOption switch
+        {
+            BranchOption.GeneralSantosCity => BillingBranch.GenStar,
+            BranchOption.Polomolok => BillingBranch.Kulay,
+            BranchOption.Warehouse => BillingBranch.Warehouse,
+            _ => throw new ArgumentOutOfRangeException(nameof(branchOption), branchOption, null)
+        };
+    }
+
+    public static PurchaseShipToOption GetPurchaseToShipOption (BranchOption branchOption) {
+        return branchOption switch
+        {
+
+            BranchOption.GeneralSantosCity => PurchaseShipToOption.GeneralSantosCity,
+            BranchOption.Polomolok => PurchaseShipToOption.Polomolok,
+            BranchOption.Warehouse => PurchaseShipToOption.Warehouse,
+            _ => throw new ArgumentOutOfRangeException(nameof(branchOption), branchOption, null)
+        };
+            }
+
     private static bool IsVolume(ProductMesurementOption unit) =>
         unit == ProductMesurementOption.Gallon ||
         unit == ProductMesurementOption.Liter ||
@@ -121,4 +145,5 @@ public static class UtilitiesHelper
         ThreeMonths = 4,
         OneYear = 5
     }
+    
 }
