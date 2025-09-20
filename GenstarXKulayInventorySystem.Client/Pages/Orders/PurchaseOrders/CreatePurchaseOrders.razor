@@ -19,7 +19,7 @@ else
         <DialogContent>
           <MudForm @ref="_form" >
               <MudGrid Spacing="3" >
-                  <MudItem xl="4">
+                  <MudItem xl="4" xs="12">
 
 
                         <MudAutocomplete
@@ -35,14 +35,14 @@ else
                        
                   </MudItem>
                   
-                    <MudItem xl="1" Class="d-flex align-items-end justify-content-start">
+                    <MudItem xl="1" Class="d-flex align-items-end justify-content-start" xs="4">
                         @if (IsNewSupplier)
                         {
                         <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Success" StartIcon="@Icons.Material.Filled.AddCircle" OnClick="ConfirmAddSupplier">Add</MudButton>
 
                         }
                   </MudItem>
-                  <MudItem xl="1">
+                  <MudItem xl="1" xs="12">
                         <MudSelect T="PurchaseRecieptOption"
                                    Label="Receipt Type"
                                    
@@ -53,7 +53,7 @@ else
                             }
                         </MudSelect>
                   </MudItem>
-                  <MudItem xl="2">
+                  <MudItem xl="2" xs="12">
                         <MudSelect T="PurchaseRecieveOption"
                                    Label="Receive Option"
                                    ReadOnly=true
@@ -64,37 +64,37 @@ else
                             }
                         </MudSelect>
                   </MudItem>
-                  <MudItem xl="2">
+                  <MudItem xl="2" xs="12">
                         <MudSelect T="PurchaseShipToOption"
                                    Label="Ship To"
-                                   @bind-Value="NewPurchaseOrder.PurchaseShipToOption">
+                                   @bind-Value="NewPurchaseOrder.PurchaseShipToOption" ReadOnly=true>
                             @foreach (var val in Enum.GetValues<PurchaseShipToOption>())
                             {
                                 <MudSelectItem Value="@val">@val.ToString()</MudSelectItem>
                             }
                         </MudSelect>
                   </MudItem>
-                  <MudItem xl="2">
+                  <MudItem xl="2" xs="12">
                         <MudTextField Label="PO No." @bind-Value="NewPurchaseOrder.PurchaseOrderNumber" Disabled=true Placeholder="Auto Generated"/>
                   </MudItem>
-                  <MudItem xl="1">
+                  <MudItem xl="1" xs="12">
                        <MudDatePicker 
                                Label="Date Ordered" 
                                MinDate="MinDate"
                                DateChanged="@(newDate => OnDateChanged(newDate))"
                                Date="NewPurchaseOrder.PurchaseOrderDate" />
                   </MudItem>    
-                   <MudItem xl="1">
+                   <MudItem xl="1" xs="12">
                         <MudDatePicker Label="Date to Recieve" MinDate="NewPurchaseOrder.PurchaseOrderDate" Date="NewPurchaseOrder.ExpectedDeliveryDate" DateChanged="@(newDate => OnExpectedDateChanged(newDate))"/>
                   </MudItem>  
-                  <MudItem xl="4">
+                  <MudItem xl="4" xs="12">
                       <MudTextField Label="Remarks" @bind-Value="NewPurchaseOrder.Remarks" />
                   </MudItem>
               </MudGrid>
               
              
               <MudCard Class="w-100 mt-4" Elevation="0">
-                  <GetAllToBeAddedPurchaseOrderItems @ref="PurchaseOrderItemComponent" OnPurchaseOrderItemsChanged="HandlePurchaseOrderItemsChanged" Branch="NewPurchaseOrder.PurchaseShipToOption" />
+                  <GetAllToBeAddedPurchaseOrderItems @ref="PurchaseOrderItemComponent" OnPurchaseOrderItemsChanged="HandlePurchaseOrderItemsChanged" Branch="UserState.Branch.GetValueOrDefault()" />
               </MudCard>
 
           </MudForm>

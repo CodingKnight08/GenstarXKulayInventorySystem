@@ -35,7 +35,7 @@ public partial class AddPaintsIncluded
         IsLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync("api/productbrand/all");
+            var response = await HttpClient.GetAsync("api/productbrand/all/brandnames");
             response.EnsureSuccessStatusCode();
             var brands = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>();
             Brands = brands ?? new List<ProductBrandDto>();
@@ -65,10 +65,10 @@ public partial class AddPaintsIncluded
             IsProductLoading = false;
         }
     }
-    protected Task<IEnumerable<string>> SearchBrands(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<string?>> SearchBrands(string value, CancellationToken cancellationToken)
     {
         if (Brands is null || !Brands.Any())
-            return Task.FromResult(Enumerable.Empty<string>());
+            return Task.FromResult(Enumerable.Empty<string?>());
 
         var result = Brands
             .Where(b => !string.IsNullOrWhiteSpace(b.BrandName) &&
@@ -76,15 +76,20 @@ public partial class AddPaintsIncluded
                         b.BrandName.Contains(value, StringComparison.OrdinalIgnoreCase)))
             .Select(b => (string?)b.BrandName);
 
-        return Task.FromResult(result!);
+        return Task.FromResult(result);
     }
 
-    protected Task<IEnumerable<string>> SearchProducts(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<ProductDto>> SearchProducts(string value, CancellationToken cancellationToken)
     {
-        if(Products is null|| !Products.Any())
-            return Task.FromResult(Enumerable.Empty<string>());
-        
-        var result = Products.Where(p => !string.IsNullOrWhiteSpace(p.ProductName) && (string.IsNullOrWhiteSpace(value) || p.ProductName.Contains(value, StringComparison.OrdinalIgnoreCase))).Select(p => p.ProductName);
+        if (Products is null || !Products.Any())
+            return Task.FromResult(Enumerable.Empty<ProductDto>());
+
+        var result = Products
+            .Where(p => string.IsNullOrWhiteSpace(value) ||
+                        p.ProductNameAndUnit.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(p => p.Id)
+            .Select(g => g.First());
+
         return Task.FromResult(result);
     }
 
@@ -116,14 +121,14 @@ public partial class AddPaintsIncluded
     }
 
 
-    protected void OnProductSelect(string product)
+    protected void OnProductSelect(ProductDto product)
     {
-        if (string.IsNullOrWhiteSpace(product) || Products is null)
+        if (product is null || Products is null)
             return;
 
         SelectedProduct = Products.FirstOrDefault(p =>
             !string.IsNullOrWhiteSpace(p.ProductName) &&
-            string.Equals(p.ProductName, product, StringComparison.OrdinalIgnoreCase)
+            string.Equals(p.ProductNameAndUnit, product.ProductNameAndUnit, StringComparison.OrdinalIgnoreCase)
         ) ?? new ProductDto();
 
         if (SelectedProduct.Id != 0)

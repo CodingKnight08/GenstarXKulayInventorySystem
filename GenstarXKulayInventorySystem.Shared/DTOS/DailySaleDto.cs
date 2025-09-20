@@ -13,7 +13,7 @@ public class DailySaleDto:BaseEntityDto
     public DateTime DateOfSales { get; set; }
     public string NameOfClient { get; set; } = string.Empty;
     public string SalesNumber { get; set; } = string.Empty;
-    public string RecieptReference { get; set; } = string.Empty;
+    public string? RecieptReference { get; set; } = string.Empty;
     public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
     public PaymentMethod? PaymentType { get; set; }
     public PaymentTermsOption? PaymentTermsOption { get; set; }

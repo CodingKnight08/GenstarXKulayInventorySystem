@@ -5,6 +5,7 @@ using MudBlazor;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Sales.DailySales;
@@ -17,6 +18,7 @@ public partial class CreateDailySale
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [CascadingParameter] protected IMudDialogInstance DialogInstance { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
 
     protected DailySaleDto Sale { get; set; } = new DailySaleDto();
     protected List<ClientDto> Clients { get; set; } = new List<ClientDto>();
@@ -25,12 +27,19 @@ public partial class CreateDailySale
     protected bool IsLoading { get; set; } = false;
     protected bool IsClientLoading { get; set; } = false;
     protected string? ErrorMessage { get; set; }
-    protected bool IsValid => !string.IsNullOrWhiteSpace(Sale.NameOfClient) && !string.IsNullOrWhiteSpace(Sale.RecieptReference) && Sale.SalesOption != null && Sale.SaleItems.Count != 0;
+    protected string? NonVoiceReceipt { get; set; }
+    protected bool IsValid =>
+        !string.IsNullOrWhiteSpace(Sale.NameOfClient) &&
+        Sale.SalesOption != null &&
+        Sale.SaleItems.Count != 0 &&
+        (Sale.SalesOption == PurchaseRecieptOption.NonBIR || !string.IsNullOrWhiteSpace(Sale.RecieptReference));
+
 
     protected override async Task OnInitializedAsync()
     {
         await LoadClients();
         Sale.PaymentTermsOption = PaymentTermsOption.SevenDays;
+        Sale.Branch = UserState.Branch.GetValueOrDefault();
     }
 
     protected async Task LoadClients()

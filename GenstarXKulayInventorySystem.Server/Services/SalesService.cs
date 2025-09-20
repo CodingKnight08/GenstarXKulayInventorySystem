@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
@@ -30,7 +31,11 @@ public class SalesService:ISalesService
 
     private string GetCurrentUsername()
     {
-        return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
+        var user = _httpContextAccessor.HttpContext?.User;
+        if (user == null) return "Unknown";
+
+        var usernameClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
+        return usernameClaim?.Value ?? "Unknown";
     }
 
     public async Task<List<DailySaleDto>> GetAllDailySalesAsync()
@@ -203,7 +208,7 @@ public class SalesService:ISalesService
     {
         try
         {
-            var existingSale = await _context.DailySales.AsNoTracking().FirstOrDefaultAsync(e => e.Branch == saleDto.Branch && e.RecieptReference == saleDto.RecieptReference);
+            var existingSale = await _context.DailySales.AsNoTracking().FirstOrDefaultAsync(e => e.Branch == saleDto.Branch && e.Id == saleDto.Id);
             if (existingSale != null) {
                 return false;
             }

@@ -14,34 +14,24 @@ public class JwtService
         _config = config;
     }
 
-    public string GenerateToken(User user, IList<string> roles)
+    public string GenerateToken(User user)
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.UserName
-                ?? throw new InvalidOperationException("UserName is required")),
-            new Claim(ClaimTypes.NameIdentifier, user.Id
-                ?? throw new InvalidOperationException("User Id is required")),
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim("Branch", user.Branch.ToString()),
-            new Claim(ClaimTypes.Role, user.Role.ToString())
+            new Claim(ClaimTypes.Role, user.Role.ToString()) // ✅ Must be ClaimTypes.Role
         };
 
-        // Add roles
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
-        var jwtKey = _config["Jwt:Key"]
-            ?? throw new InvalidOperationException("JWT Key is missing from configuration.");
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_config["Jwt:ExpireMinutes"])),
+            expires: DateTime.UtcNow.AddMinutes(60),
             signingCredentials: creds
         );
 

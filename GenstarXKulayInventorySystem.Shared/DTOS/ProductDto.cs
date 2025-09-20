@@ -22,4 +22,9 @@ public class ProductDto:BaseEntityDto
     public string Packaging { get; set; } = string.Empty;
     public decimal ActualQuantity { get; set; }
     public decimal? BufferStocks { get; set; }
+    public string ProductNameAndUnit =>
+    string.IsNullOrWhiteSpace(ProductName)
+        ? string.Empty
+        : $"{ProductName} -({ProductMesurementOption?.ToString()?? ""})";
+
 }

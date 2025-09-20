@@ -1,5 +1,6 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
@@ -7,6 +8,7 @@ using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class SalesController : ControllerBase
 {
