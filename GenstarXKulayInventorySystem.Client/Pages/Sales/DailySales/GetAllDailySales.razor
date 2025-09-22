@@ -59,7 +59,7 @@ else
                         <MudText Typo="Typo.subtitle2" Align="Align.Center">No Current Sales</MudText>
                     </NoRecordsContent>
                     <PagerContent>
-                        <MudTablePager/>
+                        <MudTablePager PageSizeOptions="@(new int[] { 5, 10, 20 })" />
                     </PagerContent>
                 </MudTable>
         </MudItem>

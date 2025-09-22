@@ -27,12 +27,14 @@ public class SaleItemService:ISaleItemService
         return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
     }
 
-    public async Task<List<SaleItemDto>> GetAllSaleItemsAsync(int dailySaleId)
+    public async Task<List<SaleItemDto>> GetAllSaleItemsAsync(int dailySaleId, int skip, int take)
     {
         List<SaleItem> saleItems = await _context.SaleItems
             .AsNoTracking()
             .AsSplitQuery()
             .Where(e => e.DailySaleId == dailySaleId && !e.IsDeleted)
+            .Skip(skip)
+            .Take(take)
             .ToListAsync();
 
         if(saleItems == null || saleItems.Count == 0)
@@ -43,6 +45,30 @@ public class SaleItemService:ISaleItemService
         List<SaleItemDto> saleItemDtos = _mapper.Map<List<SaleItemDto>>(saleItems); 
         return saleItemDtos;
     }
+
+    public async Task<SaleItemPageResultDto<SaleItemDto>> GetAllSaleItemsPageAsync(int dailySaleId, int skip, int take)
+    {
+        var query = _context.SaleItems
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(e => e.DailySaleId == dailySaleId && !e.IsDeleted);
+
+        int totalCount = await query.CountAsync();
+
+        List<SaleItem> saleItems = await query
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync();
+
+        var saleItemDtos = _mapper.Map<List<SaleItemDto>>(saleItems);
+
+        return new SaleItemPageResultDto<SaleItemDto>
+        {
+            SaleItems = saleItemDtos,
+            TotalCount = totalCount
+        };
+    }
+
 
     public async Task<List<SaleItemDto>> GetAllUndeductedItemsAsync()
     {
@@ -153,7 +179,8 @@ public class SaleItemService:ISaleItemService
 }
 public interface ISaleItemService
 {
-    Task<List<SaleItemDto>> GetAllSaleItemsAsync(int dailySaleId);
+    Task<List<SaleItemDto>> GetAllSaleItemsAsync(int dailySaleId, int skip, int take);
+    Task<SaleItemPageResultDto<SaleItemDto>> GetAllSaleItemsPageAsync(int dailySaleId, int skip, int take);
     Task<List<SaleItemDto>> GetAllUndeductedItemsAsync();
     Task<SaleItemDto?> GetSaleItemById(int saleItemId);
     Task<bool> AddSaleItemAsync(SaleItemDto saleItemDto);

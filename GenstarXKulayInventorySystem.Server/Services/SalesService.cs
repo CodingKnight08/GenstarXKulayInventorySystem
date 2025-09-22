@@ -57,24 +57,22 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date)
     {
-        DateTime chosenDate = date.Date; 
-        DateTime startOfDay = chosenDate;
-        DateTime endOfDay = chosenDate.AddDays(1);
+        var chosenDateLocal = date.Date;
 
-        List<DailySale> dailySales = await _context.DailySales
+        // assume the chosenDate is local, so convert to UTC
+        var startOfDay = chosenDateLocal.ToUniversalTime();
+        var endOfDay = chosenDateLocal.AddDays(1).ToUniversalTime();
+
+        var dailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
             .Where(e => !e.IsDeleted && e.DateOfSales >= startOfDay && e.DateOfSales < endOfDay)
             .OrderByDescending(e => e.DateOfSales)
             .ToListAsync();
-        if (dailySales == null || dailySales.Count == 0)
-        {
-            return new List<DailySaleDto>();
-        }
 
-        List<DailySaleDto> dailySaleDtos = _mapper.Map<List<DailySaleDto>>(dailySales);
-        return dailySaleDtos;
+        return _mapper.Map<List<DailySaleDto>>(dailySales);
     }
+
 
     public async Task<List<DailySaleDto>> GetAllDailySaleByDaysAsync(DateRangeOption range)
     {
