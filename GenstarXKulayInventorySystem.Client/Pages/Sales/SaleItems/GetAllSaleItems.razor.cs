@@ -14,7 +14,7 @@ public partial class GetAllSaleItems
     [Inject] protected ILogger<GetAllSaleItems> Logger { get; set; } = default!;
     protected bool IsLoading { get; set; } = false;
     protected List<SaleItemDto> SaleItems { get; set; } = new List<SaleItemDto>();
-
+    protected MudTable<SaleItemDto>? saleItemsTable;
     protected override async Task OnInitializedAsync()
     {
         await LoadSaleItems();
@@ -37,6 +37,32 @@ public partial class GetAllSaleItems
         {
             await Task.Delay(2000);
             IsLoading = false;
+        }
+    }
+    private async Task<TableData<SaleItemDto>> ServerLoadData(TableState state, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var skip = state.Page * state.PageSize;
+            var take = state.PageSize;
+            var response = await HttpClient.GetAsync($"api/saleitem/all/{DailySaleId}?skip={skip}&take={take}", cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<SaleItemPageResultDto<SaleItemDto>>(cancellationToken:cancellationToken);
+            if (result == null) {
+                return new TableData<SaleItemDto> { Items = new List<SaleItemDto>(), TotalItems = 0 };
+            }
+            return new TableData<SaleItemDto>
+            {
+                Items = result.SaleItems,
+                TotalItems = result.TotalCount,
+            };
+
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError($"Error loading sale items: {ex.Message}");
+            return new TableData<SaleItemDto> { Items = new List<SaleItemDto>(), TotalItems = 0 };
         }
     }
 
