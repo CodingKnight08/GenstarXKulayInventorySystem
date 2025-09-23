@@ -12,11 +12,13 @@ public partial class GetAllDailyReport
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected ILogger<GetAllDailyReport> Logger { get; set; } = default!;
     [Inject] protected IDialogService Dialog { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
     protected List<DailySaleReportDto> DailySaleReports { get; set; } = new();
     protected bool IsLoading { get; set; } = true;
-    protected BranchOption SelectedBranch { get; set; } = BranchOption.GeneralSantosCity;
+    protected BranchOption SelectedBranch { get; set; }
     protected override async Task OnInitializedAsync()
     {
+        SelectedBranch = UserState.Branch.GetValueOrDefault();
         await LoadDailySaleReports();
     }
 

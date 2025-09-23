@@ -1,4 +1,5 @@
-﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+﻿@using GenstarXKulayInventorySystem.Shared.DTOS
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 <MudCard Elevation="0" Class="w-100 d-flex flex-row align-items-center justify-between p-4 mb-4">
     <MudGrid Spacing="16">
         <MudItem xl="2">
@@ -7,6 +8,7 @@
                        Label="Branch"
                        Class="me-4"
                        ValueChanged="OnBranchChanged"
+                       ReadOnly="@(UserState.Role != UserRole.Admin)"
                        FullWidth=false>
                 @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
                 {
