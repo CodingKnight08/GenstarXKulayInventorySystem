@@ -132,7 +132,7 @@ public class DailySaleReportService : IDailySaleReportService
 
     public async Task<List<DailySaleDto>> GetAllDailySaleInvoice(DateTime date, BranchOption branch)
     {
-        var start = date.Date;
+        var start = date.Date.ToUniversalTime();
         var end = start.AddDays(1);
 
         var paidDailySales = await _context.DailySales
@@ -154,7 +154,7 @@ public class DailySaleReportService : IDailySaleReportService
     }
     public async Task<List<DailySaleDto>> GetAllDailySaleNonInvoice(DateTime date, BranchOption branch)
     {
-        var start = date.Date;
+        var start = date.Date.ToUniversalTime();
         var end = start.AddDays(1);
 
         var paidDailySales = await _context.DailySales

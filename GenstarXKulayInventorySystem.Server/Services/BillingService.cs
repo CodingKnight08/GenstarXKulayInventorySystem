@@ -62,7 +62,7 @@ public class BillingService:IBillingService
 
     public async Task<List<BillingDto>> GetAllExpensesBillingPerDay(DateTime date, BillingBranch branch)
     {
-        var start = date.Date;
+        var start = date.Date.ToUniversalTime();
         var end = start.AddDays(1);
 
         var billings = await _context.Billings
