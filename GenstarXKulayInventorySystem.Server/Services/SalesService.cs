@@ -101,7 +101,7 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date, BranchOption branch)
     {
-        var start = date.Date;
+        var start = date.Date.ToUniversalTime();
         var end = start.AddDays(1);
 
         var paidDailySales = await _context.DailySales
@@ -157,7 +157,7 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySalesUnpaidAsync(DateTime date, BranchOption branch)
     {
-        var start = date.Date;
+        var start = date.Date.ToUniversalTime();
         var end = start.AddDays(1);
 
         var unpaidDailySales = await _context.DailySales
@@ -185,6 +185,7 @@ public class SalesService:ISalesService
             .Where(ds => !ds.IsDeleted
                       && ds.Branch == branch
                       && ds.UpdatedAt.HasValue
+                      && ds.UpdatedAt == date.Date.ToUniversalTime()
                      )
             .ToListAsync();
 
