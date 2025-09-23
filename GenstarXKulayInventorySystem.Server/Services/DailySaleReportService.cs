@@ -62,7 +62,7 @@ public class DailySaleReportService : IDailySaleReportService
     {
         try
         {
-            var existingReport = await _context.DailySaleReports.AsNoTracking().FirstOrDefaultAsync(dr => !dr.IsDeleted && dr.Date.Date == UtilitiesHelper.GetPhilippineTime().Date && dr.Branch == reportDto.Branch);
+            var existingReport = await _context.DailySaleReports.AsNoTracking().FirstOrDefaultAsync(dr => !dr.IsDeleted && dr.Date.Date == DateTime.UtcNow.Date && dr.Branch == reportDto.Branch);
             if(existingReport != null)
             {
                 return false; 
