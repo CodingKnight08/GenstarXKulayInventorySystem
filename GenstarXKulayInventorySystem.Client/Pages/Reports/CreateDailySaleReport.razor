@@ -1,4 +1,5 @@
-﻿@if(IsLoading){
+﻿@using GenstarXKulayInventorySystem.Shared.DTOS
+@if(IsLoading){
     <MudDialog>
         <DialogContent>
             <MudCard Elevation="0" Class="d-flex flex-column justify-content-center align-items-center">
@@ -53,11 +54,13 @@ else
                 <MudItem xl="3">
                     <MudGrid Spacing="5">
                         <MudItem xl="12">
-                            <MudDatePicker @bind-Date="DailySaleReport.Date"
+                            <MudDatePicker Date="DailySaleReport.Date"
                                            MinDate="@DateTime.Now.AddYears(-10)"
                                            Label="Date"
                                            Variant="Variant.Text"
-                                           ReadOnly="true" />
+                                           ReadOnly="@(UserState.Role == UserRole.User)"
+                                           DateChanged="OnDateChanged"
+                                            />
                         </MudItem>
                         <MudItem xl="12">
                            <MudNumericField 

@@ -16,6 +16,7 @@ public partial class CreateDailySaleReport
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ILogger<CreateDailySaleReport> Logger { get; set; } = default!;
     [Inject] protected ISnackbar SnackBar { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
     protected DailySaleReportDto DailySaleReport { get; set; } = new();
     protected List<DailySaleDto> PaidSales { get; set; } = new();
@@ -46,6 +47,36 @@ public partial class CreateDailySaleReport
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    protected async Task OnDateChanged(DateTime? newDate)
+    {
+        if (newDate == null)
+            return;
+
+        // Update ReportDate with new date (force to date only, keep time at 00:00)
+        ReportDate = newDate.Value.Date;
+
+        IsLoading = true;
+        try
+        {
+            await LoadPaidSales();
+            await LoadUnpaidSales();
+            await LoadCollectedSales();
+            await LoadExpenses();
+            AssignFields();
+            OnExpensesChange();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error reloading data on date change");
+            SnackBar.Add("Failed to load data for the selected date", Severity.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
         }
     }
 
