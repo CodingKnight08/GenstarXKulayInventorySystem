@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor.Extensions;
 using System.Security.Claims;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
@@ -157,7 +158,7 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySalesUnpaidAsync(DateTime date, BranchOption branch)
     {
-        var start = date.Date;
+        var start = date.Date.ToUniversalTime();
         var end = start.AddDays(1);
 
         var unpaidDailySales = await _context.DailySales
@@ -185,6 +186,7 @@ public class SalesService:ISalesService
             .Where(ds => !ds.IsDeleted
                       && ds.Branch == branch
                       && ds.UpdatedAt.HasValue
+                      && ds.UpdatedAt.GetValueOrDefault().Date == date.ToUniversalTime().Date 
                      )
             .ToListAsync();
 
