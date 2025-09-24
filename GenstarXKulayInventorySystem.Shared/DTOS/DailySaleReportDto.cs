@@ -33,4 +33,6 @@ public class DailySaleReportDto: BaseEntityDto
     public BranchOption Branch { get; set; }
     public decimal? TotalCollectionCash => CollectionCash;
     public decimal? TotalCollectionChecks => CollectionChecks;
+
+    public List<BillingDto> Billings { get; set; } = new List<BillingDto>();
 }

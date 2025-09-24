@@ -30,4 +30,6 @@ public class DailySaleReport:BaseEntity
     public string Notes { get; set; } = string.Empty;
     public string PreparedBy { get; set; } = string.Empty;
     public BranchOption Branch { get; set; }
+
+    public ICollection<Billing> Billings { get; set; } = new List<Billing>();
 }

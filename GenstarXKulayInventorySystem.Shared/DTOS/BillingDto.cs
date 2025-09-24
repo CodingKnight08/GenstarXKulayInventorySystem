@@ -6,6 +6,8 @@ namespace GenstarXKulayInventorySystem.Shared.DTOS;
 public class BillingDto:BaseEntityDto
 {
     public int Id { get; set; }
+    public int? DailySaleIdId { get; set; }
+    public DailySaleReportDto? DailySaleReportDto { get; set; }
     public string BillingName { get; set; } = string.Empty;
     public string BillingNumber { get; set; } = string.Empty;
     public DateTime DateOfBilling { get; set; } = DateTime.Now;
