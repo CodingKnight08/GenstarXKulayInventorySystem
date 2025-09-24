@@ -198,6 +198,7 @@ public partial class CreateDailySaleReport
         try
         {
             DailySaleReport.Branch = Branch;
+            DailySaleReport.Billings = Expenses;
             var response = await HttpClient.PostAsJsonAsync("api/dailysalereport", DailySaleReport);
             if (response.IsSuccessStatusCode)
             {
