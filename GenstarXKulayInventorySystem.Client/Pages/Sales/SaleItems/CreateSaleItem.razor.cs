@@ -135,6 +135,7 @@ public partial class CreateSaleItem
         {
             SaleItemDto.ProductId = matchedProduct.Id;
             SelectedProductFromList = matchedProduct;
+            SaleItemDto.UnitMeasurement = matchedProduct.ProductMesurementOption.GetValueOrDefault();
             OnWholeSaleChanged(IsWholeSale);
         }
         else
