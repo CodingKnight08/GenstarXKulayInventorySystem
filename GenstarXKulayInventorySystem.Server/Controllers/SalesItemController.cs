@@ -14,6 +14,17 @@ public class SalesItemController : ControllerBase
         _saleItemService = saleItemService;
     }
 
+    [HttpGet("items/{dailySaleId:int}")]
+    public async Task<ActionResult<List<SaleItemDto>>> GetAllSaleItems(int dailySaleId)
+    {
+        var result = await _saleItemService.GetAllSaleItemsAsync(dailySaleId);
+        if(result is null)
+        {
+            result = new List<SaleItemDto>();
+        }
+        return Ok(result);
+    }
+
     [HttpGet("all/{dailySaleId:int}")]
     public async Task<ActionResult<SaleItemPageResultDto<SaleItemDto>>> GetAllSaleItemsByDailySale(
      int dailySaleId,
