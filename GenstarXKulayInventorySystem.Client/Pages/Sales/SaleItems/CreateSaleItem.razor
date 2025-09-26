@@ -51,7 +51,7 @@
                 <MudNumericField T="decimal?" @bind-Value="SaleItemDto.Size"  Placeholder="Item Size eg. 1.5" Label="Item Size" HideSpinButtons="true" Variant="Variant.Text" Required=true/>
             </MudItem>
             <MudItem xl="3">
-                <MudSelect T="ProductMesurementOption" @bind-Value="SaleItemDto.UnitMeasurement" Label="Unit">
+                <MudSelect T="ProductMesurementOption" @bind-Value="SaleItemDto.UnitMeasurement" Label="Unit" Disabled="@(SaleItemDto.ProductId !=null)">
                     @foreach(var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
                     {
                         <MudSelectItem T="ProductMesurementOption" Value="@unit">

@@ -102,7 +102,7 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date, BranchOption branch)
     {
-        var start = date.Date;
+        var start = date.Date.ToUniversalTime();
         var end = start.AddDays(1);
 
         var paidDailySales = await _context.DailySales

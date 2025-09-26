@@ -69,6 +69,7 @@ public class BillingService:IBillingService
             .AsNoTracking()
             .AsSplitQuery()
             .Where(e => !e.IsDeleted
+                     && e.DailySaleId == null
                      && e.Branch == branch
                      && e.IsPaid
                      && e.DatePaid.HasValue
@@ -79,6 +80,7 @@ public class BillingService:IBillingService
         return _mapper.Map<List<BillingDto>>(billings);
     }
 
+  
     public async Task<BillingDto?> GetBillingById(int id)
     {
         var billing = await _context.Billings.AsNoTracking()

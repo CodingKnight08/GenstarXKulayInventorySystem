@@ -25,13 +25,25 @@ public partial class GetAllSaleItems
         IsLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync($"api/salesitem/all/{DailySaleId}");
+            var response = await HttpClient.GetAsync($"api/salesitem/all/{DailySaleId}?skip=0&take=10");
             response.EnsureSuccessStatusCode();
-            var saleItems = await response.Content.ReadFromJsonAsync<List<SaleItemDto>>();
-            SaleItems = saleItems ?? new List<SaleItemDto>();
+
+            var result = await response.Content.ReadFromJsonAsync<SaleItemPageResultDto<SaleItemDto>>();
+
+            if (result != null)
+            {
+                SaleItems = result.SaleItems;
+                
+            }
+            else
+            {
+                SaleItems = new List<SaleItemDto>();
+                
+            }
         }
-        catch (Exception ex) {
-                Logger.LogError($"Error in loading Sale Items: {ex.Message}");
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error in loading Sale Items: {ex.Message}");
         }
         finally
         {
@@ -39,13 +51,16 @@ public partial class GetAllSaleItems
             IsLoading = false;
         }
     }
+
+
+
     private async Task<TableData<SaleItemDto>> ServerLoadData(TableState state, CancellationToken cancellationToken)
     {
         try
         {
             var skip = state.Page * state.PageSize;
             var take = state.PageSize;
-            var response = await HttpClient.GetAsync($"api/saleitem/all/{DailySaleId}?skip={skip}&take={take}", cancellationToken);
+            var response = await HttpClient.GetAsync($"api/salesitem/all/{DailySaleId}?skip={skip}&take={take}", cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadFromJsonAsync<SaleItemPageResultDto<SaleItemDto>>(cancellationToken:cancellationToken);

@@ -64,7 +64,11 @@ public static class UtilitiesHelper
                 (ProductMesurementOption.Milliliter, ProductMesurementOption.Gallon) => totalSize * 3785m,
                 (ProductMesurementOption.Milliliter, ProductMesurementOption.Liter) => totalSize * 1000m,
                 (ProductMesurementOption.Milliliter, ProductMesurementOption.Quart) => totalSize * 946m,
-
+                (ProductMesurementOption.Liter, ProductMesurementOption.Quart) => totalSize * 1.057m,
+                (ProductMesurementOption.Liter, ProductMesurementOption.Liter) => totalSize,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Liter) => totalSize * 0.946m,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Quart) => totalSize,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Gallon) => totalSize * 0.25m,
                 _ => throw new Exception($"No conversion available for {productUnit} -> {saleItemUnit}")
             };
         }
