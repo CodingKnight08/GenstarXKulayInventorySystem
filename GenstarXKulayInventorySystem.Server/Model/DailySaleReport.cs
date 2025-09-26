@@ -32,4 +32,5 @@ public class DailySaleReport:BaseEntity
     public BranchOption Branch { get; set; }
 
     public ICollection<Billing> Billings { get; set; } = new List<Billing>();
+    public ICollection<DailySale> DailySales { get; set; } = new List<DailySale>();
 }
