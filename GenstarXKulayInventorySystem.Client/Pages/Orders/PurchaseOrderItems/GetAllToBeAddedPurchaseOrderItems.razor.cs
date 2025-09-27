@@ -9,7 +9,7 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrderItems;
 public partial class GetAllToBeAddedPurchaseOrderItems
 {
     [Parameter] public EventCallback<List<PurchaseOrderItemDto>> OnPurchaseOrderItemsChanged { get; set; }
-    [Parameter] public PurchaseShipToOption Branch { get; set; }
+    [Parameter] public BranchOption Branch { get; set; }
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
@@ -31,17 +31,11 @@ public partial class GetAllToBeAddedPurchaseOrderItems
     {
         try
         {
-            BranchOption branch = Branch switch
-            {
-                PurchaseShipToOption.GeneralSantosCity => BranchOption.GeneralSantosCity,
-                PurchaseShipToOption.Polomolok => BranchOption.Polomolok,
-                PurchaseShipToOption.Warehouse => BranchOption.Warehouse,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+           
 
             var dialog = await DialogService.ShowAsync<CreatePurchaseOrderItem>("", new DialogParameters
             {
-                {"Branch", branch}
+                {"Branch", Branch }
             });
             if (dialog is not null)
             {

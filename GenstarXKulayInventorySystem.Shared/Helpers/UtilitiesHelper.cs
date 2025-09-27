@@ -1,4 +1,6 @@
 ﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Shared.Helpers;
@@ -10,7 +12,35 @@ public static class UtilitiesHelper
         var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
         return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
     }
+    public static DateTime ConvertPhilippineToUtc(DateTime philippineTime)
+    {
+        TimeZoneInfo phZone;
 
+        try
+        {
+            phZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            phZone = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
+        }
+
+        return TimeZoneInfo.ConvertTimeToUtc(philippineTime, phZone);
+    }
+
+
+    private static readonly TimeZoneInfo PhilippineTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila"); // PHT is same as Singapore Standard Time
+
+    public static DateTime ConvertUtcToPhilippineTime(DateTime utcDateTime)
+    {
+        if (utcDateTime.Kind == DateTimeKind.Unspecified)
+        {
+            utcDateTime = DateTime.SpecifyKind(utcDateTime, DateTimeKind.Utc);
+        }
+
+        return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, PhilippineTimeZone);
+    }
 
     public static decimal ConvertItems(
      decimal size,
@@ -34,7 +64,11 @@ public static class UtilitiesHelper
                 (ProductMesurementOption.Milliliter, ProductMesurementOption.Gallon) => totalSize * 3785m,
                 (ProductMesurementOption.Milliliter, ProductMesurementOption.Liter) => totalSize * 1000m,
                 (ProductMesurementOption.Milliliter, ProductMesurementOption.Quart) => totalSize * 946m,
-
+                (ProductMesurementOption.Liter, ProductMesurementOption.Quart) => totalSize * 1.057m,
+                (ProductMesurementOption.Liter, ProductMesurementOption.Liter) => totalSize,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Liter) => totalSize * 0.946m,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Quart) => totalSize,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Gallon) => totalSize * 0.25m,
                 _ => throw new Exception($"No conversion available for {productUnit} -> {saleItemUnit}")
             };
         }
@@ -59,6 +93,28 @@ public static class UtilitiesHelper
 
         return totalSize;
     }
+
+    public static BillingBranch GetBillingBranch(BranchOption branchOption)
+    {
+        return branchOption switch
+        {
+            BranchOption.GeneralSantosCity => BillingBranch.GenStar,
+            BranchOption.Polomolok => BillingBranch.Kulay,
+            BranchOption.Warehouse => BillingBranch.Warehouse,
+            _ => throw new ArgumentOutOfRangeException(nameof(branchOption), branchOption, null)
+        };
+    }
+
+    public static PurchaseShipToOption GetPurchaseToShipOption (BranchOption branchOption) {
+        return branchOption switch
+        {
+
+            BranchOption.GeneralSantosCity => PurchaseShipToOption.GeneralSantosCity,
+            BranchOption.Polomolok => PurchaseShipToOption.Polomolok,
+            BranchOption.Warehouse => PurchaseShipToOption.Warehouse,
+            _ => throw new ArgumentOutOfRangeException(nameof(branchOption), branchOption, null)
+        };
+            }
 
     private static bool IsVolume(ProductMesurementOption unit) =>
         unit == ProductMesurementOption.Gallon ||
@@ -93,4 +149,5 @@ public static class UtilitiesHelper
         ThreeMonths = 4,
         OneYear = 5
     }
+    
 }

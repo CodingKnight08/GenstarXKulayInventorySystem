@@ -1,4 +1,5 @@
 ﻿@using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems
+@using GenstarXKulayInventorySystem.Shared.DTOS
 @using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
@@ -56,7 +57,9 @@
                 <MudSelect T="BranchOption"
                            Value="Sale.Branch"
                            ValueChanged="OnBranchChanged"
-                           Label="Branch">
+                           Label="Branch"
+                           ReadOnly="@(UserState.Role != UserRole.Admin)">
+                                         
                     @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
                     {
                         <MudSelectItem T="BranchOption" Value="@branch">
@@ -65,12 +68,16 @@
                     }
                 </MudSelect>
             </MudItem>
-            <MudItem xl="3">
-                <MudTextField @bind-Value="Sale.RecieptReference"
-                              T="string"
-                              Placeholder="Enter Receipt No."
-                              Label="Receipt No." />
-            </MudItem>
+          
+                <MudItem xl="3">
+                    <MudTextField @bind-Value="Sale.RecieptReference"
+                                  T="string"
+                                  Placeholder="Enter Receipt No."
+                                  Label="Receipt No."
+                                  />
+                </MudItem>
+            
+
             @if(Sale.PaymentType == null)
             {
                 

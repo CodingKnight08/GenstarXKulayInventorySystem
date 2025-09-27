@@ -79,7 +79,11 @@ public class InventoryDbContext: IdentityDbContext<User>
 
         modelBuilder.Entity<Billing>(entity =>
         {
-          
+            entity.HasOne(b => b.DailySaleReport)
+                 .WithMany(dsr => dsr.Billings)
+                 .HasForeignKey(b => b.DailySaleId)
+                 .OnDelete(DeleteBehavior.SetNull);
+
             entity.Property(b => b.Amount).HasColumnType("numeric(18,2)");
             entity.Property(b => b.DiscountAmount).HasColumnType("numeric(18,2)");
             entity.Property(b => b.Category).HasConversion<int>();
@@ -106,6 +110,11 @@ public class InventoryDbContext: IdentityDbContext<User>
              .WithMany(c => c.DailySales)
              .HasForeignKey(ds => ds.ClientId)
              .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(ds => ds.DailySaleReport)
+                  .WithMany(dsr => dsr.DailySales)
+                  .HasForeignKey(ds => ds.DailySaleReportId)
+                  .OnDelete(DeleteBehavior.SetNull);
 
             entity.Property(ds => ds.TotalAmount).HasColumnType("numeric(18,2)");
 

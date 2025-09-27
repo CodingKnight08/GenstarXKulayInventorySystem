@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Reports;
@@ -16,11 +17,16 @@ public partial class ViewDailySaleReport
     [Inject] protected NavigationManager Navigation { get; set; } = default!;
 
     protected DailySaleReportDto DailySaleReport { get; set; } = new();
-    protected List<DailySaleDto> PaidSales { get; set; } = new();
+    protected List<DailySaleDto> Invoices { get; set; } = new();
+    protected List<DailySaleDto> NonVoice { get; set; } = new();
+    protected List<DailySaleDto> ChargeSales { get; set; } = new List<DailySaleDto>();
     protected bool IsLoading { get; set; } = true;
     protected override async Task OnInitializedAsync()
     {
         await LoadReport();
+        Invoices = DailySaleReport.DailySales.Where(x => x.SalesOption == PurchaseRecieptOption.BIR && x.PaymentType != null && x.UpdatedAt == null).ToList();
+        NonVoice = DailySaleReport.DailySales.Where(x => x.SalesOption == PurchaseRecieptOption.NonBIR && x.PaymentType != null && x.UpdatedAt == null).ToList();
+        ChargeSales = DailySaleReport.DailySales.Where(x => x.SalesOption == null || x.UpdatedAt.HasValue).ToList();
     }
 
     protected async Task LoadReport()
@@ -44,7 +50,7 @@ public partial class ViewDailySaleReport
         }
         finally
         {
-           IsLoading = false;
+            IsLoading = false;
         }
     }
     protected List<BreadcrumbItem> _items =

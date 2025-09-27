@@ -3,6 +3,7 @@ using System;
 using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250924102145_UpdateBillingForeignKey")]
+    partial class UpdateBillingForeignKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,9 +175,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int?>("CustomPaymentTermsOption")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("DailySaleReportId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("DateOfSales")
                         .HasColumnType("timestamp with time zone");
 
@@ -223,8 +223,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
-
-                    b.HasIndex("DailySaleReportId");
 
                     b.ToTable("DailySales");
                 });
@@ -1116,14 +1114,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.DailySaleReport", "DailySaleReport")
-                        .WithMany("DailySales")
-                        .HasForeignKey("DailySaleReportId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("Client");
-
-                    b.Navigation("DailySaleReport");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>
@@ -1268,8 +1259,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.DailySaleReport", b =>
                 {
                     b.Navigation("Billings");
-
-                    b.Navigation("DailySales");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>

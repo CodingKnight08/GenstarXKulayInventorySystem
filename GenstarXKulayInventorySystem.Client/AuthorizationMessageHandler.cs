@@ -30,7 +30,6 @@ public class AuthorizationMessageHandler:DelegatingHandler
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             await _localStorage.RemoveItemAsync("authToken");
-            _navigation.NavigateTo("/login", forceLoad: true);
         }
 
         return response;

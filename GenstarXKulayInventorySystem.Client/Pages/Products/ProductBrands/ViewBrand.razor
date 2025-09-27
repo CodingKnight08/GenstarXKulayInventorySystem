@@ -1,6 +1,9 @@
 ﻿@page "/productbrand/{brandId:int}"
-
-
+@using GenstarXKulayInventorySystem.Shared.DTOS;
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+@attribute [Authorize]
 <PageTitle>View Product Brand</PageTitle>
 
 
@@ -10,8 +13,9 @@
 
      @if (IsLoading)
     {
-        <div class="d-flex justify-center align-center" style="height: 300px;">
+        <div class="d-flex flex-column justify-content-center align-items-center gap-2" style="height: 300px;">
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+            <MudText Align="Align.Center" Color="Color.Primary">Loading</MudText>
         </div>
     }
     else
@@ -35,77 +39,115 @@
             </MudGrid>
         </MudCardContent>
     </MudCard>
-    <MudText Typo="Typo.h4" Align="Align.Center">Products</MudText>
-        <div class="d-flex justify-content-end mb-3 me-3">
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="AddProduct"
-            >
-                Add Product
-            </MudButton>
-        </div>
-    <!-- Product Table -->
-    <MudCard Elevation="0">
+  
+        <MudText Typo="Typo.h4" Align="Align.Center">Products</MudText>
+  
+        <MudCard Elevation="0">
+            <MudGrid Justify="Justify.SpaceBetween">
+                  <MudItem lg="3" xl="2">
+                        <AuthorizeView Roles="Admin">
+                            <MudSelect T="BranchOption" Value="Branch" Label="Branch" ValueChanged="OnBranchChanged" Class="px-3">
+                                @foreach (var branch in Enum.GetValues<BranchOption>())
+                                {
+                                    <MudSelectItem Value="@branch">@branch</MudSelectItem>
+                                }
+                        </MudSelect>
+                     </AuthorizeView>
+                  </MudItem>
+                <AuthorizeView Roles="Secretary,Admin">
+                    <MudItem lg="8" Class="d-flex flex-row justify-content-end mb-3 me-3">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="AddProduct">
+                            Add Product
+                        </MudButton>
+                    </MudItem>
+                </AuthorizeView>
+                
+            </MudGrid>
+        </MudCard>
        
-        <MudCardContent>
-            <MudTable Items="@Products" Hover="true" Bordered="true" Dense="true" HorizontalScrollbar=true >
-                <HeaderContent>
-                    <MudTh>Product Name</MudTh>
-                    <MudTh>Size</MudTh>
-                    <MudTh>Unit</MudTh>
-                    <MudTh>Category</MudTh>
-                    <MudTh>Quantity</MudTh>
-                    <MudTh>Lvl Stock</MudTh>
-                    <MudTh>Color</MudTh>
-                    <MudTh>Capital Price</MudTh>
-                    <MudTh>Retail Price</MudTh>
-                    <MudTh>Wholesale Price</MudTh>
-                    <MudTh>Branch</MudTh>
-                    <MudTh>Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd Style="position:sticky;" DataLabel="Product Name">@context.ProductName</MudTd>
-                    <MudTd DataLabel="Size">@context.Size</MudTd>
-                    <MudTd DataLabel="Unit">@context.ProductMesurementOption.ToString()</MudTd>
-                   <MudTd DataLabel="Category">
-                        @(
-                            context.ProductCategoryId != null
-                                ? Categories.FirstOrDefault(c => c.Id == context.ProductCategoryId)?.Name ?? "None"
-                                : "None"
-                        )
-                    </MudTd>
+   
+    <!-- Product Table -->
+        
+            
+        
+        <MudCard Elevation="0">
 
+                <MudCardContent>
+                    <MudTable T="ProductDto"
+                              @ref="productTable"
+                              ServerData="ServerLoadData"
+                              Hover="true"
+                              Bordered="true"
+                              Dense="true"
+                              Striped="true"
+                              HorizontalScrollbar="true">
 
+                        <HeaderContent>
+                            <MudTh Style="position:sticky; left:0; z-index:2; background:white;">
+                                Product Name
+                            </MudTh>
+                            <MudTh>Size</MudTh>
+                            <MudTh>Unit</MudTh>
+                            <MudTh>Category</MudTh>
+                            <MudTh>Quantity</MudTh>
+                            <MudTh>Lvl Stock</MudTh>
+                            <MudTh>Color</MudTh>
+                            <MudTh>Capital Price</MudTh>
+                            <MudTh>Retail Price</MudTh>
+                            <MudTh>Wholesale Price</MudTh>
+                            <MudTh>Actions</MudTh>
+                        </HeaderContent>
 
-
+                        <RowTemplate>
+                            <MudTd Style="position:sticky; left:0; z-index:1; background:white;"
+                                   DataLabel="Product Name">
+                                @context.ProductName
+                            </MudTd>
+                            <MudTd DataLabel="Size">@context.Size</MudTd>
+                            <MudTd DataLabel="Unit">@context.ProductMesurementOption.ToString()</MudTd>
+                            <MudTd DataLabel="Category">
+                                @(
+                                                        context.ProductCategoryId != null
+                                                        ? Categories.FirstOrDefault(c => c.Id == context.ProductCategoryId)?.Name ?? "None"
+                                                        : "None"
+                                                        )
+                        </MudTd>
                         <MudTd DataLabel="Quantity"
                                Style=@($"color:{(context.ActualQuantity < context.BufferStocks ? "red" : "inherit")}")>
                             @context.ActualQuantity
                         </MudTd>
-
-                    <MudTd DataLabel="LevelStock">@context.BufferStocks</MudTd>
-                    <MudTd DataLabel="Color">@context.Color</MudTd>
-                    <MudTd DataLabel="Capital"> ₱ @context.CostPrice</MudTd>
-                    <MudTd DataLabel="RetailPrice"> ₱@context.RetailPrice</MudTd>
-                    <MudTd DataLabel="Wholesale"> ₱@context.WholesalePrice</MudTd>
-                    <MudTd DataLabel="Branch">@context.Branch.ToString()</MudTd>
-                    <MudTd DataLabel="Action">
+                        <MudTd DataLabel="LevelStock">@context.BufferStocks</MudTd>
+                        <MudTd DataLabel="Color">@context.Color</MudTd>
+                        <MudTd DataLabel="Capital"> ₱ @context.CostPrice</MudTd>
+                        <MudTd DataLabel="RetailPrice"> ₱@context.RetailPrice</MudTd>
+                        <MudTd DataLabel="Wholesale"> ₱@context.WholesalePrice</MudTd>
+                        <MudTd DataLabel="Action">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Color="Color.Success"
-                                           Variant="Variant.Text" 
-                                           OnClick="()=>UpdateProduct(context.Id)"/>
+                                           Variant="Variant.Text"
+                                           OnClick="()=>UpdateProduct(context.Id)" />
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                            Color="Color.Error"
-                                           Variant="Variant.Text" 
-                                           OnClick="() => DeleteProduct(context.Id)"/>
-                    </MudTd>
-                </RowTemplate>
-                <PagerContent>
-                   <MudTablePager />
-                </PagerContent>
-            </MudTable>
-        </MudCardContent>
-    </MudCard> 
+                                           Variant="Variant.Text"
+                                           OnClick="() => DeleteProduct(context.Id)" />
+                        </MudTd>
+                    </RowTemplate>
+
+                        <NoRecordsContent>
+                            <MudText Align="Align.Center" Color="Color.Error">No Products</MudText>
+                        </NoRecordsContent>
+
+                        <PagerContent>
+                            <MudTablePager HorizontalAlignment="HorizontalAlignment.Center" PageSizeOptions="@(new int[] { 5, 10, 20 })" />
+                        </PagerContent>
+                    </MudTable>
+                </MudCardContent>
+
+            </MudCard>
+        
+
     }
 </MudMainContent>

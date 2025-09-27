@@ -39,7 +39,7 @@
 
             </MudItem>
             <MudItem xl="6" lg="6" md="6" sm="12">
-                <MudSelect T="BillingBranch" @bind-Value="Billing.Branch" Label="Billing Branch" FullWidth="true">
+                <MudSelect T="BillingBranch" @bind-Value="Billing.Branch" Label="Billing Branch" FullWidth="true" ReadOnly="true">
                     @foreach (var s in Enum.GetValues<BillingBranch>())
                     {
                         <MudSelectItem Value="@s">@s.ToString()</MudSelectItem>

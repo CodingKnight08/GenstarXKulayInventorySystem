@@ -24,7 +24,20 @@ public partial class ViewDailySale
         await LoadSale();
     }
 
-
+    protected async Task LoadSaleItems()
+    {
+        try
+        {
+            var response = await HttpClient.GetAsync($"api/sales/items/{Sales.Id}");
+            response.EnsureSuccessStatusCode();
+            var saleItems = await response.Content.ReadFromJsonAsync<List<SaleItemDto>>();
+            Sales.SaleItems = saleItems ?? new List<SaleItemDto>();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error in loading Sale Items: {ex.Message}");
+        }
+    }
     protected async Task LoadSale()
     {
         IsLoading = true;

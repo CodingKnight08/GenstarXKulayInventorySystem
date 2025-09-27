@@ -10,6 +10,7 @@ public partial class GetAllUsers
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private ILogger<GetAllUsers> Logger { get; set; } = default!;
     [Inject] private IDialogService Dialog { get; set; } = default!;
+    [Inject] private ISnackbar SnackBar { get; set; } = default!;
     protected List<UserDto> Users { get; set; } = new();
     protected bool IsLoading { get; set; } = true;
 
@@ -53,5 +54,31 @@ public partial class GetAllUsers
                 StateHasChanged();
             }
         }
+    }
+
+    protected async Task DeleteAsync(UserDto user)
+    {
+        var parameters = new DialogParameters
+        {
+            {"User", user }
+        };
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            BackdropClick = false
+        };
+        var dialog = await Dialog.ShowAsync<DeleteUser>("", parameters, options);
+        if(dialog is not null)
+        {
+            var result = await dialog.Result;
+            if(result is not null && !result.Canceled)
+            {
+                await LoadUsers();
+                StateHasChanged();
+            }
+        }
+        
     }
 }

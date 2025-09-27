@@ -14,15 +14,31 @@ public class SalesItemController : ControllerBase
         _saleItemService = saleItemService;
     }
 
-    [HttpGet("all/{dailySaleId:int}")]
-    public async Task<ActionResult<List<SaleItemDto>>> GetAllSaleItemsByDailySale(int dailySaleId)
+    [HttpGet("items/{dailySaleId:int}")]
+    public async Task<ActionResult<List<SaleItemDto>>> GetAllSaleItems(int dailySaleId)
     {
-        var saleItems = await _saleItemService.GetAllSaleItemsAsync(dailySaleId);
-        if (saleItems == null || saleItems.Count == 0) { 
-         return NotFound("No sale items found");
+        var result = await _saleItemService.GetAllSaleItemsAsync(dailySaleId);
+        if(result is null)
+        {
+            result = new List<SaleItemDto>();
         }
-        return Ok(saleItems);
+        return Ok(result);
     }
+
+    [HttpGet("all/{dailySaleId:int}")]
+    public async Task<ActionResult<SaleItemPageResultDto<SaleItemDto>>> GetAllSaleItemsByDailySale(
+     int dailySaleId,
+     [FromQuery] int skip = 0,
+     [FromQuery] int take = 10)
+    {
+        var result = await _saleItemService.GetAllSaleItemsPageAsync(dailySaleId, skip, take);
+
+        if (result.SaleItems == null || result.SaleItems.Count == 0)
+            return NotFound("No sale items found");
+
+        return Ok(result);
+    }
+
 
     [HttpGet("all/undeducted")]
     public async Task<ActionResult<List<SaleItemDto>>> GetAllUndeductedItems()

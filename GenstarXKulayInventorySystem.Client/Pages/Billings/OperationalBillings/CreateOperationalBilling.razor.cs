@@ -1,4 +1,5 @@
 ﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
@@ -11,6 +12,7 @@ public partial class CreateOperationalBilling
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private UserState UserState { get; set; } = default!;
     protected BillingDto Billing { get; set; } = new();
     protected string? ErrorMessage { get; set; }
     protected DateTime MinDate { get; set; } = new DateTime(DateTime.Now.Year, 1, 1);
@@ -18,8 +20,8 @@ public partial class CreateOperationalBilling
     protected override async Task OnInitializedAsync()
     {
         Billing.Category = BillingCategory.Logistics;
-        Billing.DateOfBilling = DateTime.Today;
-       
+        Billing.DateOfBilling = DateTime.UtcNow;
+        Billing.Branch = UtilitiesHelper.GetBillingBranch(UserState.Branch.GetValueOrDefault());
         await Task.CompletedTask;
     }
     protected async Task SubmitAsync()

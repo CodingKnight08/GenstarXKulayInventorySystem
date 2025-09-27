@@ -1,0 +1,45 @@
+﻿@using GenstarXKulayInventorySystem.Shared.DTOS
+<MudDialog>
+    <DialogContent>
+        <MudText Align="Align.Center" Typo="Typo.h6">Are you sure to delete <strong class="text-danger">@User.Username</strong> ?</MudText>
+        <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Error">This process cannot be reverted!</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="Delete">Delete User</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public UserDto User { get; set; } = new (); 
+    [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
+    [Inject] protected HttpClient HttpClient { get; set; } = default!;
+    [Inject] protected ILogger<DeleteUser> Logger { get; set; } = default!;
+    [Inject] protected ISnackbar SnackBar { get; set; } = default!;
+
+    protected async Task Delete()
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Delete, "api/authentication/remove")
+            {
+                Content = JsonContent.Create(User)
+            };
+
+            var response = await HttpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+
+            response.EnsureSuccessStatusCode();
+            SnackBar.Add($"User {User.Username} was successfully deleted.", Severity.Success);
+            MudDialog.Close(true);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error while deleting user.");
+            SnackBar.Add($"Failed to delete user {User.Username}.", Severity.Error);
+        }
+    }
+
+    protected void Cancel() => MudDialog.Cancel();
+}

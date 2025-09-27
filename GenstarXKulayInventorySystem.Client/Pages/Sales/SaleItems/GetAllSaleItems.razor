@@ -1,4 +1,5 @@
 ﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+@using GenstarXKulayInventorySystem.Shared.DTOS;
 @if (IsLoading)
 {
     <MudCard Elevation="10" Class="w-100 d-flex flex-column align-items-center justify-content-center">
@@ -9,7 +10,7 @@
 else
 {
     <MudCard Elevation="0" Class="w-100">
-        <MudTable Items="SaleItems" Bordered="true" Hover="true" Elevation="10">
+        <MudTable T="SaleItemDto" @ref="saleItemsTable" ServerData="ServerLoadData" Striped=true Bordered="true" Hover="true" Elevation="10">
             <HeaderContent>
                 <MudTh>Item Name</MudTh>
                 <MudTh>Size</MudTh>
@@ -40,7 +41,7 @@ else
                 </MudText>
             </NoRecordsContent>
            <PagerContent>
-               <MudTablePager/>
+                <MudTablePager HorizontalAlignment="HorizontalAlignment.Center" PageSizeOptions="@(new int[] { 5, 10, 20 })" />
            </PagerContent>
         </MudTable>
     </MudCard>
