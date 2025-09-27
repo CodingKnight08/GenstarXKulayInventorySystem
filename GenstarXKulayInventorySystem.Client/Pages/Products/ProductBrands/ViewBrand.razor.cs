@@ -19,7 +19,6 @@ public partial class ViewBrand
     protected List<ProductCategoryDto> Categories { get; set; } = new List<ProductCategoryDto>();
     protected BranchOption Branch { get; set; }
     protected MudTable<ProductDto>? productTable;
-
     protected bool IsLoading = false;
     protected string? ErrorMessage { get; set; }
     protected List<BreadcrumbItem> items = new();
@@ -108,7 +107,14 @@ public partial class ViewBrand
             return new TableData<ProductDto> { Items = new List<ProductDto>(), TotalItems = 0 };
         }
     }
-
+    private async Task OnBranchChanged(BranchOption newBranch)
+    {
+        Branch = newBranch;
+        if (productTable is not null)
+        {
+            await productTable.ReloadServerData();
+        }
+    }
 
     protected void OnPageChanged(int page)
     {
@@ -143,7 +149,10 @@ public partial class ViewBrand
     {
         var dialogRef = await DialogService.ShowAsync<CreateProduct>(
             "Add Product",
-            new DialogParameters { ["BrandId"] = BrandId });
+            new DialogParameters {
+                ["BrandId"] = BrandId ,
+                ["Branch"] = Branch
+            });
 
         if (dialogRef is not null)
         {
