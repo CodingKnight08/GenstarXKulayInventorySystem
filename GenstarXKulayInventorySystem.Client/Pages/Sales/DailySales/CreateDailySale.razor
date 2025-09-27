@@ -1,4 +1,5 @@
 ﻿@using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems
+@using GenstarXKulayInventorySystem.Shared.DTOS
 @using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
@@ -57,7 +58,7 @@
                            Value="Sale.Branch"
                            ValueChanged="OnBranchChanged"
                            Label="Branch"
-                           ReadOnly=true>
+                           ReadOnly="@(UserState.Role != UserRole.Admin)">
                                          
                     @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
                     {
