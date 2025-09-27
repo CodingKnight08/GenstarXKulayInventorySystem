@@ -15,7 +15,7 @@ public partial class GetAllDailySales
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected UserState UserState { get; set; } = default!;
-    private MudTable<DailySaleDto> dailySaleTable;
+    private MudTable<DailySaleDto>? dailySaleTable;
     protected List<DailySaleDto> Sales { get; set; } = new List<DailySaleDto>();
     protected BranchOption Branch { get; set; } 
     protected bool IsLoading { get; set; } = false;
@@ -68,7 +68,7 @@ public partial class GetAllDailySales
             return;
 
         SelectedDate = newDate.Value;
-        await dailySaleTable.ReloadServerData();
+        await dailySaleTable!.ReloadServerData();
     }
 
     protected void CreateSaleAsync()
