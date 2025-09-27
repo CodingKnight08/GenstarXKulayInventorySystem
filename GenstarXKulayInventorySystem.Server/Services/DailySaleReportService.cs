@@ -47,6 +47,7 @@ public class DailySaleReportService : IDailySaleReportService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(b => b.Billings)
+            .Include(ds => ds.DailySales)
             .FirstOrDefaultAsync(dr => dr.Id == id && !dr.IsDeleted);
         if (report == null)
         {

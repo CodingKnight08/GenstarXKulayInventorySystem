@@ -2,6 +2,7 @@
 @using GenstarXKulayInventorySystem.Shared.DTOS;
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @attribute [Authorize]
 <PageTitle>View Product Brand</PageTitle>
 
@@ -38,18 +39,36 @@
             </MudGrid>
         </MudCardContent>
     </MudCard>
-    <AuthorizeView Roles="Admin, Secretary, User">
-    <MudText Typo="Typo.h4" Align="Align.Center">Products</MudText>
-        <div class="d-flex justify-content-end mb-3 me-3">
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="AddProduct"
-            >
-                Add Product
-            </MudButton>
-        </div>
-    </AuthorizeView>
+  
+        <MudText Typo="Typo.h4" Align="Align.Center">Products</MudText>
+  
+        <MudCard Elevation="0">
+            <MudGrid Justify="Justify.SpaceBetween">
+                  <MudItem lg="3" xl="2">
+                        <AuthorizeView Roles="Admin">
+                            <MudSelect T="BranchOption" Value="Branch" Label="Branch" ValueChanged="OnBranchChanged" Class="px-3">
+                                @foreach (var branch in Enum.GetValues<BranchOption>())
+                                {
+                                    <MudSelectItem Value="@branch">@branch</MudSelectItem>
+                                }
+                        </MudSelect>
+                     </AuthorizeView>
+                  </MudItem>
+                <AuthorizeView Roles="Secretary,Admin">
+                    <MudItem lg="8" Class="d-flex flex-row justify-content-end mb-3 me-3">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="AddProduct">
+                            Add Product
+                        </MudButton>
+                    </MudItem>
+                </AuthorizeView>
+                
+            </MudGrid>
+        </MudCard>
+       
+   
     <!-- Product Table -->
         
             

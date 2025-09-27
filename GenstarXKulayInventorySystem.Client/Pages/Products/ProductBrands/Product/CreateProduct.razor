@@ -1,4 +1,5 @@
 ﻿@using System.Globalization
+@using GenstarXKulayInventorySystem.Shared.DTOS
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
@@ -137,7 +138,7 @@
                 <MudTextField @bind-Value="NewProduct.Packaging" Label="Packaging" Margin=Margin.Dense Lines="1" Placeholder="e.g (1x12)" />
             </MudItem>
             <MudItem xs="12" sm="6" lg="6">
-                <MudSelect T="BranchOption" @bind-Value="NewProduct.Branch" Label="Branch" ReadOnly=true>
+                <MudSelect T="BranchOption" @bind-Value="NewProduct.Branch" Label="Branch" ReadOnly="@(UserState.Role != UserRole.Admin)">
                     @foreach (var branch in Enum.GetValues<BranchOption>())
                     {
                         <MudSelectItem Value="@branch">@branch</MudSelectItem>
