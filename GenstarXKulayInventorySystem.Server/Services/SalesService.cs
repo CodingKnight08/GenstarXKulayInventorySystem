@@ -56,6 +56,29 @@ public class SalesService:ISalesService
         return dailySaleDtos;
     }
 
+    public async Task<List<DailySaleDto>> GetAllDailySaleByBranch(BranchOption branch, DateTime dateTime)
+    {
+        DateTime startUtc = dateTime.Date.ToUniversalTime();
+        DateTime endUtc = startUtc.AddDays(1);
+
+        List<DailySale> dailySales = await _context.DailySales
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(e => !e.IsDeleted
+                && e.Branch == branch
+                && e.DateOfSales >= startUtc
+                && e.DateOfSales < endUtc)
+            .OrderByDescending(e => e.DateOfSales)
+            .ToListAsync();
+
+        if (dailySales == null || dailySales.Count == 0)
+        {
+            return new List<DailySaleDto>();
+        }
+
+        return _mapper.Map<List<DailySaleDto>>(dailySales);
+    }
+
     public async Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date)
     {
         var chosenDateLocal = date.Date;
@@ -305,6 +328,7 @@ public class SalesService:ISalesService
 public interface ISalesService
 {
     Task<List<DailySaleDto>> GetAllDailySalesAsync();
+    Task<List<DailySaleDto>> GetAllDailySaleByBranch(BranchOption branch, DateTime dateTime);
     Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date);
     Task<List<DailySaleDto>> GetAllDailySaleByDaysAsync(DateRangeOption range);
 
