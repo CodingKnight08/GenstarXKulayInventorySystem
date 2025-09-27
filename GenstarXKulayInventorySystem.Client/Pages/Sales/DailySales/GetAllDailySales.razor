@@ -1,4 +1,5 @@
 ﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+@using GenstarXKulayInventorySystem.Shared.DTOS;
 
     <MudCard Elevation="0" Class="d-flex w-100 flex-row align-items-center justify-content-end">
         <MudButton
@@ -31,10 +32,13 @@ else
                                Class="mb-4" />
         </MudItem>
         <MudItem xl="12" lg="12" md="12" sm="12">
-                <MudTable Items="Sales"
+                <MudTable T="DailySaleDto" 
+                          @ref="dailySaleTable"
+                          ServerData="ServerLoadData"
                           Dense=true
                           Hover=true
                           Square=true
+                          Striped=true
                           Bordered=true>
 
                     <HeaderContent>
