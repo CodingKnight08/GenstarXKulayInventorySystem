@@ -26,6 +26,32 @@ public class SalesController : ControllerBase
         return Ok(sales);
     }
 
+    [HttpGet("paged/by/{branch}/{date}")]
+    public async Task<ActionResult<DailySalePageResultDto<DailySaleDto>>> GetAllDailySalesByBranch(
+    BranchOption branch,
+    DateTime date,
+    [FromQuery] int skip = 0,
+    [FromQuery] int take = 10)
+    {
+        try
+        {
+            var dailySales = await _saleService.GetAllDailySaleByBranch(branch, date);
+            if (dailySales == null || !dailySales.Any())
+                return new DailySalePageResultDto<DailySaleDto> { Sales = new List<DailySaleDto>(), TotalCount = 0 };
+            var total = dailySales.Count;
+            var pageItems = dailySales.Skip(skip).Take(take).ToList();
+            return Ok(new DailySalePageResultDto<DailySaleDto>
+            {
+                Sales = pageItems,
+                TotalCount = total
+            });
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving daily sales: {ex.Message}");
+        }
+    }
+
     [HttpGet("all/range/{range}")]
     public async Task<ActionResult<List<DailySaleDto>>> GetDailySalesByRange(DateRangeOption range)
     {
