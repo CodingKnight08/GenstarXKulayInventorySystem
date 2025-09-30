@@ -76,7 +76,13 @@ public class SalesService:ISalesService
             return new List<DailySaleDto>();
         }
 
-        return _mapper.Map<List<DailySaleDto>>(dailySales);
+        return _mapper.Map<List<DailySaleDto>>(dailySales)
+                  .Select(dto =>
+                  {
+                      dto.DateOfSales = ConvertUtcToPhilippineTime(dto.DateOfSales);
+                      return dto;
+                  })
+                  .ToList();
     }
 
     public async Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date)
