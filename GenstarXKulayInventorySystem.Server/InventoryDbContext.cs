@@ -83,6 +83,10 @@ public class InventoryDbContext: IdentityDbContext<User>
                  .WithMany(dsr => dsr.Billings)
                  .HasForeignKey(b => b.DailySaleId)
                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(b => b.OperationsProvider)
+                  .WithMany(op => op.Billings)
+                  .HasForeignKey(b => b.OpertationsProviderId)
+                  .OnDelete(DeleteBehavior.SetNull);
 
             entity.Property(b => b.Amount).HasColumnType("numeric(18,2)");
             entity.Property(b => b.DiscountAmount).HasColumnType("numeric(18,2)");
@@ -196,6 +200,7 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<GenstarXKulayInventorySystem.Server.Model.Client> Clients { get; set; }
     public DbSet<DailySaleReport> DailySaleReports { get; set; }
     public DbSet<Registration> Registrations { get; set; }
+    public DbSet<OperationsProvider> OperationsProviders { get; set; }
 
     public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {

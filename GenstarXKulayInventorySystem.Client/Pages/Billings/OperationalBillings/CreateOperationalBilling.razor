@@ -3,6 +3,22 @@
 <MudDialog>
     <DialogContent>
         <MudGrid Spacing="4">
+            <MudItem xl="9" lg="10">
+                <MudAutocomplete T="string"
+                    Label="Provider Name"
+                    @bind-Value="ProviderName"
+                    SearchFunc="SearchProviders"
+                    Dense="true"
+                    Clearable="true"
+                    CoerceText="true"
+                    CoerceValue="true"
+                    Placeholder="Enter Name of Provider"
+                    Variant="Variant.Text"
+                    Required=true
+                    ShowProgressIndicator="IsLoading"
+                    TextChanged="OnProviderNameTyped"
+                    />
+            </MudItem>
             <MudItem xl="6" lg="6" md="12" sm="12">
                 <MudTextField T="string" @bind-Value="Billing.BillingName" Label="Billing Name" FullWidth="true" Required=true />
             </MudItem>

@@ -10,6 +10,7 @@ public partial class ViewDailySale
 {
     [Parameter] public int Id { get; set; }
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
+    [Inject] private UserState UserState { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected ILogger<ViewDailySale> Logger { get; set; } = default!;

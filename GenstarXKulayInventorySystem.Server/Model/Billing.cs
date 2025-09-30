@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Policy;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
@@ -7,6 +8,9 @@ namespace GenstarXKulayInventorySystem.Server.Model;
 public class Billing: BaseEntity
 {
     public int Id { get; set; }
+    public int? OpertationsProviderId { get; set; }
+    [ForeignKey(nameof(OpertationsProviderId))]
+    public OperationsProvider? OperationsProvider { get; set; }
     public int? DailySaleId { get; set; }
     [ForeignKey(nameof(DailySaleId))]
     public DailySaleReport? DailySaleReport { get; set; }
@@ -23,4 +27,6 @@ public class Billing: BaseEntity
     public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
     public BillingBranch Branch { get; set; } = BillingBranch.GenStar;
     public DateTime? DatePaid { get; set; } = null;
+    public string? ReceiptNumber { get; set; } = string.Empty;
+    
 }

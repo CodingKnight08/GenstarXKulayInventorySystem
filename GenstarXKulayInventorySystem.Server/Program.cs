@@ -148,6 +148,7 @@ builder.Services.AddScoped<ISalesService, SalesService>();
 builder.Services.AddScoped<ISaleItemService, SaleItemService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
+builder.Services.AddScoped<IOperationsProviderService, OperationsProviderService>();
 builder.Services.AddScoped<JwtService>();
     
 

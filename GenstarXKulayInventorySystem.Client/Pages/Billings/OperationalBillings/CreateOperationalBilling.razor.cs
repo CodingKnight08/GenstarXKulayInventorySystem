@@ -16,13 +16,69 @@ public partial class CreateOperationalBilling
     protected BillingDto Billing { get; set; } = new();
     protected string? ErrorMessage { get; set; }
     protected DateTime MinDate { get; set; } = new DateTime(DateTime.Now.Year, 1, 1);
-    
+    protected List<OperationsProviderDto> OperationsProviders { get; set; } = new();
+    protected OperationsProviderDto NewProvider { get; set; } = new OperationsProviderDto();
+    protected string ProviderName { get; set; } = string.Empty;
+    protected bool IsLoading { get; set; } = false;
+
     protected override async Task OnInitializedAsync()
     {
         Billing.Category = BillingCategory.Logistics;
         Billing.DateOfBilling = DateTime.UtcNow;
         Billing.Branch = UtilitiesHelper.GetBillingBranch(UserState.Branch.GetValueOrDefault());
-        await Task.CompletedTask;
+        await LoadProviders();
+    }
+
+    protected async Task LoadProviders()
+    {
+        IsLoading = true;
+        try
+        {
+            var response = await HttpClient.GetAsync($"api/operationsproviders/all/{UserState.Branch.GetValueOrDefault()}");
+            if (response.IsSuccessStatusCode)
+            {
+                var providers = await response.Content.ReadFromJsonAsync<List<OperationsProviderDto>>();
+                if (providers != null)
+                {
+                    OperationsProviders = providers;
+                }
+            }
+            else
+            {
+                ErrorMessage = "Failed to load providers. Please try again.";
+                Snackbar.Add(ErrorMessage, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"An error occurred while loading providers: {ex.Message}";
+            Snackbar.Add(ErrorMessage, Severity.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+    protected Task<IEnumerable<string>> SearchProviders(string value, CancellationToken cancellationToken)
+    {
+        if(OperationsProviders is null || !OperationsProviders.Any())
+            return Task.FromResult(Enumerable.Empty<string>());
+
+        var result = OperationsProviders
+            .Where(x => x.ProviderName.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+            .Select(x => x.ProviderName);
+        return Task.FromResult(result);
+    }
+
+    protected void OnProviderNameTyped(string providerName)
+    {
+        ProviderName = providerName;
+        var matchedProvider = OperationsProviders.FirstOrDefault(p => p.ProviderName.Equals(providerName, StringComparison.InvariantCultureIgnoreCase));
+        if (matchedProvider != null)
+        {
+            Billing.OperatationsProviderId = matchedProvider.Id;
+        }
+        
     }
     protected async Task SubmitAsync()
     {
