@@ -9,16 +9,29 @@ namespace GenstarXKulayInventorySystem.Server.Controllers;
 public class BillingsController : ControllerBase
 {
     private readonly IBillingService _billingService;
-    public BillingsController(IBillingService billingService)
+    private readonly ILogger<BillingsController> _logger;
+    public BillingsController(IBillingService billingService, ILogger<BillingsController> logger)
     {
         _billingService = billingService;
+        _logger = logger;
     }
     //Operational Billings
     [HttpGet("all/others")]
     public async Task<ActionResult<List<BillingDto>>> GetAllBillings()
     {
-        var billings = await _billingService.GetAllBillingAsync();
-        return Ok(billings);
+        try
+        {
+
+
+            var billings = await _billingService.GetAllBillingAsync();
+            return Ok(billings);
+        }
+        catch (Exception ex)
+        {
+            // log the full error
+            _logger.LogError(ex, "Error while getting billings");
+            return StatusCode(500, ex.Message); 
+        }
     }
 
     [HttpGet("all/expenses/{date}/{branch}")]
