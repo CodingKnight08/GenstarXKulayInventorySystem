@@ -26,22 +26,23 @@ public class BillingService:IBillingService
         return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
     }
     // Billings 
-    public async Task<List<BillingDto>> GetAllBillingAsync()
-    {
-        List<Billing> billings = await _context.Billings
-            .AsNoTracking()
-            .AsSplitQuery()   
-            .Where(e => !e.IsDeleted)
-            .OrderByDescending(e => e.DateOfBilling).ToListAsync();
-
-        if (billings == null || billings.Count == 0)
+        public async Task<List<BillingDto>> GetAllBillingAsync()
         {
-            return new List<BillingDto>();
-        }
+            List<Billing> billings = await _context.Billings
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Include(b => b.OperationsProvider)
+                .Where(e => !e.IsDeleted)
+                .OrderByDescending(e => e.DateOfBilling).ToListAsync();
 
-        List<BillingDto> billingDtos = _mapper.Map<List<BillingDto>>(billings);
-        return billingDtos;
-    }
+            if (billings == null || billings.Count == 0)
+            {
+                return new List<BillingDto>();
+            }
+
+            List<BillingDto> billingDtos = _mapper.Map<List<BillingDto>>(billings);
+            return billingDtos;
+        }
     public async Task<List<BillingDto>> GetAllNotPurchaseOrderBillings()
     {
         var billings = await _context.Billings
