@@ -12,12 +12,14 @@ public class OperationsProviderService:IOperationsProviderService
     private readonly ILogger<OperationsProviderService> _logger;
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    public OperationsProviderService(InventoryDbContext context, ILogger<OperationsProviderService> logger, IMapper mapper, IHttpContextAccessor httpContextAccessor)
+    private readonly IBillingService _billingService;
+    public OperationsProviderService(InventoryDbContext context, ILogger<OperationsProviderService> logger, IMapper mapper, IHttpContextAccessor httpContextAccessor, IBillingService billingService)
     {
         _context = context;
         _logger = logger;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
+        _billingService = billingService;
     }
     private string GetCurrentUsername()
     {
@@ -55,6 +57,7 @@ public class OperationsProviderService:IOperationsProviderService
             operationProvider.CreatedAt = DateTime.UtcNow;
             _ = await _context.OperationsProviders.AddAsync(operationProvider);
             _ = await _context.SaveChangesAsync();
+            
             return operationProvider.Id;
 
         }
