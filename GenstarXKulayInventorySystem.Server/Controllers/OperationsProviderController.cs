@@ -6,7 +6,7 @@ using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-public class OperationsProviderController : Controller
+public class OperationsProviderController : ControllerBase
 {
     private readonly IOperationsProviderService _operationsProviderService;
     public OperationsProviderController(IOperationsProviderService operationsProviderService)
