@@ -16,6 +16,7 @@
               Hover="true"
               Class="flex-grow-1">
         <HeaderContent>
+            <MudTh>Provider</MudTh>
             <MudTh>Billing Number</MudTh>
             <MudTh>Billing Name</MudTh>
             <MudTh>Billing Amount</MudTh>
@@ -26,6 +27,7 @@
             <MudTh>Action</MudTh>
         </HeaderContent>
         <RowTemplate>
+            <MudTd>@(context.OperationsProvider?.ProviderName ?? string.Empty)</MudTd>
             <MudTd>@context.BillingNumber</MudTd>
             <MudTd>@context.BillingName</MudTd>
             <MudTd>@context.Amount.ToString("C", new System.Globalization.CultureInfo("en-PH"))</MudTd>
