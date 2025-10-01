@@ -8,15 +8,15 @@ namespace GenstarXKulayInventorySystem.Server.Model;
 public class Billing: BaseEntity
 {
     public int Id { get; set; }
-    public int? OpertationsProviderId { get; set; }
-    [ForeignKey(nameof(OpertationsProviderId))]
+    public int? OperationsProviderId { get; set; }
+    [ForeignKey(nameof(OperationsProviderId))]
     public OperationsProvider? OperationsProvider { get; set; }
     public int? DailySaleId { get; set; }
     [ForeignKey(nameof(DailySaleId))]
     public DailySaleReport? DailySaleReport { get; set; }
     public string BillingName { get; set; } = string.Empty;
     public  string BillingNumber { get; set; } = string.Empty;
-    public DateTime DateOfBilling { get; set; }
+    public DateTime DateOfBilling { get; set; } 
     public BillingCategory Category { get; set; }
     public string? Remarks { get; set; }
     public decimal Amount { get; set; } = 0;

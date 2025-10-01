@@ -85,7 +85,7 @@ public class InventoryDbContext: IdentityDbContext<User>
                  .OnDelete(DeleteBehavior.SetNull);
             entity.HasOne(b => b.OperationsProvider)
                   .WithMany(op => op.Billings)
-                  .HasForeignKey(b => b.OpertationsProviderId)
+                  .HasForeignKey(b => b.OperationsProviderId)
                   .OnDelete(DeleteBehavior.SetNull);
 
             entity.Property(b => b.Amount).HasColumnType("numeric(18,2)");
