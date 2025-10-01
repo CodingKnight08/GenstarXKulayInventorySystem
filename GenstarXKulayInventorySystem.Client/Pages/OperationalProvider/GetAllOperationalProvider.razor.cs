@@ -25,7 +25,7 @@ public partial class GetAllOperationalProvider
         {
             int skip = state.Page * state.PageSize;
             int take = state.PageSize;
-            var response = await HttpClient.GetAsync($"api/operationsprovider/paged/by/{UserState.Branch}?skip={skip}&take={take}");
+            var response = await HttpClient.GetAsync($"api/operationsprovider/paged/by/{UserState.Branch.GetValueOrDefault()}?skip={skip}&take={take}");
             response.EnsureSuccessStatusCode();
             var paginatedResponse = await response.Content.ReadFromJsonAsync<OperationsProviderPageResultDto<OperationsProviderDto>>();
             if (paginatedResponse != null)
@@ -53,6 +53,51 @@ public partial class GetAllOperationalProvider
             IsLoading = false;
         }
     }
+
+    protected async Task CreateOperationalProvider()
+    {
+        var dialog = await DialogService.ShowAsync<AddOperationalProvider>("Add Provider",
+            new DialogParameters
+            {
+                ["Branch"] = UserState.Branch.GetValueOrDefault()
+            }
+        );
+        if(dialog is not null)
+        {
+            var result = await dialog.Result;
+            if(result is not null && !result.Canceled && result.Data is OperationsProviderDto)
+            {
+                await operationsProviderTable!.ReloadServerData();
+                StateHasChanged();
+            }
+        }
+    }
+
+    protected void ViewProvider(int id)
+    {
+        NavigationManager.NavigateTo($"operational-providers/view/{id}");
+    }
+
+    protected async Task UpdateOperationalProvider(int id)
+    {
+        var dialog = await DialogService.ShowAsync<UpdateOperationalProvider>("Update Provider",
+            new DialogParameters
+            {
+                ["Id"] = id,
+            }
+        );
+        if (dialog is not null)
+        {
+            var result = await dialog.Result;
+            if (result is not null && !result.Canceled && result.Data is int)
+            {
+                await operationsProviderTable!.ReloadServerData();
+                StateHasChanged();
+            }
+        }
+    }
+
+
 
 
 }

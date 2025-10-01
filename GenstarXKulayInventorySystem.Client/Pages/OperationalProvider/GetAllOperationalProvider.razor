@@ -9,6 +9,7 @@
                 StartIcon="@Icons.Material.Filled.AddCircle"
                 Variant="Variant.Filled"
                 Color="Color.Info"
+                OnClick="CreateOperationalProvider"
                 Class="me-4">Add Provider</MudButton>
         </MudCard>
 
@@ -41,8 +42,19 @@
                         <MudTd>@context.Address</MudTd>
                         <MudTd>@context.TINNumber</MudTd>
                         <MudTd>
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Info" Size="Size.Small" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" />
+                            <MudIconButton
+                                Icon="@Icons.Material.Filled.Visibility"
+                                Color="Color.Info"
+                                Size="Size.Small" 
+                                OnClick="() =>ViewProvider(context.Id)"
+                                Variant="Variant.Text"/>
+                            <MudIconButton 
+                                Icon="@Icons.Material.Filled.Edit" 
+                                Color="Color.Success" 
+                                Size="Size.Small"
+                                OnClick="() => UpdateOperationalProvider(context.Id)"
+                                Variant="Variant.Text" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Variant="Variant.Text" />
                         </MudTd>
                     </RowTemplate>
                     <NoRecordsContent>
