@@ -15,23 +15,37 @@ public partial class EditOperationalBilling
     protected DateTime MinDate { get; set; } = new DateTime(DateTime.Now.Year, 1, 1);
     protected bool IsUpdating { get; set; } = false;
     protected bool IsLoading { get; set; } = true;
+    protected BillingDto EditableBilling { get; set; } = new BillingDto();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             IsLoading = true;
+
             if (Billing.Id == 0)
             {
                 Snackbar.Add("Billing not found.", Severity.Error);
                 MudDialog.Close(DialogResult.Ok(false));
                 return;
             }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error initializing edit billing");
-            Snackbar.Add("Failed to load billing details.", Severity.Error);
+
+            EditableBilling = new BillingDto
+            {
+                Id = Billing.Id,
+                BillingName = Billing.BillingName,
+                BillingNumber = Billing.BillingNumber,
+                DateOfBilling = Billing.DateOfBilling,
+                Amount = Billing.Amount,
+                Branch = Billing.Branch,
+                Category = Billing.Category,
+                IsPaid = Billing.IsPaid,
+                PaymentMethod = Billing.PaymentMethod,
+                Remarks = Billing.Remarks,
+                Discounted = Billing.Discounted,
+                DiscountAmount = Billing.DiscountAmount,
+                OperationsProvider = Billing.OperationsProvider
+            };
         }
         finally
         {
@@ -46,7 +60,22 @@ public partial class EditOperationalBilling
         {
             IsLoading = true;
             IsUpdating = true;
-            var response = await HttpClient.PutAsJsonAsync($"api/billings/operational/{Billing.Id}", Billing);
+
+            // Apply edits to the real Billing object
+            Billing.BillingName = EditableBilling.BillingName;
+            Billing.BillingNumber = EditableBilling.BillingNumber;
+            Billing.DateOfBilling = EditableBilling.DateOfBilling;
+            Billing.Amount = EditableBilling.Amount;
+            Billing.Branch = EditableBilling.Branch;
+            Billing.Category = EditableBilling.Category;
+            Billing.IsPaid = EditableBilling.IsPaid;
+            Billing.PaymentMethod = EditableBilling.PaymentMethod;
+            Billing.Remarks = EditableBilling.Remarks;
+            Billing.Discounted = EditableBilling.Discounted;
+            Billing.DiscountAmount = EditableBilling.DiscountAmount;
+
+            var response = await HttpClient.PutAsJsonAsync($"api/billings/operational/{Billing.Id}", EditableBilling);
+
             if (response.IsSuccessStatusCode)
             {
                 Snackbar.Add("Billing updated successfully.", Severity.Success);
@@ -57,17 +86,13 @@ public partial class EditOperationalBilling
                 Snackbar.Add("Failed to update billing.", Severity.Error);
             }
         }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error updating operational billing");
-            Snackbar.Add("Failed to update billing.", Severity.Error);
-        }
         finally
         {
             IsLoading = false;
             IsUpdating = false;
         }
     }
+
 
     protected void OnDateChanged(DateTime? date)
     {
