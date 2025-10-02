@@ -21,6 +21,9 @@ else{
 <MudDialog>
     <DialogContent>
         <MudGrid Spacing="4">
+            <MudItem sm="12">
+                <MudTextField Value="Billing.OperationsProvider?.ProviderName" Label="Provider Name" Variant="Variant.Text" ReadOnly="true" />
+            </MudItem>
             <MudItem xl="6" lg="6" md="12" sm="12">
                 <MudTextField T="string" @bind-Value="Billing.BillingName" Label="Billing Name" FullWidth="true" ReadOnly=true />
             </MudItem>
@@ -44,6 +47,9 @@ else{
                         </MudSelectItem>
                     }
                 </MudSelect>
+            </MudItem>
+            <MudItem md="6" sm="12">
+                <MudTextField @bind-Value="Billing.ReceiptNumber" Label="Reciept Number" Variant="Variant.Text" ReadOnly=true />
             </MudItem>
             <MudItem xl="6" xs="12">
                 <MudNumericField T="decimal"
