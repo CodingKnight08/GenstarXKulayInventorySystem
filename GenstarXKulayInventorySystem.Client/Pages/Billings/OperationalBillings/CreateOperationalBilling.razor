@@ -44,6 +44,9 @@
                     }
                 </MudSelect>    
             </MudItem>
+            <MudItem xs="12" sm="12" md="6">
+                <MudTextField T="string" @bind-Value="Billing.ReceiptNumber" Placeholder="Enter Reciept Number" Label="Reciept Number" Variant="Variant.Text" />
+            </MudItem>
             <MudItem xl="6" xs="12">
                 <MudNumericField T="decimal"
                                  Label="Amount"
