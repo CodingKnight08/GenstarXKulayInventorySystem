@@ -112,7 +112,14 @@ public partial class GetAllProductBrands
     
     protected async Task CreateProductBrand()
     {
-        var dialogRef = await DialogService.ShowAsync<CreateProductBrand>("Create Product Brand");
+        var dialogOptions = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            BackdropClick = false
+        };
+        var dialogRef = await DialogService.ShowAsync<CreateProductBrand>("Create Product Brand",dialogOptions);
 
         if (dialogRef is not null)
         {
