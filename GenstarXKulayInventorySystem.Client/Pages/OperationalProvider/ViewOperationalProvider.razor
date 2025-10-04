@@ -1,0 +1,21 @@
+﻿@page "/operational-providers/view/{Id:int}"
+
+<MudMainContent Class="w-auto h-100 d-flex flex-column align-items-center gap-2">
+    <MudText Typo="Typo.h4" Class="mt-4">View Operational Provider</MudText>
+    <MudCard Elevation="0" Class="w-100">
+        <MudGrid Spacing="4" Class="px-5">
+            <MudItem xs="12" md="6">
+                <MudTextField Value="ProviderDto.ProviderName" Label="Name" Variant="Variant.Text" ReadOnly=true FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField Value="ProviderDto.TINNumber" Label="TIN Number" Variant="Variant.Text" ReadOnly=true FullWidth="true" />
+            </MudItem>
+            <MudItem xs="10">
+                <MudTextField Value="ProviderDto.Address" Label="Address" Variant="Variant.Text" ReadOnly=true FullWidth="true" Class="text-truncate" />
+            </MudItem>
+            <MudItem sm="12">
+                LISt of Billings
+            </MudItem>
+        </MudGrid>
+    </MudCard>
+</MudMainContent>

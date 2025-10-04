@@ -84,7 +84,7 @@ public class BillingService:IBillingService
   
     public async Task<BillingDto?> GetBillingById(int id)
     {
-        var billing = await _context.Billings.AsNoTracking()
+        var billing = await _context.Billings.AsNoTracking().AsSplitQuery().Include(b => b.OperationsProvider)
                              .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
 
         return billing == null ? null : _mapper.Map<BillingDto>(billing);

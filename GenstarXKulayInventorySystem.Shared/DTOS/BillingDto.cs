@@ -23,4 +23,5 @@ public class BillingDto:BaseEntityDto
     public BillingBranch Branch { get; set; } = BillingBranch.GenStar;
     public DateTime? DatePaid { get; set; } = null;
     public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+    public string? ReceiptNumber { get; set; } = string.Empty;
 }

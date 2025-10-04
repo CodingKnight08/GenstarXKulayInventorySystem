@@ -22,7 +22,7 @@
                 <MudAutocomplete T="ProductDto"
                                  Label="Item Name"
                                  SearchFunc="SearchProductsDto"
-                                 ToStringFunc="p => p?.ProductNameAndUnit"
+                                 ToStringFunc="p => p?.ProductName"
                                  ValueChanged="OnProductSelectDto"
                                  TextChanged="OnProductTyped"
                                  Text="@SelectedProduct"

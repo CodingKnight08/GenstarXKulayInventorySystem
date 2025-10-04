@@ -103,7 +103,7 @@ public partial class CreateSaleItem
 
         var result = Products
             .Where(p => string.IsNullOrWhiteSpace(value) ||
-                        p.ProductNameAndUnit.Contains(value, StringComparison.OrdinalIgnoreCase))
+                        p.ProductName.Contains(value, StringComparison.OrdinalIgnoreCase))
             .GroupBy(p => p.Id)         
             .Select(g => g.First());
 
@@ -115,9 +115,9 @@ public partial class CreateSaleItem
         if (product is null) return;
 
         SelectedProductFromList = product;
-        SelectedProduct = product.ProductNameAndUnit;
+        SelectedProduct = product.ProductName;
         SaleItemDto.ProductId = product.Id;
-        SaleItemDto.ItemName = product.ProductNameAndUnit;
+        SaleItemDto.ItemName = product.ProductName;
 
         OnWholeSaleChanged(IsWholeSale);
     }
@@ -129,7 +129,7 @@ public partial class CreateSaleItem
 
         var matchedProduct = Products.FirstOrDefault(e =>
             !string.IsNullOrWhiteSpace(e.ProductNameAndUnit) &&
-            string.Equals(e.ProductNameAndUnit, text, StringComparison.OrdinalIgnoreCase));
+            string.Equals(e.ProductName, text, StringComparison.OrdinalIgnoreCase));
 
         if (matchedProduct != null)
         {
