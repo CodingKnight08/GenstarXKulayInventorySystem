@@ -1,11 +1,13 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ProductController : ControllerBase
 {
@@ -32,7 +34,7 @@ public class ProductController : ControllerBase
             var products = await _productService.GetAllProductByBrandAndBranch(brandId, branch);
 
             if (products == null || !products.Any())
-                return NotFound("No products found for the selected brand and branch.");
+                return new List<ProductDto>();
 
             return Ok(products);
         }
@@ -41,6 +43,68 @@ public class ProductController : ControllerBase
             return StatusCode(500, $"Error retrieving products: {ex.Message}");
         }
     }
+    [HttpGet("paged/by/{brandId:int}/{branch}")]
+    public async Task<ActionResult<ProductPageResultDto<ProductDto>>> GetProductsByBrandAndBranchPaged(
+    int brandId,
+    BranchOption branch,
+    [FromQuery] int skip = 0,
+    [FromQuery] int take = 10)
+    {
+        try
+        {
+            var products = await _productService.GetAllProductByBrandAndBranch(brandId, branch);
+
+            if (products == null || !products.Any())
+                return new ProductPageResultDto<ProductDto> { Products = new(), TotalCount = 0 };
+
+            var total = products.Count;
+            var pagedItems = products.Skip(skip).Take(take).ToList();
+
+            return Ok(new ProductPageResultDto<ProductDto>
+            {
+                Products = pagedItems,
+                TotalCount = total
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
+        }
+    }
+
+
+    [HttpGet("count/{brandId:int}/{branch}")]
+    public async Task<ActionResult<int>> GetProductCount(int brandId, BranchOption branch)
+    {
+        try
+        {
+            int count = await _productService.GetProductCountAsync(brandId, branch);
+            return Ok(count);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
+        }
+    }
+
+    [HttpGet("all/products/by/{brandId:int}/{branch}")]
+    public async Task<ActionResult<List<ProductDto>>> GetAllProductByBrandAndBranch(int brandId,BranchOption branch, [FromQuery] int skip = 0,[FromQuery] int take = 10)
+    {
+        try
+        {
+            var products = await _productService.GetAllProductsAsyncByBranch(brandId, branch, skip, take);
+
+            if (products == null || !products.Any())
+                return Ok(new List<ProductDto>());
+
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error in retrieving products: {ex.Message}");
+        }
+    }
+
 
     // GET: api/products/5
     [HttpGet("{id}")]

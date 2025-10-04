@@ -4,9 +4,11 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Security.Claims;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static MudBlazor.Icons.Custom;
 
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -49,9 +51,43 @@ public class ProductService:IProductService
     }
     public async Task<List<ProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch)
     {
-        var products = await _context.Products.AsNoTracking().AsSplitQuery()
-            .Where(p => p.BrandId == brandId && p.Branch == branch && !p.IsDeleted && p.ActualQuantity > p.BufferStocks).ToListAsync() ?? new List<Product>();
+        var products = await _context.Products
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(p => p.BrandId == brandId
+                     && p.Branch == branch
+                     && !p.IsDeleted
+                     && p.ActualQuantity > p.BufferStocks)
+            .OrderBy(p => p.ProductName)
+            .ToListAsync();
+
+        if (products.Count == 0)
+            return new List<ProductDto>();
+
         return products.Select(product => _mapper.Map<ProductDto>(product)).ToList();
+    }
+
+    public async Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take)
+    {
+        var products = await _context.Products
+           .AsNoTracking()
+           .AsSplitQuery()
+           .Where(p => p.BrandId == brandId
+                    && p.Branch == branch
+                    && !p.IsDeleted
+                    )
+           .ToListAsync();
+
+        if (products.Count == 0)
+            return new List<ProductDto>();
+
+        return _mapper.Map<List<ProductDto>>(products).ToList();
+    }
+
+    public async Task<int> GetProductCountAsync(int brandId, BranchOption branch)
+    {
+        var products = await _context.Products.AsNoTracking().AsSplitQuery().Where(p => p.BrandId == brandId && p.Branch == branch && !p.IsDeleted).ToListAsync();
+        return products.Count();
     }
     public async Task<ProductDto?> GetByIdAsync(int id)
     {
@@ -132,13 +168,22 @@ public class ProductService:IProductService
     }
 
     //ProductBrand Methods
-
-    public async Task<List<ProductBrandDto>> GetAllBrandsAsync()
+    public async Task<int> GetAllBrandCount()
     {
         var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted ).ToListAsync() ?? new List<ProductBrand>();
+        return brands.Count();
+    }
+    public async Task<List<ProductBrandDto>> GetAllBrandsAsync(int take, int skip)
+    {
+        var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted ).Skip(skip).Take(take).OrderBy(p => p.BrandName).ToListAsync() ?? new List<ProductBrand>();
         return brands.Select(brand => _mapper.Map<ProductBrandDto>(brand)).ToList();
     }
 
+    public async Task<List<ProductBrandDto>> GetAllBrands()
+    {
+        var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted).ToListAsync() ?? new List<ProductBrand>();
+        return _mapper.Map<List<ProductBrandDto>>(brands);
+    }
     public async Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync(BranchOption branch)
     {
         var brands = await _context.ProductBrands
@@ -289,13 +334,16 @@ public interface IProductService
 {
     Task<List<ProductDto>> GetAllAsync(int brandId);
     Task<List<ProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
+    Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take);
+    Task<int> GetProductCountAsync(int brandId, BranchOption branch);
     Task<ProductDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(ProductDto productDto);
     Task<bool> UpdateAsync(ProductDto productDto);
     Task<bool> DeleteAsync(int id);
 
-
-    Task<List<ProductBrandDto>> GetAllBrandsAsync();
+    Task<int> GetAllBrandCount();
+    Task<List<ProductBrandDto>> GetAllBrands();
+    Task<List<ProductBrandDto>> GetAllBrandsAsync(int take, int skip);
     Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync(BranchOption branch);
     Task<ProductBrandDto?> GetBrandByIdAsync(int id);
     Task<bool> AddBrandAsync(ProductBrandDto brandDto);

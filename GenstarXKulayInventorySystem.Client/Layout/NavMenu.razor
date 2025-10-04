@@ -12,6 +12,9 @@
                 background-size:contain;">
      </div>
     <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" >Dashboard</MudNavLink>
+    <AuthorizeView Roles="Admin,Secretary,User" Context="GeneralAuth">
+
+    
     <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Products</MudNavLink>
     <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
     <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
@@ -24,16 +27,18 @@
     <MudNavGroup Icon="@Icons.Material.Filled.Groups" IconColor="@Color.Tertiary" Title="Group">
         <MudNavLink Href="/suppliers" Match="NavLinkMatch.Prefix">Suppliers</MudNavLink>
         <MudNavLink Href="/clients" Match="NavLinkMatch.Prefix">Clients</MudNavLink>
+        <MudNavLink Href="/operational-providers" Match="NavLinkMatch.Prefix">Billing Providers</MudNavLink>
 
     </MudNavGroup>
 
     <MudNavGroup Icon="@Icons.Material.Filled.Settings" IconColor="@Color.Info" Title="Settings" >
-        <AuthorizeView Roles="Admin">
+        <AuthorizeView Roles="Admin" Context="AdminAuth">
             <MudNavLink Href="/users" Match="NavLinkMatch.Prefix">Users</MudNavLink>
         </AuthorizeView>
 
         <MudNavLink Href="/security" Match="NavLinkMatch.Prefix">Security</MudNavLink>
     </MudNavGroup>
+    </AuthorizeView>
     
     <MudCard Elevation="0" Class="d-flex align-items-center justify-content-center mt-5">
         <MudButton 

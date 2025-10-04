@@ -10,6 +10,7 @@ public partial class ViewDailySale
 {
     [Parameter] public int Id { get; set; }
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
+    [Inject] private UserState UserState { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected ILogger<ViewDailySale> Logger { get; set; } = default!;
@@ -24,7 +25,20 @@ public partial class ViewDailySale
         await LoadSale();
     }
 
-
+    protected async Task LoadSaleItems()
+    {
+        try
+        {
+            var response = await HttpClient.GetAsync($"api/sales/items/{Sales.Id}");
+            response.EnsureSuccessStatusCode();
+            var saleItems = await response.Content.ReadFromJsonAsync<List<SaleItemDto>>();
+            Sales.SaleItems = saleItems ?? new List<SaleItemDto>();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error in loading Sale Items: {ex.Message}");
+        }
+    }
     protected async Task LoadSale()
     {
         IsLoading = true;

@@ -1,0 +1,19 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="4">
+            <MudItem xs="12">
+                <MudTextField Variant="Variant.Text" @bind-Value="NewProvider.ProviderName" Placeholder="Enter Provider Name" Label="Provider Name" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField Variant="Variant.Text" @bind-Value="NewProvider.Address" Placeholder="Address" Label="Address" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField Variant="Variant.Text" @bind-Value="NewProvider.TINNumber" Placeholder="TIN Number" Label="TIN Number" Mask="@(new PatternMask("000-000-000-000"))" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="IsValid">Submit</MudButton>
+        <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>

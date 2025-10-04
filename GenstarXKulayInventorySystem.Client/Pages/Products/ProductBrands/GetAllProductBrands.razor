@@ -1,55 +1,77 @@
-﻿@layout MainLayout
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using GenstarXKulayInventorySystem.Shared.DTOS;
+@layout MainLayout
+@attribute [Authorize]
+<AuthorizeView Roles="Admin,Secretary">
+    <div class="d-flex justify-content-end mb-3">
 
-<div class="d-flex justify-content-end mb-3">
-    <MudButton Variant="Variant.Filled"
-               Color="Color.Primary"
-               StartIcon="@Icons.Material.Filled.Add"
-               OnClick="CreateProductBrand"
-    >
-        Add Brand
-    </MudButton>
-</div>
-<MudPaper Class="d-flex flex-column flex-grow-1" Style="height: 100%;">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="CreateProductBrand">
+            Add Brand
+        </MudButton>
+    </div>
+</AuthorizeView>
 
-    
-    <MudTable Items="ProductBrands"
-              Dense="true"
-              Hover="true"
-              Bordered="true"
-              Class="flex-grow-1" 
-              
-    >
+<MudPaper Elevation="0" Class="d-flex flex-column flex-grow-1 h-auto">
 
-        <HeaderContent>
-            <MudTh>Brand Name</MudTh>
-            <MudTh>Description</MudTh>
-            <MudTh>Actions</MudTh>
-        </HeaderContent>
+@if (!IsLoading)
+    {
 
-        <RowTemplate>
-            <MudTd Class="fw-bold fs-5">@context.BrandName</MudTd>
-            <MudTd>@context.Description</MudTd>
-            <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                               Color="Color.Primary"
-                               Variant="Variant.Text"
-                               OnClick="() => ViewBrands(context.Id)"
-                                />
-                <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                               Color="Color.Success"
-                               Variant="Variant.Text"
-                               OnClick="() => UpdateProductBrand(context.Id)"
-                                />  
-                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                               Color="Color.Error"
-                               Variant="Variant.Text"
-                               OnClick="() => DeleteProductBrand(context.Id)"
-                               />
-            </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager/>
-        </PagerContent>
-    </MudTable>
+            <MudDataGrid
+                
+                ServerData="ServerLoadData"
+                @ref="brandsGrid"
+                T="ProductBrandDto" 
+                Dense="true"
+                Hover="true"
+                CurrentPage="@CurrentPage"
+                RowsPerPage="@PageTake"
+                CurrentPageChanged="OnPageChanged"
+                RowsPerPageChanged="OnRowsPerPageChanged"
+                Bordered="true"
+                Breakpoint="Breakpoint.Sm"
+            
+            >
+                <Columns>
+                    <PropertyColumn Property="b => b.BrandName" Title="Brand Name">
+                        <CellTemplate Context="cell">
+                            <MudText Typo="Typo.body1" Class="fw-bold">
+                                @cell.Item.BrandName
+                            </MudText>
+                        </CellTemplate>
+                    </PropertyColumn>
+                <PropertyColumn Property="b => b.Description" Title="Description" />
+                <TemplateColumn Title="Actions">
+                        <CellTemplate Context="brand">
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                           Color="Color.Primary"
+                                           OnClick="() => ViewBrands(brand.Item.Id)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Success"
+                                           OnClick="() => UpdateProductBrand(brand.Item.Id)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           OnClick="() => DeleteProductBrand(brand.Item.Id)" />
+                        </CellTemplate>
+                    </TemplateColumn>
+
+
+                </Columns>
+                <PagerContent>
+                    <MudDataGridPager ShowPageNumber=true T="ProductBrandDto" PageSizeOptions=@(new int[] { 5, 10, 20 }) />
+                </PagerContent>
+            </MudDataGrid>
+        
+    }
+    else
+    {
+        <MudCard Elevation="10" Class="d-flex flex-column align-items-center justify-content-center gap-2">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Medium" Rounded=true  />    
+            <MudText Typo="Typo.h6" Align="Align.Center">Loading..</MudText>
+        </MudCard>
+    }
 </MudPaper>
 

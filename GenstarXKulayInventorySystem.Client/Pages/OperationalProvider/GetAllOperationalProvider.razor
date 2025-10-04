@@ -1,0 +1,71 @@
+﻿@page "/operational-providers"
+@using GenstarXKulayInventorySystem.Shared.DTOS
+
+<MudMainContent Class="w-auto h-100">
+    <MudPaper Elevation="0" Class="w-100 d-flex flex-column align-items-center justify-content-center gap-2 mt-3">
+        <MudText Typo="Typo.h5" Align="Align.Center">Billing Providers</MudText>
+        <MudCard Elevation="0" Class="w-100 flex-row align-items-center justify-content-end">
+            <MudButton
+                StartIcon="@Icons.Material.Filled.AddCircle"
+                Variant="Variant.Filled"
+                Color="Color.Info"
+                OnClick="CreateOperationalProvider"
+                Class="me-4">Add Provider</MudButton>
+        </MudCard>
+
+        @if (IsLoading)
+        {
+            <MudCard Elevation="10" Class="w-100 h-100 d-flex flex-column align-items-center justify-content-center gap-2" >
+                <MudProgressCircular Indeterminate=true Color="Color.Info" Size="Size.Medium" Rounded=true />
+                <MudText Typo="Typo.h6" Align="Align.Center" Class="mt-2">Loading Data..</MudText>
+            </MudCard>
+        }
+        else
+        {
+            <MudCard Elevation="0" Class="w-100 mx-2 mt-5 px-3">
+                <MudTable T="OperationsProviderDto"
+                          @ref="operationsProviderTable"
+                          ServerData="ServerLoadData"
+                          Dense=true
+                          Square=true
+                          Striped=true
+                          Bordered=true
+                          Hover=true>
+                    <HeaderContent>
+                        <MudTh>Name</MudTh>
+                        <MudTh>Address</MudTh>
+                        <MudTh>TIN No.</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.ProviderName</MudTd>
+                        <MudTd>@context.Address</MudTd>
+                        <MudTd>@context.TINNumber</MudTd>
+                        <MudTd>
+                            <MudIconButton
+                                Icon="@Icons.Material.Filled.Visibility"
+                                Color="Color.Info"
+                                Size="Size.Small" 
+                                OnClick="() =>ViewProvider(context.Id)"
+                                Variant="Variant.Text"/>
+                            <MudIconButton 
+                                Icon="@Icons.Material.Filled.Edit" 
+                                Color="Color.Success" 
+                                Size="Size.Small"
+                                OnClick="() => UpdateOperationalProvider(context.Id)"
+                                Variant="Variant.Text" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Variant="Variant.Text" />
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Typo="Typo.h6" Align="Align.Center" Class="mt-2">No Records Found</MudText>
+                    </NoRecordsContent>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="@(new int[] {5,10,20})" />
+                    </PagerContent>
+                </MudTable>
+            </MudCard>
+        }
+    </MudPaper>
+</MudMainContent>
+

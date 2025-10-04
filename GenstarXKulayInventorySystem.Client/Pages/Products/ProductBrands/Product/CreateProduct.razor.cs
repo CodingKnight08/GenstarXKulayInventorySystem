@@ -10,6 +10,8 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands.Produ
 public partial class CreateProduct
 {
     [Parameter] public int BrandId { get; set; }
+    [Parameter] public BranchOption Branch { get; set; }
+    [Inject] private UserState UserState { get; set; } = default!;
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
@@ -23,13 +25,20 @@ public partial class CreateProduct
                                 || NewProduct.Size.Equals(0)
                                 || NewProduct.CostPrice.Equals(0)
                                 || NewProduct.ProductMesurementOption == null
+                                || NewProduct.RetailPrice == null
+                                || NewProduct.CostPrice > NewProduct.WholesalePrice
+                                || NewProduct.RetailPrice < NewProduct.CostPrice
+                                || NewProduct.RetailPrice < NewProduct.WholesalePrice
+                                || NewProduct.BufferStocks == null
                                 || NewProduct.BufferStocks == 0;
+                        
 
 
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
         await LoadCategoriesAsync();
+        NewProduct.Branch = Branch;
         
     }
 

@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -15,19 +16,36 @@ public class AuthenticationService: IAuthenticationService
     private readonly InventoryDbContext _context;
     private readonly ILogger<AuthenticationService> _logger;
     private readonly IMapper _mapper;
+    private readonly JwtService _jwtService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, InventoryDbContext context, IMapper mapper, ILogger<AuthenticationService> logger)
+    public AuthenticationService(UserManager<User> userManager, 
+        SignInManager<User> signInManager, 
+        InventoryDbContext context, 
+        IMapper mapper,
+        ILogger<AuthenticationService> logger, 
+        JwtService jwtService,
+        IHttpContextAccessor httpContextAccessor)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _context = context;
         _mapper = mapper;
         _logger = logger;
+        _jwtService = jwtService;
+        _httpContextAccessor = httpContextAccessor; 
     }
+    private string GetCurrentUsername()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        if (user == null) return "Unknown";
 
+        var usernameClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name);
+        return usernameClaim?.Value ?? "Unknown";
+    }
     public async Task<List<UserDto>> GetAllUsersAsync()
     {
-        var users = await _userManager.Users.ToListAsync();
+        var users = await _userManager.Users.Where(u => !u.IsDeleted).ToListAsync();
         return _mapper.Map<List<UserDto>>(users);
     }
     public async Task<bool> RegisterAsync(RegistrationDto registerDto)
@@ -70,10 +88,23 @@ public class AuthenticationService: IAuthenticationService
         }
     }
 
-    public async Task<bool> LoginAsync(LoginDto loginDto)
+    public async Task<string?> LoginAsync(LoginDto loginDto)
     {
-        var result = await _signInManager.PasswordSignInAsync(loginDto.Username, loginDto.Password, false, false);
-        return result.Succeeded;
+        // 1️⃣ Find the user by username
+        var user = await _userManager.FindByNameAsync(loginDto.Username);
+        if (user == null) return null;
+
+        // 2️⃣ Verify password
+        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+        if (!result.Succeeded) return null;
+
+        // 3️⃣ Get user roles
+        var roles = await _userManager.GetRolesAsync(user);
+
+        // 4️⃣ Generate JWT with proper role claims
+        var token = _jwtService.GenerateToken(user);
+
+        return token;
     }
 
 
@@ -194,6 +225,27 @@ public class AuthenticationService: IAuthenticationService
         }
     }
 
+        public async Task<bool> DeleteUser (UserDto userDto)
+        {
+        try
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userDto.Username && !u.IsDeleted);
+            if (user == null)
+                return false;
+            user.IsDeleted = true;
+            user.DeletedAt = DateTime.UtcNow;
+            user.UpdatedBy = GetCurrentUsername();
+            _context.Users.Update(user);
+            int result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex, "Error deleting user");
+            return false;
+        }
+    }
+
 }
 
 public interface IAuthenticationService
@@ -201,11 +253,12 @@ public interface IAuthenticationService
     Task<List<UserDto>> GetAllUsersAsync();
     Task<bool> RegisterUser(RegistrationDto registration);
     Task<bool> RegisterAsync(RegistrationDto registerDto);
-    Task<bool> LoginAsync(LoginDto loginDto);
+    Task<string?> LoginAsync(LoginDto loginDto);
     Task<bool> UpdateUser(UserDto userDto);
 
     Task<List<RegistrationDto>> GetAllRegistrationsAsync();
     Task<RegistrationDto> GetRegistrant(int id);
     Task<bool> UpdateRegistrant(RegistrationDto registrationDto);
     Task<bool> ApproveApplicant(int id);
+    Task<bool> DeleteUser(UserDto userDto);
 }

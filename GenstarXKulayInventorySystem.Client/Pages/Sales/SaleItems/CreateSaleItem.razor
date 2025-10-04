@@ -1,5 +1,6 @@
 ﻿@using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems.PaintIncluded
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+@using GenstarXKulayInventorySystem.Shared.DTOS;
 <MudDialog>
     <DialogContent>
         <MudGrid>
@@ -17,20 +18,23 @@
                          />
             </MudItem>
             <MudItem xl="5">
-                 <MudAutocomplete T="string"
+
+                <MudAutocomplete T="ProductDto"
                                  Label="Item Name"
-                                 @bind-Value="SelectedProduct"
-                                 SearchFunc="SearchProducts"
-                                 Dense="true"
-                                 Clearable="true"
-                                 CoerceText="true"
-                                 CoerceValue="true"
-                                 Placeholder="Enter Item Name"
-                                 Variant="Variant.Text"
-                                 Required=true
-                                 ShowProgressIndicator="IsProductLoading"
+                                 SearchFunc="SearchProductsDto"
+                                 ToStringFunc="p => p?.ProductName"
+                                 ValueChanged="OnProductSelectDto"
                                  TextChanged="OnProductTyped"
-                                  />
+                                 Text="@SelectedProduct"
+                                 Clearable="true"
+                                 Dense="true"
+                                 CoerceText="false"
+                                 CoerceValue="false"
+                                 ResetValueOnEmptyText="false" />
+
+
+
+
             </MudItem>
 
             <MudItem xl="3">
@@ -47,7 +51,7 @@
                 <MudNumericField T="decimal?" @bind-Value="SaleItemDto.Size"  Placeholder="Item Size eg. 1.5" Label="Item Size" HideSpinButtons="true" Variant="Variant.Text" Required=true/>
             </MudItem>
             <MudItem xl="3">
-                <MudSelect T="ProductMesurementOption" @bind-Value="SaleItemDto.UnitMeasurement" Label="Unit">
+                <MudSelect T="ProductMesurementOption" @bind-Value="SaleItemDto.UnitMeasurement" Label="Unit" Disabled="@(SaleItemDto.ProductId !=null)">
                     @foreach(var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
                     {
                         <MudSelectItem T="ProductMesurementOption" Value="@unit">

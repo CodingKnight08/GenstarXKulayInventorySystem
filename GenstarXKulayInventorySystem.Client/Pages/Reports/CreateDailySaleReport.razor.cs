@@ -22,6 +22,7 @@ public partial class CreateDailySaleReport
     protected List<DailySaleDto> UnpaidSales { get; set; } = new();
     protected List<DailySaleDto> CollectedSales { get; set; } = new List<DailySaleDto>();
     protected List<BillingDto> Expenses { get; set; } = new();
+    protected List<DailySaleDto> AllDailySaleTobeAdded { get; set; } = new List<DailySaleDto>();
     protected DateTime ReportDate { get; set; } = UtilitiesHelper.GetPhilippineTime();
     protected bool IsLoading { get; set; } = false;
     protected bool IsSaving { get; set; }  = false;
@@ -38,6 +39,8 @@ public partial class CreateDailySaleReport
             await LoadExpenses();
             AssignFields();
             OnExpensesChange();
+            AllDailySaleTobeAdded.AddRange(PaidSales);
+            AllDailySaleTobeAdded.AddRange(UnpaidSales);
         }
         catch (Exception ex)
         {
@@ -198,6 +201,8 @@ public partial class CreateDailySaleReport
         try
         {
             DailySaleReport.Branch = Branch;
+            DailySaleReport.Billings = Expenses;
+            DailySaleReport.DailySales = AllDailySaleTobeAdded;
             var response = await HttpClient.PostAsJsonAsync("api/dailysalereport", DailySaleReport);
             if (response.IsSuccessStatusCode)
             {

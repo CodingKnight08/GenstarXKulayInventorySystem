@@ -26,22 +26,23 @@ public class BillingService:IBillingService
         return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
     }
     // Billings 
-    public async Task<List<BillingDto>> GetAllBillingAsync()
-    {
-        List<Billing> billings = await _context.Billings
-            .AsNoTracking()
-            .AsSplitQuery()   
-            .Where(e => !e.IsDeleted)
-            .OrderByDescending(e => e.DateOfBilling).ToListAsync();
-
-        if (billings == null || billings.Count == 0)
+        public async Task<List<BillingDto>> GetAllBillingAsync()
         {
-            return new List<BillingDto>();
-        }
+            List<Billing> billings = await _context.Billings
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Include(b => b.OperationsProvider)
+                .Where(e => !e.IsDeleted)
+                .OrderByDescending(e => e.DateOfBilling).ToListAsync();
 
-        List<BillingDto> billingDtos = _mapper.Map<List<BillingDto>>(billings);
-        return billingDtos;
-    }
+            if (billings == null || billings.Count == 0)
+            {
+                return new List<BillingDto>();
+            }
+
+            List<BillingDto> billingDtos = _mapper.Map<List<BillingDto>>(billings);
+            return billingDtos;
+        }
     public async Task<List<BillingDto>> GetAllNotPurchaseOrderBillings()
     {
         var billings = await _context.Billings
@@ -62,13 +63,14 @@ public class BillingService:IBillingService
 
     public async Task<List<BillingDto>> GetAllExpensesBillingPerDay(DateTime date, BillingBranch branch)
     {
-        var start = date.Date;
+        var start = date.Date.ToUniversalTime();
         var end = start.AddDays(1);
 
         var billings = await _context.Billings
             .AsNoTracking()
             .AsSplitQuery()
             .Where(e => !e.IsDeleted
+                     && e.DailySaleId == null
                      && e.Branch == branch
                      && e.IsPaid
                      && e.DatePaid.HasValue
@@ -79,9 +81,10 @@ public class BillingService:IBillingService
         return _mapper.Map<List<BillingDto>>(billings);
     }
 
+  
     public async Task<BillingDto?> GetBillingById(int id)
     {
-        var billing = await _context.Billings.AsNoTracking()
+        var billing = await _context.Billings.AsNoTracking().AsSplitQuery().Include(b => b.OperationsProvider)
                              .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
 
         return billing == null ? null : _mapper.Map<BillingDto>(billing);

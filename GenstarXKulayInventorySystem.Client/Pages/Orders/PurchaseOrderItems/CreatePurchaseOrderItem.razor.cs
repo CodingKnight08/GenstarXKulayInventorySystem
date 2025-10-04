@@ -69,11 +69,13 @@ public partial class CreatePurchaseOrderItem
 
         var matchBrand = ProductBrands
             .Where(b => !string.IsNullOrWhiteSpace(b.BrandName) &&
-                        (string.IsNullOrWhiteSpace(value) || b.BrandName.Contains(value, StringComparison.OrdinalIgnoreCase)))
-            .Select(b => b.BrandName);
+                        (string.IsNullOrWhiteSpace(value) ||
+                         b.BrandName.Contains(value, StringComparison.OrdinalIgnoreCase)))
+            .Select(b => b.BrandName!); // safe because we filtered nulls
 
-        return Task.FromResult(matchBrand.AsEnumerable());
+        return Task.FromResult(matchBrand);
     }
+
 
 
 
@@ -105,31 +107,31 @@ public partial class CreatePurchaseOrderItem
     }
 
 
-    protected Task<IEnumerable<string>> SearchProduct(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<ProductDto>> SearchProduct(string value, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(value) || SelectedBrand?.Products == null)
-            return Task.FromResult(Enumerable.Empty<string>());
+            return Task.FromResult(Enumerable.Empty<ProductDto>());
 
         var matchProduct = SelectedBrand.Products
-            .Where(p => !string.IsNullOrWhiteSpace(p.ProductName) &&
-                        p.ProductName.Contains(value, StringComparison.OrdinalIgnoreCase))
-            .Select(p => p.ProductName);
+            .Where(p => string.IsNullOrWhiteSpace(value) ||
+                        p.ProductNameAndUnit.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(p => p.Id)
+            .Select(g => g.First());
 
         return Task.FromResult(matchProduct);
     }
 
 
 
-    protected void OnProductSelected(string product)
+    protected void OnProductSelected(ProductDto product)
     {
-        if (string.IsNullOrWhiteSpace(product) && ProductBrands == null)
-            return;
+        if (product is null) return;
 
-        SelectedProduct = product;
+        SelectedProduct = product.ProductNameAndUnit;
 
         var selectedProduct = SelectedBrand?.Products?
-            .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.ProductName) &&
-                                 string.Equals(p.ProductName, product, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.ProductNameAndUnit) &&
+                                 string.Equals(p.ProductNameAndUnit, product.ProductNameAndUnit, StringComparison.OrdinalIgnoreCase));
 
         if (selectedProduct != null)
         {

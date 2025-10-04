@@ -22,23 +22,26 @@ else{
 <MudDialog>
     <DialogContent>
         <MudGrid Spacing="4">
+            <MudItem sm="12">
+                <MudTextField Value="EditableBilling.OperationsProvider?.ProviderName" Label="Provider Name" Variant="Variant.Text" ReadOnly="true" />
+            </MudItem>
             <MudItem xl="6" lg="6" md="12" sm="12">
-                <MudTextField T="string" @bind-Value="Billing.BillingName" Label="Billing Name" FullWidth="true" Required=true />
+                <MudTextField T="string" @bind-Value="EditableBilling.BillingName" Label="Billing Name" FullWidth="true" Required=true />
             </MudItem>
 
             <MudItem xl="6" lg="6" md="12" sm="12">
-                <MudTextField T="string" @bind-Value="Billing.BillingNumber" Label="Billing Number" FullWidth="true" Required=true ReadOnly=true />
+                <MudTextField T="string" @bind-Value="EditableBilling.BillingNumber" Label="Billing Number" FullWidth="true" Required=true ReadOnly=true />
             </MudItem>
 
             <MudItem xl="6" lg="6" md="12" sm="12">
-                <MudDatePicker Date="Billing.DateOfBilling"
+                    <MudDatePicker Date="EditableBilling.DateOfBilling"
                                Label="Billing Date"
                                MinDate="MinDate"
                                DateChanged="@(billingDate => OnDateChanged(billingDate))" />
             </MudItem>
 
             <MudItem xl="6" lg="6" md="12" sm="12">
-                <MudSelect T="BillingCategory" @bind-Value="Billing.Category" Label="Billing Category" FullWidth="true" ReadOnly=true>
+                    <MudSelect T="BillingCategory" @bind-Value="EditableBilling.Category" Label="Billing Category" FullWidth="true" ReadOnly=true>
                     @foreach (var val in Enum.GetValues<BillingCategory>())
                     {
                         <MudSelectItem Value="@val">
@@ -47,6 +50,9 @@ else{
                     }
                 </MudSelect>
             </MudItem>
+                <MudItem md="6" sm="12">
+                    <MudTextField @bind-Value="EditableBilling.ReceiptNumber" Label="Reciept Number" Variant="Variant.Text"  />
+                </MudItem>
             <MudItem xl="6" xs="12">
                 <MudNumericField T="decimal"
                                  Label="Amount"
@@ -58,7 +64,7 @@ else{
 
             </MudItem>
             <MudItem xl="6" lg="6" md="6" sm="12">
-                <MudSelect T="BillingBranch" @bind-Value="Billing.Branch" Label="Billing Branch" FullWidth="true">
+                    <MudSelect T="BillingBranch" @bind-Value="EditableBilling.Branch" Label="Billing Branch" FullWidth="true">
                     @foreach (var s in Enum.GetValues<BillingBranch>())
                     {
                         <MudSelectItem Value="@s">@s.ToString()</MudSelectItem>
@@ -67,7 +73,7 @@ else{
             </MudItem>
             <MudItem xl="6">
                 <MudSelect T="bool"
-                           @bind-Value="Billing.IsPaid"
+                               @bind-Value="EditableBilling.IsPaid"
                            Label="Billing Status"
                            FullWidth="true">
                     <MudSelectItem T="bool" Value="true">Paid</MudSelectItem>
@@ -78,7 +84,7 @@ else{
 
 
             <MudItem xl="6" lg="6" md="6" sm="12">
-                <MudSelect T="PaymentMethod" @bind-Value="Billing.PaymentMethod" Label="Payment Method" FullWidth="true" Disabled="!Billing.IsPaid">
+                    <MudSelect T="PaymentMethod" @bind-Value="EditableBilling.PaymentMethod" Label="Payment Method" FullWidth="true" Disabled="!Billing.IsPaid">
                     @foreach (var s in Enum.GetValues<PaymentMethod>())
                     {
                         <MudSelectItem Value="@s">@s.ToString()</MudSelectItem>
@@ -87,14 +93,14 @@ else{
             </MudItem>
 
             <MudItem xl="12" xs="12">
-                <MudTextField @bind-Value="Billing.Remarks"
+                    <MudTextField @bind-Value="EditableBilling.Remarks"
                               Label="Remarks"
                               FullWidth="true"
                               MaxLines="3" />
             </MudItem>
 
             <MudItem xl="3" lg="3" md="6" sm="12">
-                <MudCheckBox @bind-Value="Billing.Discounted" Label="Discounted" />
+                    <MudCheckBox @bind-Value="EditableBilling.Discounted" Label="Discounted" />
             </MudItem>
 
             @if (Billing.Discounted)
@@ -102,7 +108,7 @@ else{
                 <MudItem xl="4" lg="4" md="6" sm="12">
                     <MudNumericField T="decimal?"
                                      HideSpinButtons="true"
-                                     @bind-Value="Billing.DiscountAmount"
+                                     @bind-Value="EditableBilling.DiscountAmount"
                                      Label="Discount Amount"
                                      FullWidth="true" />
                 </MudItem>

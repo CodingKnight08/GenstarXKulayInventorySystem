@@ -16,23 +16,25 @@
               Hover="true"
               Class="flex-grow-1">
         <HeaderContent>
+            <MudTh>Provider</MudTh>
             <MudTh>Billing Number</MudTh>
             <MudTh>Billing Name</MudTh>
             <MudTh>Billing Amount</MudTh>
             <MudTh>Date of Billing</MudTh>
             <MudTh>Category</MudTh>
             <MudTh>Status</MudTh>
-            <MudTh>Branch</MudTh>
+            <MudTh>Reciept No.</MudTh>
             <MudTh>Action</MudTh>
         </HeaderContent>
         <RowTemplate>
+            <MudTd>@(context.OperationsProvider?.ProviderName ?? string.Empty)</MudTd>
             <MudTd>@context.BillingNumber</MudTd>
             <MudTd>@context.BillingName</MudTd>
             <MudTd>@context.Amount.ToString("C", new System.Globalization.CultureInfo("en-PH"))</MudTd>
             <MudTd>@context.DateOfBilling.ToString("MM/dd/yyyy")</MudTd>
             <MudTd>@context.Category.ToString()</MudTd>
             <MudTd>@(context.IsPaid ? "Paid" : "Unpaid")</MudTd>
-            <MudTd>@context.Branch</MudTd>
+            <MudTd>@context.ReceiptNumber</MudTd>
             <MudTd>
                 <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small" OnClick="() =>ViewBilling(context.Id)" />
                 <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Success" Size="Size.Small" OnClick="() => EditBilling(context)" Disabled="@(context.DatePaid.HasValue)" />
@@ -40,5 +42,11 @@
             </MudTd>
 
         </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.h6" Align="Align.Center">No Billings</MudText>
+        </NoRecordsContent>
+        <PagerContent>
+            <MudTablePager HorizontalAlignment="HorizontalAlignment.End" />
+        </PagerContent>
     </MudTable>
 </MudPaper>

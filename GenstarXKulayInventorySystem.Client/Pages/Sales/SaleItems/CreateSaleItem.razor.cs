@@ -39,7 +39,7 @@ public partial class CreateSaleItem
 
         try
         {
-            var response = await HttpClient.GetAsync("api/productbrand/all");
+            var response = await HttpClient.GetAsync("api/productbrand/all/brandnames");
             response.EnsureSuccessStatusCode();
             var brands = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>();
             ProductBrands = brands ?? new List<ProductBrandDto>();
@@ -95,49 +95,57 @@ public partial class CreateSaleItem
 
         return Task.FromResult(result);
     }
-
-
-    protected Task<IEnumerable<string>> SearchProducts(string value, CancellationToken cancellationToken)
-    { if (Products is null || !Products.Any()) 
-            return Task.FromResult(Enumerable.Empty<string>()); 
-        var result = Products
-            .Where(p => !string.IsNullOrWhiteSpace(p.ProductName) 
-            && (string.IsNullOrWhiteSpace(value) || p.ProductName
-            .Contains(value, StringComparison.OrdinalIgnoreCase))).Select(p => p.ProductName);
-        return Task.FromResult(result); }
-
-    protected void OnProductSelect(string product)
+    
+    protected Task<IEnumerable<ProductDto>> SearchProductsDto(string value, CancellationToken cancellationToken)
     {
-        // Called when user picks from the list
-        var matchedProduct = Products.FirstOrDefault(e =>
-            !string.IsNullOrWhiteSpace(e.ProductName) &&
-            string.Equals(e.ProductName, product, StringComparison.OrdinalIgnoreCase));
+        if (Products is null || !Products.Any())
+            return Task.FromResult(Enumerable.Empty<ProductDto>());
 
-        if (matchedProduct != null)
-        {
-            SaleItemDto.ProductId = matchedProduct.Id;
-            SaleItemDto.ItemName = matchedProduct.ProductName;
-        }
+        var result = Products
+            .Where(p => string.IsNullOrWhiteSpace(value) ||
+                        p.ProductName.Contains(value, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(p => p.Id)         
+            .Select(g => g.First());
+
+        return Task.FromResult(result);
+    }
+
+    protected void OnProductSelectDto(ProductDto product)
+    {
+        if (product is null) return;
+
+        SelectedProductFromList = product;
+        SelectedProduct = product.ProductName;
+        SaleItemDto.ProductId = product.Id;
+        SaleItemDto.ItemName = product.ProductName;
+
+        OnWholeSaleChanged(IsWholeSale);
     }
 
     protected void OnProductTyped(string text)
     {
-        
         SelectedProduct = text;
         SaleItemDto.ItemName = text;
 
-        // Reset ProductId if no match
         var matchedProduct = Products.FirstOrDefault(e =>
-            !string.IsNullOrWhiteSpace(e.ProductName) &&
+            !string.IsNullOrWhiteSpace(e.ProductNameAndUnit) &&
             string.Equals(e.ProductName, text, StringComparison.OrdinalIgnoreCase));
 
-        SaleItemDto.ProductId = matchedProduct?.Id;  // null if custom
-        SelectedProductFromList = matchedProduct ?? new ProductDto();
-        if(SelectedProductFromList is not null)
+        if (matchedProduct != null)
         {
+            SaleItemDto.ProductId = matchedProduct.Id;
+            SelectedProductFromList = matchedProduct;
+            SaleItemDto.UnitMeasurement = matchedProduct.ProductMesurementOption.GetValueOrDefault();
             OnWholeSaleChanged(IsWholeSale);
         }
+        else
+        {
+            SaleItemDto.ProductId = null;
+            SelectedProductFromList = null;
+        }
     }
+
+
 
 
     protected async Task OnBrandSelect(string brand) {

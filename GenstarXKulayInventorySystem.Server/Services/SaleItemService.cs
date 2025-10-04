@@ -44,6 +44,30 @@ public class SaleItemService:ISaleItemService
         return saleItemDtos;
     }
 
+    public async Task<SaleItemPageResultDto<SaleItemDto>> GetAllSaleItemsPageAsync(int dailySaleId, int skip, int take)
+    {
+        var query = _context.SaleItems
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(e => e.DailySaleId == dailySaleId && !e.IsDeleted);
+
+        int totalCount = await query.CountAsync();
+
+        List<SaleItem> saleItems = await query
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync();
+
+        var saleItemDtos = _mapper.Map<List<SaleItemDto>>(saleItems);
+
+        return new SaleItemPageResultDto<SaleItemDto>
+        {
+            SaleItems = saleItemDtos,
+            TotalCount = totalCount
+        };
+    }
+
+
     public async Task<List<SaleItemDto>> GetAllUndeductedItemsAsync()
     {
         List<SaleItem> salesItems = await _context.SaleItems
@@ -154,6 +178,7 @@ public class SaleItemService:ISaleItemService
 public interface ISaleItemService
 {
     Task<List<SaleItemDto>> GetAllSaleItemsAsync(int dailySaleId);
+    Task<SaleItemPageResultDto<SaleItemDto>> GetAllSaleItemsPageAsync(int dailySaleId, int skip, int take);
     Task<List<SaleItemDto>> GetAllUndeductedItemsAsync();
     Task<SaleItemDto?> GetSaleItemById(int saleItemId);
     Task<bool> AddSaleItemAsync(SaleItemDto saleItemDto);

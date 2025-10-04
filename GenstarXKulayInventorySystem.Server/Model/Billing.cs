@@ -1,4 +1,6 @@
-﻿using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Policy;
+using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Model;
@@ -6,9 +8,15 @@ namespace GenstarXKulayInventorySystem.Server.Model;
 public class Billing: BaseEntity
 {
     public int Id { get; set; }
+    public int? OperationsProviderId { get; set; }
+    [ForeignKey(nameof(OperationsProviderId))]
+    public OperationsProvider? OperationsProvider { get; set; }
+    public int? DailySaleId { get; set; }
+    [ForeignKey(nameof(DailySaleId))]
+    public DailySaleReport? DailySaleReport { get; set; }
     public string BillingName { get; set; } = string.Empty;
     public  string BillingNumber { get; set; } = string.Empty;
-    public DateTime DateOfBilling { get; set; }
+    public DateTime DateOfBilling { get; set; } 
     public BillingCategory Category { get; set; }
     public string? Remarks { get; set; }
     public decimal Amount { get; set; } = 0;
@@ -19,5 +27,6 @@ public class Billing: BaseEntity
     public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
     public BillingBranch Branch { get; set; } = BillingBranch.GenStar;
     public DateTime? DatePaid { get; set; } = null;
-    public ICollection<PurchaseOrderItem> PurchaseOrderItems { get; set; } = new List<PurchaseOrderItem>();
+    public string? ReceiptNumber { get; set; } = string.Empty;
+    
 }

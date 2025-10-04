@@ -3,6 +3,22 @@
 <MudDialog>
     <DialogContent>
         <MudGrid Spacing="4">
+            <MudItem sm="12">
+                <MudAutocomplete T="string"
+                    Label="Provider Name"
+                    @bind-Value="ProviderName"
+                    SearchFunc="SearchProviders"
+                    Dense="true"
+                    Clearable="true"
+                    CoerceText="true"
+                    CoerceValue="true"
+                    Placeholder="Enter Name of Provider"
+                    Variant="Variant.Text"
+                    Required=true
+                    ShowProgressIndicator="IsLoading"
+                    TextChanged="OnProviderNameTyped"
+                    />
+            </MudItem>
             <MudItem xl="6" lg="6" md="12" sm="12">
                 <MudTextField T="string" @bind-Value="Billing.BillingName" Label="Billing Name" FullWidth="true" Required=true />
             </MudItem>
@@ -28,6 +44,9 @@
                     }
                 </MudSelect>    
             </MudItem>
+            <MudItem xs="12" sm="12" md="6">
+                <MudTextField T="string" @bind-Value="Billing.ReceiptNumber" Placeholder="Enter Reciept Number" Label="Reciept Number" Variant="Variant.Text" />
+            </MudItem>
             <MudItem xl="6" xs="12">
                 <MudNumericField T="decimal"
                                  Label="Amount"
@@ -39,7 +58,7 @@
 
             </MudItem>
             <MudItem xl="6" lg="6" md="6" sm="12">
-                <MudSelect T="BillingBranch" @bind-Value="Billing.Branch" Label="Billing Branch" FullWidth="true">
+                <MudSelect T="BillingBranch" @bind-Value="Billing.Branch" Label="Billing Branch" FullWidth="true" ReadOnly="true">
                     @foreach (var s in Enum.GetValues<BillingBranch>())
                     {
                         <MudSelectItem Value="@s">@s.ToString()</MudSelectItem>

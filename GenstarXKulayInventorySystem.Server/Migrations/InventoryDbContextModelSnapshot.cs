@@ -53,6 +53,9 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
+                    b.Property<int?>("DailySaleId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Data")
                         .IsRequired()
                         .HasColumnType("text");
@@ -78,8 +81,14 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<bool>("IsPaid")
                         .HasColumnType("boolean");
 
+                    b.Property<int?>("OperationsProviderId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PaymentMethod")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ReceiptNumber")
+                        .HasColumnType("text");
 
                     b.Property<string>("Remarks")
                         .HasColumnType("text");
@@ -91,6 +100,10 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DailySaleId");
+
+                    b.HasIndex("OperationsProviderId");
 
                     b.ToTable("Billings");
                 });
@@ -167,6 +180,9 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int?>("CustomPaymentTermsOption")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("DailySaleReportId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("DateOfSales")
                         .HasColumnType("timestamp with time zone");
 
@@ -215,6 +231,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("DailySaleReportId");
 
                     b.ToTable("DailySales");
                 });
@@ -325,6 +343,52 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DailySaleReports");
+                });
+
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.OperationsProvider", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Branch")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ProviderName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TINNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OperationsProviders");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>
@@ -637,9 +701,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BillingId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -683,8 +744,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BillingId");
 
                     b.HasIndex("ProductBrandId");
 
@@ -1094,6 +1153,23 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Billing", b =>
+                {
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.DailySaleReport", "DailySaleReport")
+                        .WithMany("Billings")
+                        .HasForeignKey("DailySaleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.OperationsProvider", "OperationsProvider")
+                        .WithMany("Billings")
+                        .HasForeignKey("OperationsProviderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("DailySaleReport");
+
+                    b.Navigation("OperationsProvider");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.DailySale", b =>
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.Client", "Client")
@@ -1101,7 +1177,14 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.DailySaleReport", "DailySaleReport")
+                        .WithMany("DailySales")
+                        .HasForeignKey("DailySaleReportId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Client");
+
+                    b.Navigation("DailySaleReport");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>
@@ -1143,10 +1226,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrderItem", b =>
                 {
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.Billing", null)
-                        .WithMany("PurchaseOrderItems")
-                        .HasForeignKey("BillingId");
-
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductBrand", "ProductBrand")
                         .WithMany()
                         .HasForeignKey("ProductBrandId")
@@ -1237,11 +1316,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Billing", b =>
-                {
-                    b.Navigation("PurchaseOrderItems");
-                });
-
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Client", b =>
                 {
                     b.Navigation("DailySales");
@@ -1250,6 +1324,18 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.DailySale", b =>
                 {
                     b.Navigation("SaleItems");
+                });
+
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.DailySaleReport", b =>
+                {
+                    b.Navigation("Billings");
+
+                    b.Navigation("DailySales");
+                });
+
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.OperationsProvider", b =>
+                {
+                    b.Navigation("Billings");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>

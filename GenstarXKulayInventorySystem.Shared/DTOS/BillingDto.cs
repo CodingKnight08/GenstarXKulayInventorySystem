@@ -6,6 +6,10 @@ namespace GenstarXKulayInventorySystem.Shared.DTOS;
 public class BillingDto:BaseEntityDto
 {
     public int Id { get; set; }
+    public int? OperationsProviderId { get; set; }
+    public OperationsProviderDto? OperationsProvider { get; set; }
+    public int? DailySaleIdId { get; set; }
+    public DailySaleReportDto? DailySaleReportDto { get; set; }
     public string BillingName { get; set; } = string.Empty;
     public string BillingNumber { get; set; } = string.Empty;
     public DateTime DateOfBilling { get; set; } = DateTime.Now;
@@ -19,4 +23,5 @@ public class BillingDto:BaseEntityDto
     public BillingBranch Branch { get; set; } = BillingBranch.GenStar;
     public DateTime? DatePaid { get; set; } = null;
     public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+    public string? ReceiptNumber { get; set; } = string.Empty;
 }
