@@ -147,12 +147,19 @@ public partial class ViewBrand
 
     protected async Task AddProduct()
     {
+        var dialogOptions = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            BackdropClick = false
+        };
         var dialogRef = await DialogService.ShowAsync<CreateProduct>(
             "Add Product",
             new DialogParameters {
                 ["BrandId"] = BrandId ,
                 ["Branch"] = Branch
-            });
+            }, dialogOptions);
 
         if (dialogRef is not null)
         {
