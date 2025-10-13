@@ -175,13 +175,13 @@ public class ProductService:IProductService
     }
     public async Task<List<ProductBrandDto>> GetAllBrandsAsync(int take, int skip)
     {
-        var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted ).Skip(skip).Take(take).OrderBy(p => p.BrandName).ToListAsync() ?? new List<ProductBrand>();
+        var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted ).OrderBy(p => p.BrandName).Skip(skip).Take(take).ToListAsync() ?? new List<ProductBrand>();
         return brands.Select(brand => _mapper.Map<ProductBrandDto>(brand)).ToList();
     }
 
     public async Task<List<ProductBrandDto>> GetAllBrands()
     {
-        var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted).ToListAsync() ?? new List<ProductBrand>();
+        var brands = await _context.ProductBrands.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted).OrderBy(e => e.BrandName).ToListAsync() ?? new List<ProductBrand>();
         return _mapper.Map<List<ProductBrandDto>>(brands);
     }
     public async Task<List<ProductBrandDto>> GetAllBrandsWithProductsAsync(BranchOption branch)
@@ -191,6 +191,7 @@ public class ProductService:IProductService
             .AsSplitQuery()
             .Include(b => b.Products.Where(p => !p.IsDeleted && p.Branch == branch))
             .Where(b => !b.IsDeleted)
+            .OrderBy(b=> b.BrandName)
             .ToListAsync();
         return brands.Select(brand => _mapper.Map<ProductBrandDto>(brand)).ToList();
     }
