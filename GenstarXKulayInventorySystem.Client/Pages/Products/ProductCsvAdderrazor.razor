@@ -1,0 +1,39 @@
+﻿@page "/products/csv-adder"
+@inject HttpClient Http
+
+<MudMainContent>
+    <h3>📦 Upload Product CSV or Excel</h3>
+
+    <InputFile OnChange="UploadFile" />
+    <p>@StatusMessage</p>
+</MudMainContent>
+
+
+@code {
+    private string StatusMessage = "";
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file == null)
+            {
+                StatusMessage = "❌ No file selected.";
+                return;
+            }
+
+            var content = new MultipartFormDataContent();
+            content.Add(new StreamContent(file.OpenReadStream(50 * 1024 * 1024)), "file", file.Name);
+
+            var response = await Http.PostAsync("api/productimport/upload", content);
+            var result = await response.Content.ReadAsStringAsync();
+
+            StatusMessage = response.IsSuccessStatusCode ? result : $"❌ Failed: {result}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"❌ Error: {ex.Message}";
+        }
+    }
+}
