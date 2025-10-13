@@ -2,6 +2,7 @@
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
@@ -23,8 +24,10 @@ public partial class LoginPage
     protected LoginDto User { get; set; } = new LoginDto();
     protected MudForm form = default!;
     protected bool ShowValidation { get; set; } = false;
+    protected bool ShowPassword { get; set; } = false;
     protected bool IsUsernameInvalid => string.IsNullOrWhiteSpace(User.Username);
     protected bool IsPasswordInvalid => string.IsNullOrWhiteSpace(User.Password);
+    protected string PasswordInputType => ShowPassword ? "text" : "password";
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,6 +100,18 @@ public partial class LoginPage
     protected void Register()
     {
         NavigationManager.NavigateTo("/register");
+    }
+    private void TogglePasswordVisibility()
+    {
+        ShowPassword = !ShowPassword;
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            _ = Login();
+        }
     }
 
     private bool JwtIsValid(string token)
