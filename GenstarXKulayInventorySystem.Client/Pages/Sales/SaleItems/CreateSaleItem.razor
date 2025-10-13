@@ -15,11 +15,13 @@
                          ValueChanged="(string value) => OnBrandSelect(value)"
                          Variant="Variant.Text"
                          Disabled="SaleItemDto.PaintCategory == PaintCategory.Mix"
+                         MaxItems="100"
                          />
             </MudItem>
             <MudItem xl="5">
 
                 <MudAutocomplete T="ProductDto"
+                                 DebounceInterval=5
                                  Label="Item Name"
                                  SearchFunc="SearchProductsDto"
                                  ToStringFunc="p => p?.ProductName"
@@ -30,6 +32,7 @@
                                  Dense="true"
                                  CoerceText="false"
                                  CoerceValue="false"
+                                 MaxItems="200"
                                  ResetValueOnEmptyText="false" />
 
 

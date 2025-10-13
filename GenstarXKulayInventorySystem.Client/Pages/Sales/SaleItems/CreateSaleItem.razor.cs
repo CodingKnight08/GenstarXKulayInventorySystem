@@ -15,6 +15,7 @@ public partial class CreateSaleItem
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
     protected SaleItemDto SaleItemDto { get; set; } = new SaleItemDto();
     protected List<ProductBrandDto> ProductBrands { get; set; } = new List<ProductBrandDto>();
     protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
