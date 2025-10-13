@@ -14,8 +14,11 @@
     <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" >Dashboard</MudNavLink>
     <AuthorizeView Roles="Admin,Secretary,User" Context="GeneralAuth">
 
-    
-    <MudNavLink Href="/products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Products</MudNavLink>
+    <MudNavGroup Icon="@Icons.Material.Filled.Token" IconColor="@Color.Success" Title="Products">
+         <MudNavLink Href="/productbrands" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Brands</MudNavLink>
+          <MudNavLink Href="/productcategory" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage" IconColor="@Color.Error">Category</MudNavLink>
+    </MudNavGroup>
+   
     <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
     <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
     <MudNavGroup Icon="@Icons.Material.Filled.Inventory" IconColor="@Color.Default" Title="Orders">
