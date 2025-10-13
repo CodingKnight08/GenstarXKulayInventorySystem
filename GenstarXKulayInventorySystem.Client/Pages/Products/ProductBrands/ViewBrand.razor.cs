@@ -35,7 +35,7 @@ public partial class ViewBrand
         await LoadCategoriesAsync();
         items =
         [
-            new("Products", href: $"/products"),
+            new("Brands", href: $"/productbrands"),
             new("Brand Detail", href: "#", disabled: true),
         ];
         
