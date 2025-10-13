@@ -40,7 +40,9 @@ public class ProductsEnumHelpers
         Sheet,
 
         SquareMeter,
-        CubicMeter
+        CubicMeter,
+        Pail,
+        Set
 
     }
 
