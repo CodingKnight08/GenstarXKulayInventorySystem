@@ -21,5 +21,6 @@ public class DailySaleDto:BaseEntityDto
     public DateTime? ExpectedPaymentDate { get; set; }
     public PurchaseRecieptOption? SalesOption { get; set; } 
     public decimal? TotalAmount { get; set; }
+    public decimal? Commission { get; set; }
     public List<SaleItemDto> SaleItems { get; set; } = new List<SaleItemDto>();
 }

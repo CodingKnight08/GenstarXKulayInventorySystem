@@ -10,16 +10,25 @@ public class SaleItemDto:BaseEntityDto
     public int? ProductId { get; set; }
     public ProductDto? Product { get; set; }
     public string ItemName { get; set; } = string.Empty;
-    public decimal? Size { get; set; }
+    public decimal? Size { get; set; } = 1;
     public string Description { get; set; } = string.Empty;
     public BranchOption BranchPurchased { get; set; } = BranchOption.GeneralSantosCity;
     public ProductMesurementOption UnitMeasurement { get; set; } = ProductMesurementOption.Gallon;
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public decimal ItemPrice { get; set; }
     public ProductPricingOption ProductPricingOption { get; set; } = ProductPricingOption.Retail;
     public PaintCategory PaintCategory { get; set; } = PaintCategory.Solid;
     public List<InvolvePaintsDto> DataList { get; set; } = new List<InvolvePaintsDto>();
     public bool IsDeducted { get; set; } = false;
+    public decimal TotalPrice
+    {
+        get
+        {
+            
+            decimal sizeValue = Size ?? 1m;
+            return sizeValue * Quantity * ItemPrice;
+        }
+    }
 }
 
 public class InvolvePaintsDto

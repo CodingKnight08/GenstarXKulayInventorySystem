@@ -58,6 +58,7 @@ public class ProductsEnumHelpers
         Combo,
         Mix,
         None,
-        Solid
+        Solid,
+        Repack
     }
 }
