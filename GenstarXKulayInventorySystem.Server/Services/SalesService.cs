@@ -139,7 +139,6 @@ public class SalesService:ISalesService
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
                       && ds.Branch == branch
-                      && ds.UpdatedAt == null
                       && ds.PaymentType != null
                       && ds.DateOfSales >= start
                       && ds.DateOfSales < end)
@@ -245,7 +244,15 @@ public class SalesService:ISalesService
             sale.DateOfSales = DateTime.UtcNow;
             sale.CreatedAt = DateTime.UtcNow;
             sale.CreatedBy = GetCurrentUsername();
-            sale.TotalAmount = saleDto.SaleItems.Sum(x => (x.ItemPrice) * (x.Quantity));
+            sale.TotalAmount = Math.Round(
+                         (saleDto.SaleItems?.Sum(x =>
+                             (x.ItemPrice * x.Quantity * (x.Size ?? 1))
+                         ) ?? 0)
+                         + (saleDto.Commission ?? 0),
+                         2);
+
+
+
             sale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
                 DateTime.UtcNow,

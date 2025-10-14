@@ -51,7 +51,7 @@ public class SalesHostedService : IHostedService, IDisposable
                 foreach (var item in sales)
                 {
                     decimal subtractedValue = UtilitiesHelper.ConvertItems(
-                                        item.Size ?? 0,
+                                        item.Size ?? 1,
                                         item.Quantity,
                                         item.Product?.ProductMesurementOption
                                             ?? ProductsEnumHelpers.ProductMesurementOption.Gallon,
@@ -83,7 +83,7 @@ public class SalesHostedService : IHostedService, IDisposable
                                                         ?? ProductsEnumHelpers.ProductMesurementOption.Gallon;
 
                                 decimal paintQuantityValue = UtilitiesHelper.ConvertItems(
-                                    mixture.Size ?? 0,
+                                    mixture.Size ?? 1,
                                     1,
                                     measurementOption,
                                     mixture.UnitMeasurement);
