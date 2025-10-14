@@ -14,7 +14,7 @@ public class SaleItem:BaseEntity
     public string Description { get; set; } = string.Empty;
     public BranchOption BranchPurchased { get; set; } = BranchOption.GeneralSantosCity;
     public ProductMesurementOption UnitMeasurement { get; set; } = ProductMesurementOption.Gallon;
-    public int Quantity { get; set; } 
+    public decimal Quantity { get; set; } 
     public decimal ItemPrice { get; set; }
     public ProductPricingOption ProductPricingOption { get; set; } = ProductPricingOption.Retail;
     public PaintCategory PaintCategory { get; set; } = PaintCategory.None;
