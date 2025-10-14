@@ -76,6 +76,18 @@
                                   Label="Receipt No."
                                   />
                 </MudItem>
+                <MudItem lg="2">
+                <MudNumericField T="decimal?"
+                                 Variant="Variant.Text"
+                                 Placeholder="Enter Commission"
+                                 Label="Commission"
+                                 HideSpinButtons="true"
+                                 @bind-Value="Sale.Commission"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 AdornmentColor="Color.Default" />
+
+                </MudItem>
             
 
             @if(Sale.PaymentType == null)
