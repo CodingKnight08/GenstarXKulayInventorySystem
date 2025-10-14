@@ -21,12 +21,14 @@ public partial class CreateSaleItem
     protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
     protected ProductDto? SelectedProductFromList { get; set; } = new ProductDto();
     protected List<InvolvePaintsDto> Paints { get; set; } = new List<InvolvePaintsDto>();
-
+    protected string BrandName { get; set; } = string.Empty;
     protected ProductBrandDto? SelectedBrand { get; set; } = new ProductBrandDto();
     protected string SelectedProduct { get; set; } = string.Empty;
     protected bool IsLoading { get; set; } = false;
     protected bool IsProductLoading { get; set; } = false;
     protected bool IsWholeSale { get; set; } = false;
+    protected bool IsRepack { get; set; } = false;
+    protected bool OverridePrice { get; set; } = false;
 
     protected bool IsValid => !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) && SaleItemDto.ItemPrice > 0 && SaleItemDto.Quantity > 0;
     protected override async Task OnInitializedAsync()
@@ -83,20 +85,24 @@ public partial class CreateSaleItem
             IsProductLoading = false;
         }
     }
-    protected Task<IEnumerable<string?>> SearchBrands(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<ProductBrandDto>> SearchBrands(string value, CancellationToken cancellationToken)
     {
-        if (ProductBrands is null || !ProductBrands.Any())
-            return Task.FromResult(Enumerable.Empty<string?>());
+        if (ProductBrands == null || ProductBrands.Count == 0)
+            return Task.FromResult(Enumerable.Empty<ProductBrandDto>());
+
+        var query = value?.Trim() ?? string.Empty;
 
         var result = ProductBrands
-            .Where(b => !string.IsNullOrWhiteSpace(b.BrandName)
-                     && (string.IsNullOrWhiteSpace(value)
-                     || b.BrandName.Contains(value, StringComparison.OrdinalIgnoreCase)))
-            .Select(b => (string?)b.BrandName); // cast to nullable
+            .Where(b => string.IsNullOrWhiteSpace(value) ||
+            b.BrandName.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(b => b.Id) 
+            .Select(g => g.First()); 
+
 
         return Task.FromResult(result);
     }
-    
+
+
     protected Task<IEnumerable<ProductDto>> SearchProductsDto(string value, CancellationToken cancellationToken)
     {
         if (Products is null || !Products.Any())
@@ -113,16 +119,43 @@ public partial class CreateSaleItem
 
     protected void OnProductSelectDto(ProductDto product)
     {
-        if (product is null) return;
+        if (product is null)
+        {
+            SelectedProductFromList = null;
+            SaleItemDto.ProductId = null;
+            SaleItemDto.ItemName = string.Empty;
+            return;
+        }
 
         SelectedProductFromList = product;
         SelectedProduct = product.ProductName;
         SaleItemDto.ProductId = product.Id;
         SaleItemDto.ItemName = product.ProductName;
+        SaleItemDto.UnitMeasurement = product.ProductMesurementOption.GetValueOrDefault();
 
         OnWholeSaleChanged(IsWholeSale);
     }
 
+    protected void OnBrandTyped(string text)
+    {
+        SelectedBrand = ProductBrands.FirstOrDefault(b =>
+            !string.IsNullOrWhiteSpace(b.BrandName) &&
+            string.Equals(b.BrandName, text, StringComparison.OrdinalIgnoreCase));
+        if (SelectedBrand != null)
+        {
+            BrandName = SelectedBrand.BrandName ?? string.Empty;
+            _ = OnBrandSelect(SelectedBrand);
+        }
+        else
+        {
+            BrandName = text;
+            SelectedBrand = null;
+            Products = new List<ProductDto>();
+            SelectedProduct = string.Empty;
+            SaleItemDto.ProductId = null;
+            SaleItemDto.ItemName = string.Empty;
+        }
+    }
     protected void OnProductTyped(string text)
     {
         SelectedProduct = text;
@@ -146,26 +179,46 @@ public partial class CreateSaleItem
         }
     }
 
-
-
-
-    protected async Task OnBrandSelect(string brand) {
-        if (string.IsNullOrWhiteSpace(brand) && ProductBrands == null)
-            return;
-
-        SelectedBrand = ProductBrands.FirstOrDefault(b =>
-            !string.IsNullOrWhiteSpace(b.BrandName) &&
-            string.Equals(b.BrandName, brand, StringComparison.OrdinalIgnoreCase)
-        );
-        if(SelectedBrand != null)
+   protected void OnPaintCategoryChange(PaintCategory paintType)
+    {
+        SaleItemDto.PaintCategory = paintType;
+        SaleItemDto.ProductId = null;
+        SaleItemDto.ItemName = string.Empty;
+        SelectedProduct = string.Empty;
+        SaleItemDto.ItemPrice = 0;
+        SelectedBrand = new ProductBrandDto();
+        Products = new List<ProductDto>();
+        if(paintType == PaintCategory.Repack)
         {
-            await LoadBrandProducts();
-            SelectedProduct = string.Empty;
+            IsRepack = true;
+        }
+
+    }
+
+    protected async Task OnBrandSelect(ProductBrandDto brand)
+    {
+        if (brand is null)
+        {
+            SelectedBrand = null;
+            Products.Clear();
+            SelectedProductFromList = null;
             SaleItemDto.ProductId = null;
             SaleItemDto.ItemName = string.Empty;
-            StateHasChanged();
+            return;
         }
+
+        SelectedBrand = brand;
+        BrandName = brand.BrandName ?? string.Empty;
+
+        // Clear old selections
+        SelectedProductFromList = null;
+        SelectedProduct = string.Empty;
+        SaleItemDto.ProductId = null;
+        SaleItemDto.ItemName = string.Empty;
+
+        await LoadBrandProducts();
     }
+
 
     protected void SaveItem()
     {
@@ -253,6 +306,16 @@ public partial class CreateSaleItem
             {
                 Snackbar.Add("This item is already included!", Severity.Warning);
             }
+        }
+
+    }
+    protected async Task ComputeRepack(decimal quantity)
+    {
+        SaleItemDto.Quantity = quantity;
+        if (IsRepack)
+        {
+            SaleItemDto.ItemPrice = (SelectedProductFromList?.RetailPrice ?? 0) * SaleItemDto.Quantity;
+            await InvokeAsync(StateHasChanged);
         }
 
     }

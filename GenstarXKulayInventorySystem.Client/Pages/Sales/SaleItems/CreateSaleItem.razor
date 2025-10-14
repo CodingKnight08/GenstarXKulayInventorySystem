@@ -4,44 +4,42 @@
 <MudDialog>
     <DialogContent>
         <MudGrid>
-            <MudItem xl="4">
-                <MudAutocomplete 
-                         Label="Select Brand"
-                         Value="SelectedBrand?.BrandName"  
-                         CoerceText="true"
-                         CoerceValue="true"
-                         Placeholder="Select Brand"
-                         SearchFunc="SearchBrands"
-                         ValueChanged="(string value) => OnBrandSelect(value)"
-                         Variant="Variant.Text"
-                         Disabled="SaleItemDto.PaintCategory == PaintCategory.Mix"
-                         MaxItems="100"
-                         />
-            </MudItem>
-            <MudItem xl="5">
-
-                <MudAutocomplete T="ProductDto"
-                                 DebounceInterval=5
-                                 Label="Item Name"
-                                 SearchFunc="SearchProductsDto"
-                                 ToStringFunc="p => p?.ProductName"
-                                 ValueChanged="OnProductSelectDto"
-                                 TextChanged="OnProductTyped"
-                                 Text="@SelectedProduct"
-                                 Clearable="true"
+            <MudItem xl="4" lg="6" md="6" sm="12">
+                <MudAutocomplete T="ProductBrandDto"
+                                 Label="Select Brand"
                                  Dense="true"
+                                 Placeholder="Select Brand"
+                                 SearchFunc="SearchBrands"
+                                 Value="SelectedBrand"
+                                 ValueChanged="OnBrandSelect"
+                                 ToStringFunc="b => b?.BrandName"
+                                 Disabled="SaleItemDto.PaintCategory == PaintCategory.Mix"
+                                 MaxItems="100"
+                                 Clearable="true"
                                  CoerceText="false"
                                  CoerceValue="false"
-                                 MaxItems="200"
                                  ResetValueOnEmptyText="false" />
 
+            </MudItem>
+            <MudItem xl="5" lg="6" md="6" sm="12">
 
-
-
+                <MudAutocomplete T="ProductDto"
+                                 Label="Item Name"
+                                 Dense="true"
+                                 Placeholder="Select Item"
+                                 SearchFunc="SearchProductsDto"
+                                 Value="SelectedProductFromList"
+                                 ValueChanged="OnProductSelectDto"
+                                 ToStringFunc="p => p?.ProductName"
+                                 Clearable="true"
+                                 CoerceText="false"
+                                 CoerceValue="false"
+                                 ResetValueOnEmptyText="false"
+                                 MaxItems="500" />
             </MudItem>
 
-            <MudItem xl="3">
-                <MudSelect T="PaintCategory" @bind-Value="SaleItemDto.PaintCategory" Label="Paint Type">
+            <MudItem xl="3" lg="5" md="6" sm="12">
+                <MudSelect T="PaintCategory" Value="SaleItemDto.PaintCategory" Label="Paint Type" ValueChanged="OnPaintCategoryChange" >
                     @foreach(var type in Enum.GetValues(typeof(PaintCategory)).Cast<PaintCategory>())
                     {
                         <MudSelectItem T="PaintCategory" Value="@type">
@@ -50,10 +48,10 @@
                     }
                 </MudSelect>
             </MudItem>
-            <MudItem xl="3">
-                <MudNumericField T="decimal?" @bind-Value="SaleItemDto.Size"  Placeholder="Item Size eg. 1.5" Label="Item Size" HideSpinButtons="true" Variant="Variant.Text" Required=true/>
+            <MudItem xl="3" lg="6" md="6" sm="12">
+                <MudNumericField T="decimal?" @bind-Value="SaleItemDto.Size"  Placeholder="Item Size eg. 1.5ml" Label="Item Size" HideSpinButtons="true" Variant="Variant.Text" Required=true/>
             </MudItem>
-            <MudItem xl="3">
+            <MudItem xl="3" lg="5" md="6" sm="12">
                 <MudSelect T="ProductMesurementOption" @bind-Value="SaleItemDto.UnitMeasurement" Label="Unit" Disabled="@(SaleItemDto.ProductId !=null)">
                     @foreach(var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
                     {
@@ -63,19 +61,22 @@
                     }
                 </MudSelect>
             </MudItem>
-            <MudItem xl="3">
-                <MudNumericField T="int" @bind-Value="SaleItemDto.Quantity" Label="Quantity" Placeholder="Enter Quantity" HideSpinButtons=true /> 
+            <MudItem xl="3" lg="5" md="6" sm="12">
+                <MudNumericField T="decimal" Value="SaleItemDto.Quantity" Label="Quantity" Placeholder="Enter Quantity" HideSpinButtons=true ValueChanged="ComputeRepack"/> 
             </MudItem>
             @if (ShouldShowSaleType())
 {
-            <MudItem xl="3">
-                <MudCheckBox  T="bool" @bind-Checked="IsWholeSale" Label="Wholesale Price?" Size="Size.Small" ValueChanged="OnWholeSaleChanged" />
+            <MudItem xl="3" lg="5" md="6" sm="12">
+                <MudCheckBox  T="bool" @bind-Checked="IsWholeSale" Label="Wholesale Price?" Size="Size.Small" ValueChanged="OnWholeSaleChanged" ReadOnly="!OverridePrice" />
             </MudItem>
 }
-            <MudItem xl="3">
-                <MudNumericField T="decimal" @bind-Value="SaleItemDto.ItemPrice" Adornment="Adornment.Start" AdornmentText="₱" HideSpinButtons="true" Label="Price per Item" />
-            </MudItem>
-            <MudItem xl="12">
+                <MudItem xl="3" lg="5" md="6" sm="12">
+                    <MudNumericField T="decimal" @bind-Value="SaleItemDto.ItemPrice" Adornment="Adornment.Start" AdornmentText="₱" HideSpinButtons="true" Label="Price per Item" Format="F2"/>
+                </MudItem>
+            <MudItem xl="3" lg="5" md="6" sm="12">
+                     <MudNumericField T="decimal" Value="SaleItemDto.TotalPrice" Adornment="Adornment.Start" AdornmentText="₱" HideSpinButtons="true" Label="Total Price" Format="F2" />
+                </MudItem>
+            <MudItem xl="12" lg="12" sm="12">
                 <MudTextField @bind-Value="SaleItemDto.Description" MaxLines="2" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Info" Label="Description" />
             </MudItem>
             @if (SaleItemDto.PaintCategory == PaintCategory.Mix)
