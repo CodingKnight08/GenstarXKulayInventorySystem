@@ -25,5 +25,7 @@ public class DailySale:BaseEntity
     public DateTime? ExpectedPaymentDate { get; set; }
     public decimal? Commission { get; set; }
     public bool IsPaid { get; set; }
+    public bool HasDiscount { get; set; }
+    public bool IsApproved { get; set; }
     public virtual ICollection<SaleItem> SaleItems { get; set; } = new HashSet<SaleItem>();
 }
