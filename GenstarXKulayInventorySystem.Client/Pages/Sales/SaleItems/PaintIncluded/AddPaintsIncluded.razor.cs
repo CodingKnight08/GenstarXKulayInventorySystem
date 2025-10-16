@@ -19,6 +19,7 @@ public partial class AddPaintsIncluded
     protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
     protected ProductBrandDto SelectedBrand { get; set; } = new ProductBrandDto();
     protected ProductDto SelectedProduct { get; set; } = new ProductDto();
+    protected string BrandName { get; set; } = string.Empty;
     protected InvolvePaintsDto AddedPaint { get; set; } = new InvolvePaintsDto();
 
     protected bool IsLoading { get; set; } = false;
@@ -65,16 +66,19 @@ public partial class AddPaintsIncluded
             IsProductLoading = false;
         }
     }
-    protected Task<IEnumerable<string?>> SearchBrands(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<ProductBrandDto>> SearchBrands(string value, CancellationToken cancellationToken)
     {
-        if (Brands is null || !Brands.Any())
-            return Task.FromResult(Enumerable.Empty<string?>());
+        if (Brands == null || Brands.Count == 0)
+            return Task.FromResult(Enumerable.Empty<ProductBrandDto>());
+
+        var query = value?.Trim() ?? string.Empty;
 
         var result = Brands
-            .Where(b => !string.IsNullOrWhiteSpace(b.BrandName) &&
-                       (string.IsNullOrWhiteSpace(value) ||
-                        b.BrandName.Contains(value, StringComparison.OrdinalIgnoreCase)))
-            .Select(b => (string?)b.BrandName);
+            .Where(b => string.IsNullOrWhiteSpace(value) ||
+            b.BrandName.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(b => b.Id)
+            .Select(g => g.First());
+
 
         return Task.FromResult(result);
     }
@@ -93,31 +97,27 @@ public partial class AddPaintsIncluded
         return Task.FromResult(result);
     }
 
-    protected async Task OnBrandSelect(string brand)
+    protected async Task OnBrandSelect(ProductBrandDto brand)
     {
-        if (string.IsNullOrWhiteSpace(brand) || Brands is null || Brands.Count == 0)
-            return;
-
-        SelectedBrand = Brands.FirstOrDefault(b =>
-             !string.IsNullOrWhiteSpace(b.BrandName) &&
-             string.Equals(b.BrandName, brand, StringComparison.OrdinalIgnoreCase))
-             ?? new ProductBrandDto();
-
-        if (SelectedBrand is not null && SelectedBrand.Id != 0)
+        if (brand is null)
         {
-            await LoadProductsByBrand();
-            // reset product when brand changes
+            SelectedBrand = new ProductBrandDto();
+            Products.Clear();
             SelectedProduct = new ProductDto();
             AddedPaint.ProductId = 0;
-            AddedPaint.ProductName = string.Empty;
-
-           
-
-            AddedPaint.BrandId = SelectedBrand.Id;
-            AddedPaint.BrandName = SelectedBrand.BrandName;
-
-            StateHasChanged();
+            return;
         }
+
+        SelectedBrand = brand;
+        BrandName = brand.BrandName ?? string.Empty;
+
+        // Clear old selections
+        SelectedProduct = new ProductDto();
+        
+        AddedPaint.ProductId = 0;
+        
+
+        await LoadProductsByBrand();
     }
 
 

@@ -43,32 +43,44 @@ public static class UtilitiesHelper
     }
 
     public static decimal ConvertItems(
-     decimal size,
-     int quantity,
-     ProductMesurementOption productUnit,
-     ProductMesurementOption saleItemUnit)
+       decimal size,
+       decimal quantity,
+       ProductMesurementOption productUnit,
+       ProductMesurementOption saleItemUnit)
     {
-        decimal totalSize = size * quantity;
+        // Combine the base volume first
+        decimal totalBaseValue = size * quantity;
 
         // Volume conversions
         if (IsVolume(productUnit) && IsVolume(saleItemUnit))
         {
+            // Convert productUnit to saleItemUnit
             return (productUnit, saleItemUnit) switch
             {
-                (ProductMesurementOption.Gallon, ProductMesurementOption.Milliliter) => totalSize / 3785m,
-                (ProductMesurementOption.Gallon, ProductMesurementOption.Gallon) => totalSize,
-                (ProductMesurementOption.Liter, ProductMesurementOption.Milliliter) => totalSize / 1000m,
-                (ProductMesurementOption.Quart, ProductMesurementOption.Milliliter) => totalSize / 946m,
-                (ProductMesurementOption.Milliliter, ProductMesurementOption.Milliliter) => totalSize,
+                // Gallon conversions
+                (ProductMesurementOption.Gallon, ProductMesurementOption.Milliliter) => totalBaseValue * 3785m,
+                (ProductMesurementOption.Gallon, ProductMesurementOption.Liter) => totalBaseValue * 3.785m,
+                (ProductMesurementOption.Gallon, ProductMesurementOption.Quart) => totalBaseValue * 4m,
+                (ProductMesurementOption.Gallon, ProductMesurementOption.Gallon) => totalBaseValue,
 
-                (ProductMesurementOption.Milliliter, ProductMesurementOption.Gallon) => totalSize * 3785m,
-                (ProductMesurementOption.Milliliter, ProductMesurementOption.Liter) => totalSize * 1000m,
-                (ProductMesurementOption.Milliliter, ProductMesurementOption.Quart) => totalSize * 946m,
-                (ProductMesurementOption.Liter, ProductMesurementOption.Quart) => totalSize * 1.057m,
-                (ProductMesurementOption.Liter, ProductMesurementOption.Liter) => totalSize,
-                (ProductMesurementOption.Quart, ProductMesurementOption.Liter) => totalSize * 0.946m,
-                (ProductMesurementOption.Quart, ProductMesurementOption.Quart) => totalSize,
-                (ProductMesurementOption.Quart, ProductMesurementOption.Gallon) => totalSize * 0.25m,
+                // Liter conversions
+                (ProductMesurementOption.Liter, ProductMesurementOption.Milliliter) => totalBaseValue * 1000m,
+                (ProductMesurementOption.Liter, ProductMesurementOption.Gallon) => totalBaseValue / 3.785m,
+                (ProductMesurementOption.Liter, ProductMesurementOption.Quart) => totalBaseValue * 1.057m,
+                (ProductMesurementOption.Liter, ProductMesurementOption.Liter) => totalBaseValue,
+
+                // Quart conversions
+                (ProductMesurementOption.Quart, ProductMesurementOption.Milliliter) => totalBaseValue * 946m,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Liter) => totalBaseValue * 0.946m,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Gallon) => totalBaseValue * 0.25m,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Quart) => totalBaseValue,
+
+                // Milliliter conversions
+                (ProductMesurementOption.Milliliter, ProductMesurementOption.Gallon) => totalBaseValue / 3785m,
+                (ProductMesurementOption.Milliliter, ProductMesurementOption.Liter) => totalBaseValue / 1000m,
+                (ProductMesurementOption.Milliliter, ProductMesurementOption.Quart) => totalBaseValue / 946m,
+                (ProductMesurementOption.Milliliter, ProductMesurementOption.Milliliter) => totalBaseValue,
+
                 _ => throw new Exception($"No conversion available for {productUnit} -> {saleItemUnit}")
             };
         }
@@ -78,21 +90,23 @@ public static class UtilitiesHelper
         {
             return (productUnit, saleItemUnit) switch
             {
-                (ProductMesurementOption.Yard, ProductMesurementOption.Feet) => totalSize * 3m,
-                (ProductMesurementOption.Feet, ProductMesurementOption.Yard) => totalSize / 3m,
+                (ProductMesurementOption.Yard, ProductMesurementOption.Feet) => totalBaseValue * 3m,
+                (ProductMesurementOption.Feet, ProductMesurementOption.Yard) => totalBaseValue / 3m,
 
-                (ProductMesurementOption.Meter, ProductMesurementOption.Feet) => totalSize * 3.28084m,
-                (ProductMesurementOption.Feet, ProductMesurementOption.Meter) => totalSize * 0.3048m,
+                (ProductMesurementOption.Meter, ProductMesurementOption.Feet) => totalBaseValue * 3.28084m,
+                (ProductMesurementOption.Feet, ProductMesurementOption.Meter) => totalBaseValue * 0.3048m,
 
-                (ProductMesurementOption.Meter, ProductMesurementOption.Yard) => totalSize * 1.09361m,
-                (ProductMesurementOption.Yard, ProductMesurementOption.Meter) => totalSize * 0.9144m,
+                (ProductMesurementOption.Meter, ProductMesurementOption.Yard) => totalBaseValue * 1.09361m,
+                (ProductMesurementOption.Yard, ProductMesurementOption.Meter) => totalBaseValue * 0.9144m,
 
                 _ => throw new Exception($"No conversion available for {productUnit} -> {saleItemUnit}")
             };
         }
 
-        return totalSize;
+        // Default — no conversion rule
+        return totalBaseValue;
     }
+
 
     public static BillingBranch GetBillingBranch(BranchOption branchOption)
     {

@@ -33,9 +33,20 @@
         {
             <small class="text-danger mb-2">Username is required.</small>
         }
-        <div class="d-flex flex-row align-items-center mb-4">
+        <div class="d-flex flex-row align-items-center mb-4 position-relative">
             <span class="material-icons me-2" style="font-size:2rem;">lock</span>
-            <input type="password" class="form-control flex-grow-1" placeholder="Password" @bind-value="User.Password" />
+            <input class="form-control flex-grow-1"
+                   placeholder="Password"
+                   type="@PasswordInputType"
+                   @bind-value="User.Password"
+                   @onkeydown="HandleKeyDown" />
+
+            <!-- Password visibility toggle icon -->
+            <span class="material-icons position-absolute end-0 me-3"
+                  style="cursor:pointer; color:gray;"
+                  @onclick="TogglePasswordVisibility">
+                @(ShowPassword ? "visibility_off" : "visibility")
+            </span>
         </div>
         @if (ShowValidation && string.IsNullOrWhiteSpace(User.Password))
         {

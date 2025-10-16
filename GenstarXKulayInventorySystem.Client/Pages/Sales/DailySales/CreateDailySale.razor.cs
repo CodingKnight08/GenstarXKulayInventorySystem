@@ -101,11 +101,13 @@ public partial class CreateDailySale
                 {
                     Sale.PaymentTermsOption = PaymentTermsOption.Today;
                 }
-          
 
 
 
-                var response = await HttpClient.PostAsJsonAsync("api/sales", Sale);
+            Sale.HasDiscount = Sale.SaleItems.Any(x => x.HasDiscount);
+            Sale.IsApproved = !Sale.HasDiscount;
+
+            var response = await HttpClient.PostAsJsonAsync("api/sales", Sale);
             response.EnsureSuccessStatusCode();
 
             Snackbar.Add("Sale created successfully!", Severity.Success);
@@ -169,6 +171,6 @@ public partial class CreateDailySale
         Sale.SaleItems = saleItems; // 🔗 Bind sale items to DailySaleDto
     }
 
+   
 
-    
 }

@@ -4,30 +4,31 @@
     <DialogContent>
         <MudGrid Spacing="6">
             <MudItem xl="6" xs="12">
-                <MudAutocomplete 
-                    T="string"
-                    Label="Select Brand"
-                    CoerceText=true
-                    CoerceValue=true
-                    Dense="true"
-                    Value="SelectedBrand.BrandName"
-                    Clearable="true"
-                    ResetValueOnEmptyText="true"
-                    SearchFunc="SearchBrands"
-                    ValueChanged="OnBrandSelect"
-                    Placeholder="Type to search brand..."
-                    DebounceInterval="2"
-                    ShowProgressIndicator="IsLoading" />
+                <MudAutocomplete T="ProductBrandDto"
+                                 Label="Select Brand"
+                                 Dense="true"
+                                 Placeholder="Select Brand"
+                                 SearchFunc="SearchBrands"
+                                 Value="SelectedBrand"
+                                 ValueChanged="OnBrandSelect"
+                                 ToStringFunc="b => b?.BrandName"
+                                 MaxItems="100"
+                                 Clearable="true"
+                                 CoerceText="false"
+                                 CoerceValue="false"
+                                 ResetValueOnEmptyText="false" />
             </MudItem>
             <MudItem xl="6">
                 <MudAutocomplete T="ProductDto"
                                  Label="Select Product"
                                  Dense="true"
                                  Clearable="true"
-                                 ToStringFunc="p => p?.ProductNameAndUnit"
+                                 Value="SelectedProduct"
                                  ResetValueOnEmptyText="true"
                                  SearchFunc="SearchProducts"
                                  ValueChanged="OnProductSelect"
+                                 ToStringFunc="p => p.ProductName"
+                                 MaxItems="500"
                                  Placeholder="Type to search product..."
                                  ShowProgressIndicator="IsProductLoading" />
             </MudItem>

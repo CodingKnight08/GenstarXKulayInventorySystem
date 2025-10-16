@@ -140,6 +140,7 @@ public class InventoryDbContext: IdentityDbContext<User>
             // Decimal precision
             entity.Property(si => si.ItemPrice).HasColumnType("numeric(18,2)");
             entity.Property(si => si.Size).HasColumnType("numeric(18,2)");
+            entity.Property(si => si.Quantity).HasColumnType("numeric(18,2)");
 
             // Enum conversions
             entity.Property(si => si.BranchPurchased).HasConversion<int>();
