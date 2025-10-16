@@ -49,7 +49,7 @@
                 </MudSelect>
             </MudItem>
             <MudItem xl="3" lg="6" md="6" sm="12">
-                <MudNumericField T="decimal?" @bind-Value="SaleItemDto.Size"  Placeholder="Item Size eg. 1.5ml" Label="Item Size" HideSpinButtons="true" Variant="Variant.Text" Required=true/>
+                <MudNumericField T="decimal?" Value="SaleItemDto.Size"  Placeholder="Item Size eg. 1.5ml" Label="Item Size" HideSpinButtons="true" Variant="Variant.Text" Required=true ValueChanged="OnSizeChanged"/>
             </MudItem>
             <MudItem xl="3" lg="5" md="6" sm="12">
                 <MudSelect T="ProductMesurementOption" @bind-Value="SaleItemDto.UnitMeasurement" Label="Unit" Disabled="@(SaleItemDto.ProductId !=null)">
@@ -62,20 +62,24 @@
                 </MudSelect>
             </MudItem>
             <MudItem xl="3" lg="5" md="6" sm="12">
-                <MudNumericField T="decimal" Value="SaleItemDto.Quantity" Label="Quantity" Placeholder="Enter Quantity" HideSpinButtons=true ValueChanged="ComputeRepack"/> 
+                <MudNumericField T="decimal" Value="SaleItemDto.Quantity" Label="Quantity" Placeholder="Enter Quantity" HideSpinButtons=true ValueChanged="OnQuantityChanged"/> 
             </MudItem>
-            @if (ShouldShowSaleType())
-{
+            
+            
             <MudItem xl="3" lg="5" md="6" sm="12">
-                <MudCheckBox  T="bool" @bind-Checked="IsWholeSale" Label="Wholesale Price?" Size="Size.Small" ValueChanged="OnWholeSaleChanged" ReadOnly="!OverridePrice" />
-            </MudItem>
-}
-                <MudItem xl="3" lg="5" md="6" sm="12">
-                    <MudNumericField T="decimal" @bind-Value="SaleItemDto.ItemPrice" Adornment="Adornment.Start" AdornmentText="₱" HideSpinButtons="true" Label="Price per Item" Format="F2"/>
-                </MudItem>
+                <MudNumericField T="decimal" Value="PriceItem" Adornment="Adornment.Start" AdornmentText="₱" HideSpinButtons="true" Label="Price per Item" Format="F2" ValueChanged="Trial"/>
+             </MudItem>
             <MudItem xl="3" lg="5" md="6" sm="12">
                      <MudNumericField T="decimal" Value="SaleItemDto.TotalPrice" Adornment="Adornment.Start" AdornmentText="₱" HideSpinButtons="true" Label="Total Price" Format="F2" />
                 </MudItem>
+            @if (ShouldShowSaleType())
+            {
+                <MudItem xl="3" lg="5" md="6" sm="12">
+                    <MudCheckBox T="bool" @bind-Checked="IsWholeSale" Label="Wholesale Price?" Size="Size.Small" ValueChanged="OnWholeSaleChanged" />
+                </MudItem>
+            }
+            
+          
             <MudItem xl="12" lg="12" sm="12">
                 <MudTextField @bind-Value="SaleItemDto.Description" MaxLines="2" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Info" Label="Description" />
             </MudItem>

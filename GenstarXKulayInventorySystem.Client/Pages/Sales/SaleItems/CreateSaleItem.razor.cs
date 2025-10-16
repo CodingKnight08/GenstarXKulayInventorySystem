@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems;
@@ -29,8 +30,9 @@ public partial class CreateSaleItem
     protected bool IsWholeSale { get; set; } = false;
     protected bool IsRepack { get; set; } = false;
     protected bool OverridePrice { get; set; } = false;
+    protected decimal PriceItem { get; set; } = 0;
 
-    protected bool IsValid => !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) && SaleItemDto.ItemPrice > 0 && SaleItemDto.Quantity > 0;
+    protected bool IsValid => !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) && PriceItem > 0 && SaleItemDto.Quantity > 0;
     protected override async Task OnInitializedAsync()
     {
         await LoadBrands();
@@ -117,7 +119,7 @@ public partial class CreateSaleItem
         return Task.FromResult(result);
     }
 
-    protected void OnProductSelectDto(ProductDto product)
+    protected async Task OnProductSelectDto(ProductDto product)
     {
         if (product is null)
         {
@@ -133,7 +135,7 @@ public partial class CreateSaleItem
         SaleItemDto.ItemName = product.ProductName;
         SaleItemDto.UnitMeasurement = product.ProductMesurementOption.GetValueOrDefault();
 
-        OnWholeSaleChanged(IsWholeSale);
+        await OnWholeSaleChanged(IsWholeSale);
     }
 
     protected void OnBrandTyped(string text)
@@ -222,11 +224,16 @@ public partial class CreateSaleItem
 
     protected void SaveItem()
     {
-        if(SaleItemDto.ProductId != null && IsWholeSale)
+        if(SaleItemDto.PaintCategory != PaintCategory.Mix)
+        {
+            ComputeNotBelowWholeSale();
+        }
+        SaleItemDto.ItemPrice = PriceItem;
+        if (SaleItemDto.ProductId != null && IsWholeSale && SaleItemDto.ItemPrice == SelectedProductFromList?.WholesalePrice.GetValueOrDefault())
         {
             SaleItemDto.ProductPricingOption = ProductPricingOption.WholeSale;
         }
-        else if (SaleItemDto.ProductId !=null && !IsWholeSale)
+        else if (SaleItemDto.ProductId !=null && !IsWholeSale && SaleItemDto.ItemPrice == SelectedProductFromList?.RetailPrice)
         {
             SaleItemDto.ProductPricingOption = ProductPricingOption.Retail;
         }
@@ -246,9 +253,11 @@ public partial class CreateSaleItem
     protected bool ShouldShowSaleType()
     {
         return SaleItemDto.PaintCategory == PaintCategory.Solid
-               && SaleItemDto.ProductId != null;
+               && SelectedProductFromList?.WholesalePrice.HasValue == true
+               && SelectedProductFromList.WholesalePrice.Value > 0;
+
     }
-    protected void OnWholeSaleChanged(bool value)
+    protected async Task OnWholeSaleChanged(bool value)
     {
         IsWholeSale = value;
 
@@ -256,16 +265,14 @@ public partial class CreateSaleItem
             return;
 
         if (IsWholeSale)
-        {
-            SaleItemDto.ItemPrice = SelectedProductFromList.WholesalePrice.GetValueOrDefault();  // adjust property name
-        }
+            PriceItem = SelectedProductFromList.WholesalePrice.GetValueOrDefault();
         else
-        {
-            SaleItemDto.ItemPrice = SelectedProductFromList.RetailPrice.GetValueOrDefault();    // adjust property name
-        }
+            PriceItem = SelectedProductFromList.RetailPrice.GetValueOrDefault();
 
-        StateHasChanged(); // force UI update
+        RecalculateTotalPrice();
+        await Task.CompletedTask;
     }
+
 
 
     protected async Task AddPaintIncluded()
@@ -309,14 +316,65 @@ public partial class CreateSaleItem
         }
 
     }
-    protected async Task ComputeRepack(decimal quantity)
+   
+    protected async Task Trial(decimal price)
     {
-        SaleItemDto.Quantity = quantity;
-        if (IsRepack)
-        {
-            SaleItemDto.ItemPrice = (SelectedProductFromList?.RetailPrice ?? 0) * SaleItemDto.Quantity;
-            await InvokeAsync(StateHasChanged);
-        }
-
+        PriceItem = price;
+        RecalculateTotalPrice();
+        await Task.CompletedTask;
     }
+
+    protected void ComputeNotBelowWholeSale()
+    {
+        if(SaleItemDto.ProductId != null && SelectedProductFromList != null && PriceItem > 0)
+        {
+            decimal basePrice;
+            if (SelectedProductFromList.WholesalePrice.HasValue && SelectedProductFromList.WholesalePrice.Value > 0)
+            {
+                basePrice = SelectedProductFromList.WholesalePrice ?? 0 * SaleItemDto.Size ?? 1 * SaleItemDto.Quantity;
+                decimal retailBasePrice = SelectedProductFromList.RetailPrice * SaleItemDto.Size ?? 1 * SaleItemDto.Quantity;
+                if (SaleItemDto.TotalPrice < basePrice)
+                {
+                    SaleItemDto.HasDiscount = true;
+                }
+                else
+                {
+                    SaleItemDto.HasDiscount = false;
+                }
+            }
+
+            else
+            {
+                basePrice = SelectedProductFromList.CostPrice * SaleItemDto.Size ?? 1 * SaleItemDto.Quantity;
+                if(SaleItemDto.TotalPrice < basePrice)
+                {
+                    SaleItemDto.HasDiscount = true;
+                }
+                else
+                {
+                    SaleItemDto.HasDiscount = false;
+                }
+            }
+        }
+    }
+    protected void OnSizeChanged(decimal? newSize)
+    {
+        SaleItemDto.Size = newSize;
+        RecalculateTotalPrice();
+    }
+
+    private void RecalculateTotalPrice()
+    {
+        var size = SaleItemDto.Size ?? 1;
+        var qty = SaleItemDto.Quantity > 0 ? SaleItemDto.Quantity : 1;
+
+        SaleItemDto.TotalPrice = PriceItem * size * qty;
+        StateHasChanged();
+    }
+    protected void OnQuantityChanged(decimal newQty)
+    {
+        SaleItemDto.Quantity = newQty;
+        RecalculateTotalPrice();
+    }
+
 }

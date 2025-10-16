@@ -58,7 +58,27 @@ public partial class GetAllSaleItemsToBeAdded
             }
         }
     }
+    protected void RemoveSaleItem(SaleItemDto item)
+    {
+        if (item == null)
+            return;
 
+        // Confirm delete (optional)
+        var confirmMessage = $"Are you sure you want to remove '{item.ItemName}'?";
+        Dialog.ShowMessageBox("Confirm Delete", confirmMessage,
+            yesText: "Yes", noText: "Cancel", options: new DialogOptions { CloseButton = true })
+        .ContinueWith(async t =>
+        {
+            if (t.Result == true)
+            {
+                SaleItemsToBeAdded.Remove(item);
+                StateHasChanged();
+                await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
+                SnackBar.Add($"'{item.ItemName}' removed successfully.", Severity.Info);
+            }
+        });
+    }
 
+    
 
 }
