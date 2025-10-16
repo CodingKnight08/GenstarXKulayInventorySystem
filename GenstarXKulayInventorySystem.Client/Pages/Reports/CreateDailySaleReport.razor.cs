@@ -16,6 +16,7 @@ public partial class CreateDailySaleReport
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ILogger<CreateDailySaleReport> Logger { get; set; } = default!;
     [Inject] protected ISnackbar SnackBar { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
     protected DailySaleReportDto DailySaleReport { get; set; } = new();
     protected List<DailySaleDto> PaidSales { get; set; } = new();
@@ -45,6 +46,45 @@ public partial class CreateDailySaleReport
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error in OnParametersSetAsync");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+    private async Task OnDateChanged(DateTime? newDate)
+    {
+        if (newDate == null)
+            return;
+        ReportDate = newDate.Value;
+        DailySaleReport.Date = newDate.Value;
+        IsLoading = true;
+
+        try
+        {
+            // Optionally clear existing data before reloading
+            PaidSales.Clear();
+            UnpaidSales.Clear();
+            CollectedSales.Clear();
+            Expenses.Clear();
+            AllDailySaleTobeAdded.Clear();
+
+            // 🔁 Re-run the same methods as OnParametersSetAsync
+            await LoadPaidSales();
+            await LoadUnpaidSales();
+            await LoadCollectedSales();
+            await LoadExpenses();
+
+            AssignFields();
+            OnExpensesChange();
+
+            AllDailySaleTobeAdded.AddRange(PaidSales);
+            AllDailySaleTobeAdded.AddRange(UnpaidSales);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error during OnDateChanged");
+            SnackBar.Add("Failed to reload sales data for the selected date.", Severity.Error);
         }
         finally
         {
