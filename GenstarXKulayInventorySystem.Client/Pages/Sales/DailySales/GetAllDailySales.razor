@@ -47,6 +47,7 @@ else
                         <MudTh>Receipt No.</MudTh>
                         <MudTh>Client</MudTh>
                         <MudTh>Type</MudTh>
+                        <MudTh>Status</MudTh>
                         <MudTh>Action</MudTh>
                     </HeaderContent>
                     <RowTemplate>
@@ -55,6 +56,12 @@ else
                         <MudTd>@context.RecieptReference</MudTd>
                         <MudTd>@context.NameOfClient</MudTd>
                         <MudTd>@(context.SalesOption == PurchaseRecieptOption.BIR ? "Invoice" : "Non-Voice")</MudTd>
+                        <MudTd>
+                            <MudText Color="@(context.IsApproved? Color.Success: Color.Warning)" Typo="Typo.subtitle2">
+                                @(context.IsApproved ? "Approved" : "Pending")
+                            </MudText>
+                        </MudTd>
+
                         <MudTd>
                             <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small" OnClick="() => ViewSaleAsync(context.Id)" />
                         </MudTd>
