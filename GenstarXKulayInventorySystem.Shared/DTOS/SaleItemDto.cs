@@ -20,15 +20,9 @@ public class SaleItemDto:BaseEntityDto
     public PaintCategory PaintCategory { get; set; } = PaintCategory.Solid;
     public List<InvolvePaintsDto> DataList { get; set; } = new List<InvolvePaintsDto>();
     public bool IsDeducted { get; set; } = false;
-    public decimal TotalPrice
-    {
-        get
-        {
-            
-            decimal sizeValue = Size ?? 1m;
-            return sizeValue * Quantity * ItemPrice;
-        }
-    }
+    public decimal TotalPrice { get; set; } = 0;
+    
+    public bool HasDiscount { get; set; } = false;
 }
 
 public class InvolvePaintsDto
