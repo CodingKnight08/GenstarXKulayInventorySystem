@@ -138,6 +138,7 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
+                      && ds.IsApproved
                       && ds.Branch == branch
                       && ds.PaymentType != null
                       && ds.DateOfSales >= start
@@ -193,6 +194,7 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
+                      && ds.IsPaid
                       && ds.Branch == branch
                       && ds.UpdatedAt == null
                       && ds.PaymentType == null
@@ -212,6 +214,7 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
+                      && ds.IsPaid
                       && ds.Branch == branch
                       && ds.UpdatedAt.HasValue
                       && ds.UpdatedAt.GetValueOrDefault().Date == date.ToUniversalTime().Date 
