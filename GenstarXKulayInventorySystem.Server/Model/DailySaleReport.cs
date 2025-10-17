@@ -31,6 +31,9 @@ public class DailySaleReport:BaseEntity
     public string PreparedBy { get; set; } = string.Empty;
     public BranchOption Branch { get; set; }
 
+    public decimal LandedCost { get; set; }
+    public decimal GrossProfit { get; set; }
+
     public ICollection<Billing> Billings { get; set; } = new List<Billing>();
     public ICollection<DailySale> DailySales { get; set; } = new List<DailySale>();
 }
