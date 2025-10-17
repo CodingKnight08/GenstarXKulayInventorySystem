@@ -81,11 +81,11 @@ public partial class CreateDailySaleReport
             await LoadExpenses();
 
             AssignFields();
-            OnExpensesChange();
 
             AllDailySaleTobeAdded.AddRange(PaidSales);
             AllDailySaleTobeAdded.AddRange(UnpaidSales);
             ComputeTotals();
+            OnExpensesChange();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -250,6 +250,8 @@ public partial class CreateDailySaleReport
             DailySaleReport.Branch = Branch;
             DailySaleReport.Billings = Expenses;
             DailySaleReport.DailySales = AllDailySaleTobeAdded;
+            DailySaleReport.LandedCost = TotalLandedCost;
+            DailySaleReport.GrossProfit = TotalNetIncome;
             var response = await HttpClient.PostAsJsonAsync("api/dailysalereport", DailySaleReport);
             if (response.IsSuccessStatusCode)
             {
@@ -340,6 +342,6 @@ public partial class CreateDailySaleReport
                 }
             }
         }
-        TotalNetIncome = (TotalItemsSales - TotalLandedCost) - DailySaleReport.TotalExpenses?? 0;
+      //  TotalNetIncome = (TotalItemsSales - TotalLandedCost) - DailySaleReport.TotalExpenses?? 0;
     }
 }
