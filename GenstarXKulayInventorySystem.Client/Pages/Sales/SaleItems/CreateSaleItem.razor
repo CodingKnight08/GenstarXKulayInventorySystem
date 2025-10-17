@@ -21,7 +21,11 @@
                                  ResetValueOnEmptyText="false" />
 
             </MudItem>
-            <MudItem xl="5" lg="6" md="6" sm="12">
+            @if (SaleItemDto.PaintCategory != PaintCategory.Mix)
+            {
+
+
+                <MudItem xl="5" lg="6" md="6" sm="12">
 
                 <MudAutocomplete T="ProductDto"
                                  Label="Item Name"
@@ -36,8 +40,16 @@
                                  CoerceValue="false"
                                  ResetValueOnEmptyText="false"
                                  MaxItems="500" />
+                </MudItem>
+            }
+            else
+            {
+                
+       
+            <MudItem>
+                <MudTextField T="string" Value="SelectedProduct" Variant="Variant.Text" Label="Item Name" ValueChanged="OnProductTyped"/>
             </MudItem>
-
+            }
             <MudItem xl="3" lg="5" md="6" sm="12">
                 <MudSelect T="PaintCategory" Value="SaleItemDto.PaintCategory" Label="Paint Type" ValueChanged="OnPaintCategoryChange" >
                     @foreach(var type in Enum.GetValues(typeof(PaintCategory)).Cast<PaintCategory>())
