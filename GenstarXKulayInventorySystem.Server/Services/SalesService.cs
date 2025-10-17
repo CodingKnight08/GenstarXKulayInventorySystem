@@ -137,6 +137,8 @@ public class SalesService:ISalesService
         var paidDailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(ds => ds.SaleItems)
+            .ThenInclude(si => si.Product)
             .Where(ds => !ds.IsDeleted
                       && ds.IsApproved
                       && ds.Branch == branch
@@ -194,7 +196,8 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
-                      && ds.IsPaid
+                      && !ds.IsPaid
+                      && ds.IsApproved
                       && ds.Branch == branch
                       && ds.UpdatedAt == null
                       && ds.PaymentType == null
@@ -215,6 +218,7 @@ public class SalesService:ISalesService
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
                       && ds.IsPaid
+                      && ds.IsApproved
                       && ds.Branch == branch
                       && ds.UpdatedAt.HasValue
                       && ds.UpdatedAt.GetValueOrDefault().Date == date.ToUniversalTime().Date 
