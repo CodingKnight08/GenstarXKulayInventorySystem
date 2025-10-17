@@ -1,4 +1,5 @@
-﻿using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+﻿using System.Text.Json.Serialization;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Shared.DTOS;
 
@@ -6,6 +7,7 @@ public class SaleItemDto:BaseEntityDto
 {
     public int Id { get; set; }
     public int DailySaleId { get; set; }
+    [JsonIgnore]
     public DailySaleDto? DailySale { get; set; }
     public int? ProductId { get; set; }
     public ProductDto? Product { get; set; }
@@ -34,5 +36,6 @@ public class InvolvePaintsDto
     public string ProductName { get; set; } = string.Empty;
     public decimal? Size { get; set; }
     public ProductMesurementOption UnitMeasurement { get; set; }
-
+    public decimal ProductCost { get; set; }
+    public ProductMesurementOption ProductUnit { get; set; }
 }
