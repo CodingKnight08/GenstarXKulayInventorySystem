@@ -304,8 +304,9 @@ else
                 <MudItem xl="4">
                     <MudNumericField Label="Others"
                         T="decimal?"
-                        @bind-Value="DailySaleReport.Others" 
+                        Value="DailySaleReport.Others" 
                         Adornment="Adornment.Start"
+                        ValueChanged="@(value => { DailySaleReport.Others = value; OnExpensesChange(); })"
                         AdornmentText="₱"
                         HideSpinButtons=true
                         Format="F2" />
@@ -366,6 +367,18 @@ else
                                      AdornmentText="₱"
                                      HideSpinButtons=true
                                      Format="F2" />
+
+                </MudItem>
+                <MudItem sm="4">
+                    <MudNumericField T="decimal" @bind-Value="TotalLandedCost" Label="Landed Cost Total" Format="F2" HideSpinButtons=true />
+
+                </MudItem>
+                  <MudItem sm="4">
+                    <MudNumericField T="decimal" @bind-Value="TotalItemsSales" Label="Sales Cost Total"  Format="F2" HideSpinButtons=true />
+
+                </MudItem>
+                  <MudItem sm="4">
+                    <MudNumericField T="decimal" @bind-Value="TotalNetIncome" Label="Net Income"  Format="F2" HideSpinButtons=true />
 
                 </MudItem>
                 </MudGrid>

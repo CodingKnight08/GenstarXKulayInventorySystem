@@ -28,7 +28,9 @@ public partial class CreateDailySaleReport
     protected bool IsLoading { get; set; } = false;
     protected bool IsSaving { get; set; }  = false;
     protected bool IsValid => DailySaleReport.CashIn > 0 && DailySaleReport.BeginningBalance > 0 && !string.IsNullOrWhiteSpace(DailySaleReport.PreparedBy) ;
-
+    protected decimal TotalLandedCost { get; set; }
+    protected decimal TotalItemsSales { get; set; }
+    protected decimal TotalNetIncome { get; set; }
     protected override async Task OnParametersSetAsync()
     {
         IsLoading = true;
@@ -42,6 +44,7 @@ public partial class CreateDailySaleReport
             OnExpensesChange();
             AllDailySaleTobeAdded.AddRange(PaidSales);
             AllDailySaleTobeAdded.AddRange(UnpaidSales);
+            ComputeTotals();
         }
         catch (Exception ex)
         {
@@ -62,6 +65,8 @@ public partial class CreateDailySaleReport
 
         try
         {
+            TotalItemsSales = 0;
+            TotalLandedCost = 0;
             // Optionally clear existing data before reloading
             PaidSales.Clear();
             UnpaidSales.Clear();
@@ -80,6 +85,8 @@ public partial class CreateDailySaleReport
 
             AllDailySaleTobeAdded.AddRange(PaidSales);
             AllDailySaleTobeAdded.AddRange(UnpaidSales);
+            ComputeTotals();
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -281,6 +288,7 @@ public partial class CreateDailySaleReport
             + (DailySaleReport.CollectionChecks ?? 0)
             - DailySaleReport.TotalExpenses;
         OnTotalSalesTodayChange();
+        TotalNetIncome = (TotalItemsSales - TotalLandedCost) - DailySaleReport.TotalExpenses ?? 0;
         StateHasChanged();
     }
 
@@ -300,5 +308,38 @@ public partial class CreateDailySaleReport
             BranchOption.Warehouse => "Warehouse",
             _ => branch.ToString()
         };
+    }
+
+    protected void ComputeTotals()
+    {
+        foreach(var sale in AllDailySaleTobeAdded)
+        {
+            foreach(var item in sale.SaleItems)
+            {
+                if(item.PaintCategory != PaintCategory.Mix)
+                {
+                    decimal landedCost = (item.Product?.CostPrice ?? 0)
+                   * (item.Size ?? 1)
+                   * (item.Quantity);
+
+                    decimal itemPrice = (item.ItemPrice * item.Quantity) * item.Size ?? 1;
+
+
+                    TotalLandedCost += landedCost;
+                    TotalItemsSales += itemPrice;
+                }
+                else
+                {
+                    foreach(var paints in item.DataList)
+                    {
+                        decimal landedCost = (paints.ProductCost * paints.Size??1) * 1;
+                        TotalLandedCost += landedCost;
+                    }
+                    decimal mixPrice = item.ItemPrice * item.Quantity * item.Size ?? 1;
+                    TotalItemsSales += mixPrice;
+                }
+            }
+        }
+        TotalNetIncome = (TotalItemsSales - TotalLandedCost) - DailySaleReport.TotalExpenses?? 0;
     }
 }
