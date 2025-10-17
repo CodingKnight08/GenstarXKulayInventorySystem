@@ -24,7 +24,11 @@ public partial class AddPaintsIncluded
 
     protected bool IsLoading { get; set; } = false;
     protected bool IsProductLoading { get; set; } = false;
-    protected bool IsValid => AddedPaint.BrandId != 0 && AddedPaint.ProductId != 0 && AddedPaint.Size != null;
+    protected bool IsValid =>
+    AddedPaint.BrandId != 0 &&
+    AddedPaint.ProductId != 0 &&
+    (AddedPaint.Size ?? 0) > 0;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -109,13 +113,14 @@ public partial class AddPaintsIncluded
         }
 
         SelectedBrand = brand;
-        BrandName = brand.BrandName ?? string.Empty;
+        BrandName = brand.BrandName;
 
         // Clear old selections
         SelectedProduct = new ProductDto();
-        
+        AddedPaint.BrandId = brand.Id;
         AddedPaint.ProductId = 0;
-        
+        AddedPaint.BrandName = brand.BrandName;
+
 
         await LoadProductsByBrand();
     }
@@ -128,13 +133,15 @@ public partial class AddPaintsIncluded
 
         SelectedProduct = Products.FirstOrDefault(p =>
             !string.IsNullOrWhiteSpace(p.ProductName) &&
-            string.Equals(p.ProductNameAndUnit, product.ProductNameAndUnit, StringComparison.OrdinalIgnoreCase)
+            string.Equals(p.ProductName, product.ProductName, StringComparison.OrdinalIgnoreCase)
         ) ?? new ProductDto();
 
         if (SelectedProduct.Id != 0)
         {
             AddedPaint.ProductId = SelectedProduct.Id;
             AddedPaint.ProductName = SelectedProduct.ProductName;
+            AddedPaint.ProductCost = SelectedProduct.CostPrice;
+            AddedPaint.ProductUnit = SelectedProduct.ProductMesurementOption ?? ProductMesurementOption.Gallon;
             StateHasChanged();
         }
     }

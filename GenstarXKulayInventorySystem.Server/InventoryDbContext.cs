@@ -178,6 +178,8 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(dsr => dsr.Others).HasColumnType("numeric(18,2)");
             entity.Property(dsr => dsr.TotalExpenses).HasColumnType("numeric(18,2)");
             entity.Property(dsr => dsr.TotalCashOnHand).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.LandedCost).HasColumnType("numeric(18,2)");
+            entity.Property(dsr => dsr.GrossProfit).HasColumnType("numeric(18,2)");
 
 
         });

@@ -162,23 +162,9 @@ public partial class CreateSaleItem
     {
         SelectedProduct = text;
         SaleItemDto.ItemName = text;
-
-        var matchedProduct = Products.FirstOrDefault(e =>
-            !string.IsNullOrWhiteSpace(e.ProductNameAndUnit) &&
-            string.Equals(e.ProductName, text, StringComparison.OrdinalIgnoreCase));
-
-        if (matchedProduct != null)
-        {
-            SaleItemDto.ProductId = matchedProduct.Id;
-            SelectedProductFromList = matchedProduct;
-            SaleItemDto.UnitMeasurement = matchedProduct.ProductMesurementOption.GetValueOrDefault();
-            OnWholeSaleChanged(IsWholeSale);
-        }
-        else
-        {
-            SaleItemDto.ProductId = null;
-            SelectedProductFromList = null;
-        }
+        SaleItemDto.ProductId = null;
+        SelectedProductFromList = null;
+        
     }
 
    protected void OnPaintCategoryChange(PaintCategory paintType)
@@ -214,7 +200,6 @@ public partial class CreateSaleItem
 
         // Clear old selections
         SelectedProductFromList = null;
-        SelectedProduct = string.Empty;
         SaleItemDto.ProductId = null;
         SaleItemDto.ItemName = string.Empty;
 
