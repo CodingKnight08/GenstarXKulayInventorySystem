@@ -334,14 +334,19 @@ public partial class CreateDailySaleReport
                 {
                     foreach(var paints in item.DataList)
                     {
-                        decimal landedCost = (paints.ProductCost * paints.Size??1) * 1;
+                        decimal convertedActualSize = UtilitiesHelper.ConvertItems(paints.Size ?? 1,
+                            item.Quantity,
+                            paints.UnitMeasurement,
+                            paints.ProductUnit);
+                        decimal landedCost = convertedActualSize * paints.ProductCost;
                         TotalLandedCost += landedCost;
                     }
+                   
                     decimal mixPrice = item.ItemPrice * item.Quantity * item.Size ?? 1;
                     TotalItemsSales += mixPrice;
                 }
             }
         }
-      //  TotalNetIncome = (TotalItemsSales - TotalLandedCost) - DailySaleReport.TotalExpenses?? 0;
+       TotalNetIncome = (TotalItemsSales - TotalLandedCost) - DailySaleReport.TotalExpenses?? 0;
     }
 }
