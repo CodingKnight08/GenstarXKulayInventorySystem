@@ -20,8 +20,8 @@
             <MudTd>@context.ItemPrice</MudTd>
             <MudTd>@context.Description</MudTd>
             <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Success" Size="Size.Small"/>
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => RemoveSale(context.Id)"/>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Success" Size="Size.Small" Disabled=true/>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => RemoveSale(context.Id)" Disabled=true/>
 
             </MudTd>
         </RowTemplate>
