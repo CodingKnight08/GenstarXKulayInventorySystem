@@ -47,6 +47,7 @@ public partial class CreateDailySale
         IsClientLoading = true;
         try
         {
+            
             var response = await HttpClient.GetAsync($"api/client/all/{Sale.Branch}");
             response.EnsureSuccessStatusCode();
             var clients = await response.Content.ReadFromJsonAsync<List<ClientDto>>();
@@ -100,6 +101,10 @@ public partial class CreateDailySale
                 if(Sale.PaymentType != null)
                 {
                     Sale.PaymentTermsOption = PaymentTermsOption.Today;
+                }
+                if (Sale.PaymentTermsOption == PaymentTermsOption.Today)
+                {
+                    Sale.IsPaid = true;
                 }
 
 

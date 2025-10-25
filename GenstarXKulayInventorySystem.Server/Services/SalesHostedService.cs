@@ -53,9 +53,10 @@ public class SalesHostedService : IHostedService, IDisposable
                     decimal subtractedValue = UtilitiesHelper.ConvertItems(
                                         item.Size ?? 1,
                                         item.Quantity,
+                                        item.UnitMeasurement,
                                         item.Product?.ProductMesurementOption
-                                            ?? ProductsEnumHelpers.ProductMesurementOption.Gallon,
-                                        item.UnitMeasurement);
+                                            ?? ProductsEnumHelpers.ProductMesurementOption.Gallon
+                                        );
 
                     // Deduct from current quantity safely
                     if (item.Product != null)
@@ -85,8 +86,9 @@ public class SalesHostedService : IHostedService, IDisposable
                                 decimal paintQuantityValue = UtilitiesHelper.ConvertItems(
                                     mixture.Size ?? 1,
                                     1,
-                                    measurementOption,
-                                    mixture.UnitMeasurement);
+                                    mixture.UnitMeasurement,
+                                    measurementOption
+                                    );
 
                                 toBeUpdated.ActualQuantity -= paintQuantityValue;
 
