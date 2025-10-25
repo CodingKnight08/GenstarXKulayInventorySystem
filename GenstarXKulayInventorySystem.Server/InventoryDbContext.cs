@@ -32,33 +32,32 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(p => p.ProductCategoryId)
                   .OnDelete(DeleteBehavior.SetNull);
 
-            entity.Property(p => p.Size).HasColumnType("numeric(18,2)");
-            entity.Property(p => p.CostPrice).HasColumnType("numeric(18,2)");
-            entity.Property(p => p.RetailPrice).HasColumnType("numeric(18,2)");
-            entity.Property(p => p.WholesalePrice).HasColumnType("numeric(18,2)");
-            entity.Property(p => p.ActualQuantity).HasColumnType("numeric(18,2)");
-            entity.Property(p => p.BufferStocks).HasColumnType("numeric(18,2)");
+            entity.Property(p => p.Size).HasColumnType("decimal(18,2)");
+            entity.Property(p => p.CostPrice).HasColumnType("decimal(18,2)");
+            entity.Property(p => p.RetailPrice).HasColumnType("decimal(18,2)");
+            entity.Property(p => p.WholesalePrice).HasColumnType("decimal(18,2)");
+            entity.Property(p => p.ActualQuantity).HasColumnType("decimal(18,2)");
+            entity.Property(p => p.BufferStocks).HasColumnType("decimal(18,2)");
         });
 
         // PurchaseOrder → Supplier, PurchaseOrderItems
         modelBuilder.Entity<PurchaseOrder>(entity =>
         {
             entity.HasOne(po => po.Supplier)
-              .WithMany(s => s.PurchaseOrders)
-              .HasForeignKey(po => po.SupplierId)
-              .OnDelete(DeleteBehavior.SetNull);
+                  .WithMany(s => s.PurchaseOrders)
+                  .HasForeignKey(po => po.SupplierId)
+                  .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasMany(po => po.PurchaseOrderItems)
                   .WithOne(poi => poi.PurchaseOrder)
                   .HasForeignKey(poi => poi.PurchaseOrderId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.Property(po => po.AssumeTotalAmount).HasColumnType("numeric(18,2)");
+            entity.Property(po => po.AssumeTotalAmount).HasColumnType("decimal(18,2)");
             entity.Property(po => po.PurchaseShipToOption).HasConversion<int>();
             entity.Property(po => po.PurchaseRecieptOption).HasConversion<int>();
             entity.Property(po => po.PurchaseRecieveOption).HasConversion<int>();
         });
-
 
         // PurchaseOrderItem → Product, ProductBrand
         modelBuilder.Entity<PurchaseOrderItem>(entity =>
@@ -73,25 +72,27 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(poi => poi.ProductBrandId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.Property(poi => poi.ItemAmount).HasColumnType("numeric(18,2)");
+            entity.Property(poi => poi.ItemAmount).HasColumnType("decimal(18,2)");
             entity.Property(poi => poi.PurchaseItemMeasurementOption).HasConversion<int>();
         });
 
         modelBuilder.Entity<Billing>(entity =>
         {
             entity.HasOne(b => b.DailySaleReport)
-                 .WithMany(dsr => dsr.Billings)
-                 .HasForeignKey(b => b.DailySaleId)
-                 .OnDelete(DeleteBehavior.SetNull);
+                  .WithMany(dsr => dsr.Billings)
+                  .HasForeignKey(b => b.DailySaleId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
             entity.HasOne(b => b.OperationsProvider)
                   .WithMany(op => op.Billings)
                   .HasForeignKey(b => b.OperationsProviderId)
                   .OnDelete(DeleteBehavior.SetNull);
 
-            entity.Property(b => b.Amount).HasColumnType("numeric(18,2)");
-            entity.Property(b => b.DiscountAmount).HasColumnType("numeric(18,2)");
+            entity.Property(b => b.Amount).HasColumnType("decimal(18,2)");
+            entity.Property(b => b.DiscountAmount).HasColumnType("decimal(18,2)");
             entity.Property(b => b.Category).HasConversion<int>();
         });
+
         modelBuilder.Entity<PurchaseOrderBilling>(entity =>
         {
             entity.HasOne(pob => pob.PurchaseOrder)
@@ -99,9 +100,9 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(pob => pob.PurchaseOrderId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.Property(pob => pob.AmountToBePaid).HasColumnType("numeric(18,2)");
-            entity.Property(pob => pob.AmountPaid).HasColumnType("numeric(18,2)");
-            entity.Property(pob => pob.DiscountAmount).HasColumnType("numeric(18,2)");
+            entity.Property(pob => pob.AmountToBePaid).HasColumnType("decimal(18,2)");
+            entity.Property(pob => pob.AmountPaid).HasColumnType("decimal(18,2)");
+            entity.Property(pob => pob.DiscountAmount).HasColumnType("decimal(18,2)");
 
             entity.Property(pob => pob.BillingBranch).HasConversion<int>();
             entity.Property(pob => pob.PaymentMethod).HasConversion<int>();
@@ -111,44 +112,42 @@ public class InventoryDbContext: IdentityDbContext<User>
         modelBuilder.Entity<DailySale>(entity =>
         {
             entity.HasOne(ds => ds.Client)
-             .WithMany(c => c.DailySales)
-             .HasForeignKey(ds => ds.ClientId)
-             .OnDelete(DeleteBehavior.SetNull);
+                  .WithMany(c => c.DailySales)
+                  .HasForeignKey(ds => ds.ClientId)
+                  .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasOne(ds => ds.DailySaleReport)
                   .WithMany(dsr => dsr.DailySales)
                   .HasForeignKey(ds => ds.DailySaleReportId)
                   .OnDelete(DeleteBehavior.SetNull);
 
-            entity.Property(ds => ds.TotalAmount).HasColumnType("numeric(18,2)");
-
+            entity.Property(ds => ds.TotalAmount).HasColumnType("decimal(18,2)");
+            entity.Property(ds => ds.Commission).HasColumnType("numeric(18,2)");
         });
+
         modelBuilder.Entity<SaleItem>(entity =>
         {
-            // Relationships
             entity.HasOne(si => si.DailySale)
-                  .WithMany(ds => ds.SaleItems) 
+                  .WithMany(ds => ds.SaleItems)
                   .HasForeignKey(si => si.DailySaleId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(si => si.Product)                
-                   .WithMany(p => p.SaleItems)              
-                   .HasForeignKey(si => si.ProductId)       
-                   .OnDelete(DeleteBehavior.SetNull);
-           
+            entity.HasOne(si => si.Product)
+                  .WithMany(p => p.SaleItems)
+                  .HasForeignKey(si => si.ProductId)
+                  .OnDelete(DeleteBehavior.SetNull);
 
-            // Decimal precision
-            entity.Property(si => si.ItemPrice).HasColumnType("numeric(18,2)");
-            entity.Property(si => si.Size).HasColumnType("numeric(18,2)");
-            entity.Property(si => si.Quantity).HasColumnType("numeric(18,2)");
+            entity.Property(si => si.ItemPrice).HasColumnType("decimal(18,2)");
+            entity.Property(si => si.Size).HasColumnType("decimal(18,2)");
+            entity.Property(si => si.Quantity).HasColumnType("decimal(18,2)");
 
-            // Enum conversions
             entity.Property(si => si.BranchPurchased).HasConversion<int>();
             entity.Property(si => si.UnitMeasurement).HasConversion<int>();
             entity.Property(si => si.ProductPricingOption).HasConversion<int>();
             entity.Property(si => si.PaintCategory).HasConversion<int>();
         });
-        modelBuilder.Entity<GenstarXKulayInventorySystem.Server.Model.Client>(entity =>
+
+        modelBuilder.Entity<Model.Client>(entity =>
         {
             entity.Property(c => c.ClientName).HasMaxLength(200).IsRequired();
             entity.Property(c => c.Address).HasMaxLength(500);
@@ -157,34 +156,34 @@ public class InventoryDbContext: IdentityDbContext<User>
 
         modelBuilder.Entity<DailySaleReport>(entity =>
         {
-            entity.Property(dsr => dsr.CashIn).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.TotalSalesToday).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.BeginningBalance).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.InvoiceCash).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.InvoiceChecks).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.NonInvoiceCash).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.NonInvoiceChecks).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.TotalCash).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.TotalChecks).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.TotalSales).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.ChargeSales).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.CollectionCash).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.CollectionChecks).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.Transportation).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.Foods).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.SalaryAndAdvances).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.Commissions).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.Supplies).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.Others).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.TotalExpenses).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.TotalCashOnHand).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.LandedCost).HasColumnType("numeric(18,2)");
-            entity.Property(dsr => dsr.GrossProfit).HasColumnType("numeric(18,2)");
-
-
+            entity.Property(dsr => dsr.CashIn).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.TotalSalesToday).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.BeginningBalance).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.InvoiceCash).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.InvoiceChecks).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.NonInvoiceCash).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.NonInvoiceChecks).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.TotalCash).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.TotalChecks).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.TotalSales).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.ChargeSales).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.CollectionCash).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.CollectionChecks).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.Transportation).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.Foods).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.SalaryAndAdvances).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.Commissions).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.Supplies).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.Others).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.TotalExpenses).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.TotalCashOnHand).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.LandedCost).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.GrossProfit).HasColumnType("decimal(18,2)");
         });
+
         base.OnModelCreating(modelBuilder);
     }
+
 
 
 

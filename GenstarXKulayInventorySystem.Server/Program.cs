@@ -13,33 +13,33 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 var port = Environment.GetEnvironmentVariable("PORT");
-
 if (!string.IsNullOrEmpty(port))
 {
     // Running on Railway or another PaaS
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 }
 
-// Add services to the container  
+// Add services to the container
 builder.Services.AddControllers();
 
-
-// Enable CORS to allow calls from your Blazor WebAssembly client  
+// ✅ Enable CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>
-       policy.WithOrigins(
-            "https://localhost:7035", // Dev client
-            "https://genstarxkulayinventorysystem-production.up.railway.app", 
-            "https://helpful-gentleness-production.up.railway.app" 
+        policy.WithOrigins(
+            "https://localhost:7035",
+            "https://genstar-kulay.runasp.net",
+            "https://helpful-gentleness-production.up.railway.app"
         )
-              .AllowAnyMethod()
-              .AllowAnyHeader());
+        .AllowAnyMethod()
+        .AllowAnyHeader());
 });
+
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<InventoryDbContext>()
     .AddDefaultTokenProviders();
 
+// ✅ JWT Auth
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(options =>
 {
@@ -59,30 +59,27 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
 
-        RoleClaimType = ClaimTypes.Role, // ✅ Ensure this matches your JWT
+        RoleClaimType = ClaimTypes.Role,
         NameClaimType = ClaimTypes.Name
     };
 });
 
-
 builder.Services.AddAuthorization();
 
-// Swagger/OpenAPI configuration  
+// Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Your API Title",
+        Title = "Genstar XKulay Inventory API",
         Version = "v1"
     });
 });
 
-
 builder.Services.AddHttpContextAccessor();
 
-
-// AutoMapper profile
+// ✅ AutoMapper
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<AutoMapperProfile>();
@@ -98,46 +95,25 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 
 
-// Register DbContextFactory (with retry on failure) MSSQL
-//builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
-//{
-//    options.UseSqlServer(
-//        builder.Configuration.GetConnectionString("DefaultConnection"),
-//        sqlOptions =>
-//        {
-//            sqlOptions.EnableRetryOnFailure();
-//        });
-//}, ServiceLifetime.Scoped);
-
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-string connectionString;
-
-if (!string.IsNullOrEmpty(databaseUrl))
-{
-    // Convert DATABASE_URL to Npgsql format
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':');
-
-    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};Pooling=true;Trust Server Certificate=true;";
-}
-else
-{
-    // fallback to local
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-}
+// ✅ SQL SERVER (MSSQL) CONFIGURATION
+// Connection string is pulled from appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 {
-    options.UseNpgsql(connectionString, npgsqlOptions =>
-    {
-        npgsqlOptions.EnableRetryOnFailure();
-    });
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure();
+        });
 }, ServiceLifetime.Scoped);
 
 
 
+// Hosted + Scoped services
 builder.Services.AddHostedService<SalesHostedService>();
-//Register Services
+
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
@@ -150,36 +126,31 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
 builder.Services.AddScoped<IOperationsProviderService, OperationsProviderService>();
 builder.Services.AddScoped<JwtService>();
-    
 
 
-var app = builder.Build(); // Build must happen BEFORE using app.Services
+var app = builder.Build();
 
-// Apply migrations to create/update database automatically
+// ✅ Automatically apply migrations and seed initial data
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider; // 👈 this was missing
-
+    var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<InventoryDbContext>();
     dbContext.Database.Migrate();
 
     var userManager = services.GetRequiredService<UserManager<User>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
     await InventoryDbContext.SeedUserAsync(userManager, roleManager);
-
 }
 
 
-
-// Middleware pipeline  
+// Middleware pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API Title v1");
-        c.RoutePrefix = "swagger"; 
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Genstar XKulay Inventory API v1");
+        c.RoutePrefix = "swagger";
     });
 }
 
@@ -188,10 +159,9 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowClient");
 
-// 🔑 Add this line
 app.UseAuthentication();
-
 app.UseAuthorization();
+
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 app.MapFallbackToFile("index.html");
