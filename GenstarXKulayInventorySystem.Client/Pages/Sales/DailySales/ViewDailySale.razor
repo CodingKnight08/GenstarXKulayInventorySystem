@@ -13,7 +13,7 @@
     @if (!IsEdit)
     {
         <MudCard Elevation="0" Class="w-100 d-flex flex-row justify-content-end gap-3">
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Success" OnClick="UpdateSale" Disabled="@(!IsSameDate || UserState.Role == UserRole.User)"/>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Success" OnClick="UpdateSale" Disabled="@(UserState.Role == UserRole.User)"/>
         <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" Class="me-3" OnClick="DeleteSale" />
     </MudCard>
     
@@ -68,10 +68,32 @@
                 <MudItem xl="3">
                     <MudTextField @bind-Value="Sales.RecieptReference"
                                   T="string"
-                                  Placeholder="Enter Receipt No."
+                                  Placeholder="Receipt No."
                                   Label="Reciept No."
                                   ReadOnly=true
                                   />
+                </MudItem>
+                <MudItem xl="2" lg="3" md="4" sm="6">
+                   <MudNumericField T="decimal?"
+                                 Variant="Variant.Text"
+                                 Placeholder="Commission"
+                                 Label="Commission"
+                                 HideSpinButtons="true"
+                                 @bind-Value="Sales.Commission"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 AdornmentColor="Color.Default" />
+
+                </MudItem>
+                <MudItem xl="2" md="4" sm="6">
+                    @if (Sales.IsApproved)
+                    {
+                        <MudChip T="string" Color="Color.Success">Approved</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Warning">Pending</MudChip>
+                    }
                 </MudItem>
                 @if (Sales.PaymentType == null)
                 {

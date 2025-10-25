@@ -22,6 +22,7 @@ public class DailySaleDto:BaseEntityDto
     public PurchaseRecieptOption? SalesOption { get; set; } 
     public decimal? TotalAmount { get; set; }
     public decimal? Commission { get; set; }
+    public bool IsPaid { get; set; }
     public bool HasDiscount { get; set; }
     public bool IsApproved { get; set; }
     public List<SaleItemDto> SaleItems { get; set; } = new List<SaleItemDto>();
