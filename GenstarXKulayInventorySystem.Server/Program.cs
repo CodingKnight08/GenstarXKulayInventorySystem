@@ -12,14 +12,18 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Detect environment
+var environment = builder.Environment.EnvironmentName;
+Console.WriteLine($"Starting in environment: {environment}");
+
+// ✅ Handle PaaS environments like Railway or MonsterASP
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
 {
-    // Running on Railway or another PaaS
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 }
 
-// Add services to the container
+// ✅ Add MVC Controllers
 builder.Services.AddControllers();
 
 // ✅ Enable CORS
@@ -29,18 +33,18 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
             "https://localhost:7035",
             "https://genstar-kulay.runasp.net",
-            "https://helpful-gentleness-production.up.railway.app"
+            "https://genstarxkulayinventorysystemserver-b6hggeaqfsc9fkag.canadacentral-01.azurewebsites.net"
         )
         .AllowAnyMethod()
         .AllowAnyHeader());
 });
 
+// ✅ Identity
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<InventoryDbContext>()
     .AddDefaultTokenProviders();
 
-// ✅ JWT Auth
-var jwtSettings = builder.Configuration.GetSection("Jwt");
+// ✅ JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -54,11 +58,9 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-
         RoleClaimType = ClaimTypes.Role,
         NameClaimType = ClaimTypes.Name
     };
@@ -66,7 +68,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Swagger/OpenAPI
+// ✅ Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -85,6 +87,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<AutoMapperProfile>();
 });
 
+// ✅ Password policy
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.Password.RequireDigit = false;
@@ -94,11 +97,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireLowercase = false;
 });
 
-
-// ✅ SQL SERVER (MSSQL) CONFIGURATION
-// Connection string is pulled from appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
+// ✅ SQL Server Configuration
 builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 {
     options.UseSqlServer(
@@ -109,11 +108,14 @@ builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
         });
 }, ServiceLifetime.Scoped);
 
+// ✅ Hosted + Scoped services
+// Avoid running hosted services when generating Swagger
+var isSwaggerBuild = builder.Environment.IsEnvironment("SwaggerBuild");
 
-
-// Hosted + Scoped services
-builder.Services.AddHostedService<SalesHostedService>();
-
+if (!isSwaggerBuild)
+{
+    builder.Services.AddHostedService<SalesHostedService>();
+}
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
@@ -127,36 +129,43 @@ builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
 builder.Services.AddScoped<IOperationsProviderService, OperationsProviderService>();
 builder.Services.AddScoped<JwtService>();
 
-
 var app = builder.Build();
-
-// ✅ Automatically apply migrations and seed initial data
-using (var scope = app.Services.CreateScope())
+// ✅ Apply migrations and seed users/roles in normal runtime (not during Swagger generation)
+if (!isSwaggerBuild)
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-    var dbContext = services.GetRequiredService<InventoryDbContext>();
-    dbContext.Database.Migrate();
 
-    var userManager = services.GetRequiredService<UserManager<User>>();
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    await InventoryDbContext.SeedUserAsync(userManager, roleManager);
-}
-
-
-// Middleware pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    try
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Genstar XKulay Inventory API v1");
-        c.RoutePrefix = "swagger";
-    });
+        var dbContext = services.GetRequiredService<InventoryDbContext>();
+        dbContext.Database.Migrate(); // Apply migrations
+
+        var userManager = services.GetRequiredService<UserManager<User>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        // Seed roles and admin user
+        await InventoryDbContext.SeedUserAsync(userManager, roleManager);
+        Console.WriteLine("Database seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+    }
 }
+
+
+// ✅ Middleware pipeline
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Genstar XKulay Inventory API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseDeveloperExceptionPage();
 app.UseHttpsRedirection();
-
 app.UseCors("AllowClient");
 
 app.UseAuthentication();
