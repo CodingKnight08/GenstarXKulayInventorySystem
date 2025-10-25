@@ -70,7 +70,7 @@ public static class UtilitiesHelper
                 (ProductMesurementOption.Liter, ProductMesurementOption.Liter) => totalBaseValue,
 
                 // Quart conversions
-                (ProductMesurementOption.Quart, ProductMesurementOption.Milliliter) => totalBaseValue * 946m,
+                (ProductMesurementOption.Quart, ProductMesurementOption.Milliliter) => totalBaseValue * 946.4m,
                 (ProductMesurementOption.Quart, ProductMesurementOption.Liter) => totalBaseValue * 0.946m,
                 (ProductMesurementOption.Quart, ProductMesurementOption.Gallon) => totalBaseValue * 0.25m,
                 (ProductMesurementOption.Quart, ProductMesurementOption.Quart) => totalBaseValue,
@@ -78,7 +78,8 @@ public static class UtilitiesHelper
                 // Milliliter conversions
                 (ProductMesurementOption.Milliliter, ProductMesurementOption.Gallon) => totalBaseValue / 3785m,
                 (ProductMesurementOption.Milliliter, ProductMesurementOption.Liter) => totalBaseValue / 1000m,
-                (ProductMesurementOption.Milliliter, ProductMesurementOption.Quart) => totalBaseValue / 946m,
+                (ProductMesurementOption.Milliliter, ProductMesurementOption.Quart) => totalBaseValue / 946.4m
+,
                 (ProductMesurementOption.Milliliter, ProductMesurementOption.Milliliter) => totalBaseValue,
 
                 _ => throw new Exception($"No conversion available for {productUnit} -> {saleItemUnit}")
