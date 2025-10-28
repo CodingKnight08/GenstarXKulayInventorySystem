@@ -128,6 +128,8 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
 builder.Services.AddScoped<IOperationsProviderService, OperationsProviderService>();
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped(sp =>
+    new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]) });
 
 var app = builder.Build();
 // ✅ Apply migrations and seed users/roles in normal runtime (not during Swagger generation)
@@ -164,17 +166,18 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-app.UseDeveloperExceptionPage();
 app.UseHttpsRedirection();
-app.UseCors("AllowClient");
+app.UseStaticFiles();
+app.UseBlazorFrameworkFiles();
 
+app.UseRouting();
+
+app.UseCors("AllowClient");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();
-app.MapFallbackToFile("index.html");
-
-app.MapControllers();
+app.MapControllers();              
+app.MapFallbackToFile("index.html"); 
 
 app.Run();
+
