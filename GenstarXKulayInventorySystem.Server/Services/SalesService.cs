@@ -44,7 +44,7 @@ public class SalesService:ISalesService
         List<DailySale> dailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(e => !e.IsDeleted && e.DateOfSales.Date == DateTime.UtcNow.Date)
+            .Where(e => !e.IsDeleted && e.DateOfSales.Date == DateTime.Now.Date)
             .OrderByDescending(e => e.DateOfSales)
             .ToListAsync();
         if(dailySales == null || dailySales.Count == 0)
@@ -58,16 +58,16 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySaleByBranch(BranchOption branch, DateTime dateTime)
     {
-        DateTime startUtc = dateTime.Date.ToUniversalTime();
-        DateTime endUtc = startUtc.AddDays(1);
+        DateTime startOfDay = dateTime.Date;
+        DateTime endOfDay = startOfDay.AddDays(1);
 
         List<DailySale> dailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
             .Where(e => !e.IsDeleted
                 && e.Branch == branch
-                && e.DateOfSales >= startUtc
-                && e.DateOfSales < endUtc)
+                && e.DateOfSales >= startOfDay
+                && e.DateOfSales < endOfDay)
             .OrderByDescending(e => e.DateOfSales)
             .ToListAsync();
 
@@ -76,22 +76,17 @@ public class SalesService:ISalesService
             return new List<DailySaleDto>();
         }
 
-        return _mapper.Map<List<DailySaleDto>>(dailySales)
-                  .Select(dto =>
-                  {
-                      dto.DateOfSales = ConvertUtcToPhilippineTime(dto.DateOfSales);
-                      return dto;
-                  })
-                  .ToList();
+        return _mapper.Map<List<DailySaleDto>>(dailySales);
     }
+
 
     public async Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date)
     {
         var chosenDateLocal = date.Date;
 
         // assume the chosenDate is local, so convert to UTC
-        var startOfDay = chosenDateLocal.ToUniversalTime();
-        var endOfDay = chosenDateLocal.AddDays(1).ToUniversalTime();
+        var startOfDay = chosenDateLocal.Date;
+        var endOfDay = chosenDateLocal.AddDays(1);
 
         var dailySales = await _context.DailySales
             .AsNoTracking()
@@ -108,12 +103,12 @@ public class SalesService:ISalesService
     {
         DateTime startDate = range switch
         {
-            DateRangeOption.OneWeek => DateTime.UtcNow.AddDays(-7),
-            DateRangeOption.OneMonth => DateTime.UtcNow.AddMonths(-1),
-            DateRangeOption.TwoMonths => DateTime.UtcNow.AddMonths(-2),
-            DateRangeOption.ThreeMonths => DateTime.UtcNow.AddMonths(-3),
-            DateRangeOption.OneYear => DateTime.UtcNow.AddYears(-1),
-            _ => DateTime.UtcNow 
+            DateRangeOption.OneWeek => DateTime.Now.AddDays(-7),
+            DateRangeOption.OneMonth => DateTime.Now.AddMonths(-1),
+            DateRangeOption.TwoMonths => DateTime.Now.AddMonths(-2),
+            DateRangeOption.ThreeMonths => DateTime.Now.AddMonths(-3),
+            DateRangeOption.OneYear => DateTime.Now.AddYears(-1),
+            _ => DateTime.Now 
         };
 
         var dailySales = await _context.DailySales
@@ -131,7 +126,7 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date, BranchOption branch)
     {
-        var start = date.Date.ToUniversalTime();
+        var start = date.Date;
         var end = start.AddDays(1);
 
         var paidDailySales = await _context.DailySales
@@ -221,7 +216,7 @@ public class SalesService:ISalesService
                       && ds.IsApproved
                       && ds.Branch == branch
                       && ds.UpdatedAt.HasValue
-                      && ds.UpdatedAt.GetValueOrDefault().Date == date.ToUniversalTime().Date 
+                      && ds.UpdatedAt.GetValueOrDefault().Date == date.Date 
                      )
             .ToListAsync();
 
@@ -248,8 +243,8 @@ public class SalesService:ISalesService
                 return false;
             }
             var sale = _mapper.Map<DailySale>(saleDto);
-            sale.DateOfSales = DateTime.UtcNow;
-            sale.CreatedAt = DateTime.UtcNow;
+            sale.DateOfSales = DateTime.Now;
+            sale.CreatedAt = DateTime.Now;
             sale.CreatedBy = GetCurrentUsername();
             sale.TotalAmount = Math.Round(
                          (saleDto.SaleItems?.Sum(x =>
@@ -262,7 +257,7 @@ public class SalesService:ISalesService
 
             sale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
-                DateTime.UtcNow,
+                DateTime.Now,
                 saleDto.CustomPaymentTermsOption ?? 0);
             _ = await _context.DailySales.AddAsync(sale);
             _ = await _context.SaveChangesAsync();
@@ -290,7 +285,7 @@ public class SalesService:ISalesService
             // Map top-level props
             _mapper.Map(saleDto, existingSale);
 
-            existingSale.UpdatedAt = DateTime.UtcNow;
+            existingSale.UpdatedAt = DateTime.Now;
             existingSale.UpdatedBy = GetCurrentUsername();
             existingSale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
@@ -317,7 +312,7 @@ public class SalesService:ISalesService
         try
         {
             existingSale.IsDeleted = true;
-            existingSale.DeletedAt = DateTime.UtcNow;
+            existingSale.DeletedAt = DateTime.Now;
             _ = _context.DailySales.Update(existingSale);
             int result = await _context.SaveChangesAsync();
             return result > 0;
