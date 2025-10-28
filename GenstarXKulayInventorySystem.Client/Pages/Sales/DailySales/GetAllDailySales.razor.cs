@@ -19,8 +19,8 @@ public partial class GetAllDailySales
     protected List<DailySaleDto> Sales { get; set; } = new List<DailySaleDto>();
     protected BranchOption Branch { get; set; } 
     protected bool IsLoading { get; set; } = false;
-    protected DateTime Today { get; set; } = DateTime.UtcNow;
-    protected DateTime SelectedDate { get; set; } = DateTime.UtcNow;
+    protected DateTime Today { get; set; } = DateTime.Now;
+    protected DateTime SelectedDate { get; set; } = DateTime.Now;
     protected override void OnInitialized()
     {
         Branch = UserState.Branch.GetValueOrDefault(); 
