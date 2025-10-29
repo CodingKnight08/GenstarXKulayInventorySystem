@@ -51,7 +51,10 @@ else
                         <MudTh>Action</MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd>@context.DateOfSales.ToString("hh:mm tt")</MudTd>
+                        <MudTd>
+                            @context.DateOfSales.ToString("hh:mm tt")
+                        </MudTd>
+
                         <MudTd>@context.SalesNumber</MudTd>
                         <MudTd>@context.RecieptReference</MudTd>
                         <MudTd>@context.NameOfClient</MudTd>

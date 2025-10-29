@@ -175,7 +175,7 @@ public class SalesController : ControllerBase
     {
         try
         {
-            var result = await _saleService.DeleteSaleASync(id);
+            var result = await _saleService.DeleteSaleAsync(id);
             if (!result)
                 return NotFound("Sale info not found");
             return Ok(result);

@@ -12,21 +12,25 @@ public static class UtilitiesHelper
         var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
         return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
     }
-    public static DateTime ConvertPhilippineToUtc(DateTime philippineTime)
+    public static class PhilippineTime
     {
-        TimeZoneInfo phZone;
+        private static readonly TimeZoneInfo PhZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
 
-        try
-        {
-            phZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Manila");
-        }
-        catch (TimeZoneNotFoundException)
-        {
-            phZone = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
-        }
+        public static DateTime Now => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, PhZone);
 
-        return TimeZoneInfo.ConvertTimeToUtc(philippineTime, phZone);
+        public static DateTime ToPH(DateTime utcOrLocal) =>
+            utcOrLocal.Kind == DateTimeKind.Utc
+                ? TimeZoneInfo.ConvertTimeFromUtc(utcOrLocal, PhZone)
+                : TimeZoneInfo.ConvertTime(utcOrLocal, PhZone);
+        public static (DateTime StartOfDay, DateTime EndOfDay) GetDayRange(DateTime date)
+        {
+            var phDate = ToPH(date);
+            var start = phDate.Date;
+            var end = start.AddDays(1);
+            return (start, end);
+        }
     }
+
 
 
     private static readonly TimeZoneInfo PhilippineTimeZone =

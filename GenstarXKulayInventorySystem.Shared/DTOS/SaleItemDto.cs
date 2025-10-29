@@ -16,7 +16,7 @@ public class SaleItemDto:BaseEntityDto
     public string Description { get; set; } = string.Empty;
     public BranchOption BranchPurchased { get; set; } = BranchOption.GeneralSantosCity;
     public ProductMesurementOption UnitMeasurement { get; set; } = ProductMesurementOption.Gallon;
-    public decimal Quantity { get; set; }
+    public decimal Quantity { get; set; } = 1;
     public decimal ItemPrice { get; set; }
     public ProductPricingOption ProductPricingOption { get; set; } = ProductPricingOption.Retail;
     public PaintCategory PaintCategory { get; set; } = PaintCategory.Solid;
