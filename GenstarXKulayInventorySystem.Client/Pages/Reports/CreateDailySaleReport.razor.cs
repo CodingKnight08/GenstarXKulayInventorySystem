@@ -24,7 +24,7 @@ public partial class CreateDailySaleReport
     protected List<DailySaleDto> CollectedSales { get; set; } = new List<DailySaleDto>();
     protected List<BillingDto> Expenses { get; set; } = new();
     protected List<DailySaleDto> AllDailySaleTobeAdded { get; set; } = new List<DailySaleDto>();
-    protected DateTime ReportDate { get; set; } = UtilitiesHelper.GetPhilippineTime();
+    protected DateTime ReportDate { get; set; } = DateTime.UtcNow;
     protected bool IsLoading { get; set; } = false;
     protected bool IsSaving { get; set; }  = false;
     protected bool IsValid => DailySaleReport.CashIn > 0 && DailySaleReport.BeginningBalance > 0 && !string.IsNullOrWhiteSpace(DailySaleReport.PreparedBy) ;
