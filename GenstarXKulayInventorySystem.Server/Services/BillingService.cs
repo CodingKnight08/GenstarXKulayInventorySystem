@@ -5,6 +5,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -63,8 +64,8 @@ public class BillingService:IBillingService
 
     public async Task<List<BillingDto>> GetAllExpensesBillingPerDay(DateTime date, BillingBranch branch)
     {
-        var start = date.Date.ToUniversalTime();
-        var end = start.AddDays(1);
+        var (start, end) = PhilippineTime.GetDayRange(date);
+        
 
         var billings = await _context.Billings
             .AsNoTracking()
@@ -100,9 +101,10 @@ public class BillingService:IBillingService
             if (existingBilling != null)
                 return false;
             var billing = _mapper.Map<Billing>(billingDto);
+            var phNow = PhilippineTime.Now;
             if (billing.IsPaid)
             {
-                billing.DatePaid = DateTime.UtcNow;
+                billing.DatePaid = phNow;
             }
             billing.CreatedBy = GetCurrentUsername();
             billing.CreatedAt = DateTime.UtcNow;
@@ -145,9 +147,10 @@ public class BillingService:IBillingService
             if (existingBilling == null)
                 return false;
             var billing = _mapper.Map<Billing>(billingDto);
+            var phNow = PhilippineTime.Now;
             if (billingDto.IsPaid)
             {
-                billing.DatePaid = DateTime.UtcNow;
+                billing.DatePaid = phNow;
             }
             billing.UpdatedBy = GetCurrentUsername();
             billing.UpdatedAt = DateTime.UtcNow;
