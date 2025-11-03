@@ -32,8 +32,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowClient", policy =>
         policy.WithOrigins(
             "https://localhost:7035",
-            "https://genstar-kulay.runasp.net",
-            "https://genstarxkulayinventorysystemserver-b6hggeaqfsc9fkag.canadacentral-01.azurewebsites.net"
+            "https://genstar-kulay-inventory.runasp.net"
         )
         .AllowAnyMethod()
         .AllowAnyHeader());
