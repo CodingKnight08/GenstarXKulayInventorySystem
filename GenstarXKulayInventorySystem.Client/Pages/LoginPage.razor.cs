@@ -8,19 +8,16 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
 using System.Text.Json;
 using static System.Net.WebRequestMethods;
-
 namespace GenstarXKulayInventorySystem.Client.Pages;
 
 public partial class LoginPage
 {
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
-    [Inject] protected HttpClient Http { get; set; } = default!;
     [Inject] protected ILogger<LoginPage> Logger { get; set; } = default!;
     [Inject] protected ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject] protected ISnackbar SnackBar { get; set; } = default!;
-    [Inject] private JwtAuthenticationStateProvider JwtAuthProvider { get; set; } = default!;
-
-
+    [Inject] private JwtAuthenticationStateProvider JwtAuthProvider { get; set; } =  default!;
+    [Inject] public HttpClient Http { get; set; } = default!;
     protected LoginDto User { get; set; } = new LoginDto();
     protected MudForm form = default!;
     protected bool ShowValidation { get; set; } = false;
