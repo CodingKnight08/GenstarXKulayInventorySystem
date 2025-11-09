@@ -36,14 +36,25 @@ public class ProductImportController : ControllerBase
         var connectionString = _config.GetConnectionString("DefaultConnection");
         var ext = Path.GetExtension(file.FileName).ToLower();
 
-        if (ext == ".xlsx")
-            await ImportExcelAsync(tempPath, connectionString);
-        else if (ext == ".csv")
-            await ImportCsvAsync(tempPath, connectionString);
-        else
-            return BadRequest("Unsupported file type. Please upload .csv or .xlsx file.");
+        try
+        {
+            if (ext == ".xlsx")
+                await ImportExcelAsync(tempPath, connectionString);
+            else if (ext == ".csv")
+                await ImportCsvAsync(tempPath, connectionString);
+            else
+                return BadRequest("Unsupported file type. Please upload .csv or .xlsx file.");
+        }
+        catch (Exception ex)
+        {
+            // Catch any exception and return detailed info
+            return StatusCode(500, $"Error during import: {ex.Message} \n {ex.StackTrace}");
+        }
+        finally
+        {
+            System.IO.File.Delete(tempPath);
+        }
 
-        System.IO.File.Delete(tempPath);
         return Ok("✅ Import completed successfully.");
     }
 
@@ -61,39 +72,56 @@ public class ProductImportController : ControllerBase
 
         foreach (var row in rows)
         {
-            var brandId = GetIntCell(row, 1);
-            var cost = GetDecimalCell(row, 2);
-            var retail = GetDecimalCell(row, 3);
-            var wholesale = GetDecimalCell(row, 4);
-            var size = GetDecimalCell(row, 5);
-            var quantity = GetIntCell(row, 6);
-            var branch = GetIntCell(row, 7);
-            var measureText = row.Cell(8).GetString();
-            var actualQty = GetDecimalCell(row, 9);
-            var buffer = GetDecimalCell(row, 10);
+            try
+            {
+                var brandId = GetIntCell(row, 1);
+                var cost = GetDecimalCell(row, 2);
+                var retail = GetDecimalCell(row, 3);
+                var wholesale = GetDecimalCell(row, 4);
+                var size = GetDecimalCell(row, 5);
+                var quantity = GetIntCell(row, 6);
+                var branch = GetIntCell(row, 7);
+                var measureText = row.Cell(8).GetString();
+                var actualQty = GetDecimalCell(row, 9);
+                var buffer = GetDecimalCell(row, 10);
 
-            await using var cmd = new SqlCommand(@"
-                INSERT INTO Products
-                (BrandId, CostPrice, RetailPrice, WholesalePrice, Size,
-                 Quantity, Branch, ProductMesurementOption, ActualQuantity, BufferStocks,
-                 CreatedAt, IsDeleted, CreatedBy)
-                VALUES (@BrandId, @CostPrice, @RetailPrice, @WholesalePrice, @Size,
-                        @Quantity, @Branch, @ProductMesurementOption, @ActualQuantity, @BufferStocks,
-                        GETDATE(), 0, 'Excel Import');
-            ", conn);
+                // ✅ Check if BrandId exists
+                await using var checkCmd = new SqlCommand("SELECT COUNT(*) FROM ProductBrands WHERE Id=@BrandId", conn);
+                checkCmd.Parameters.AddWithValue("@BrandId", brandId);
+                var exists = (int)await checkCmd.ExecuteScalarAsync() > 0;
 
-            cmd.Parameters.AddWithValue("@BrandId", brandId);
-            cmd.Parameters.AddWithValue("@CostPrice", cost);
-            cmd.Parameters.AddWithValue("@RetailPrice", retail);
-            cmd.Parameters.AddWithValue("@WholesalePrice", wholesale);
-            cmd.Parameters.AddWithValue("@Size", size);
-            cmd.Parameters.AddWithValue("@Quantity", quantity);
-            cmd.Parameters.AddWithValue("@Branch", branch);
-            cmd.Parameters.AddWithValue("@ProductMesurementOption", MapMeasurement(measureText));
-            cmd.Parameters.AddWithValue("@ActualQuantity", actualQty);
-            cmd.Parameters.AddWithValue("@BufferStocks", buffer);
+                if (!exists)
+                {
+                    throw new Exception($"BrandId {brandId} does not exist in ProductBrands. Row: {row.RowNumber()}");
+                }
 
-            await cmd.ExecuteNonQueryAsync();
+                await using var cmd = new SqlCommand(@"
+                    INSERT INTO Products
+                    (BrandId, CostPrice, RetailPrice, WholesalePrice, Size,
+                     Quantity, Branch, ProductMesurementOption, ActualQuantity, BufferStocks,
+                     CreatedAt, IsDeleted, CreatedBy)
+                    VALUES (@BrandId, @CostPrice, @RetailPrice, @WholeSalePrice, @Size,
+                            @Quantity, @Branch, @ProductMesurementOption, @ActualQuantity, @BufferStocks,
+                            GETDATE(), 0, 'Excel Import');
+                ", conn);
+
+                cmd.Parameters.AddWithValue("@BrandId", brandId);
+                cmd.Parameters.AddWithValue("@CostPrice", cost);
+                cmd.Parameters.AddWithValue("@RetailPrice", retail);
+                cmd.Parameters.AddWithValue("@WholeSalePrice", wholesale);
+                cmd.Parameters.AddWithValue("@Size", size);
+                cmd.Parameters.AddWithValue("@Quantity", quantity);
+                cmd.Parameters.AddWithValue("@Branch", branch);
+                cmd.Parameters.AddWithValue("@ProductMesurementOption", MapMeasurement(measureText));
+                cmd.Parameters.AddWithValue("@ActualQuantity", actualQty);
+                cmd.Parameters.AddWithValue("@BufferStocks", buffer);
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in Excel row {row.RowNumber()}: {ex.Message}");
+            }
         }
     }
 
@@ -115,35 +143,54 @@ public class ProductImportController : ControllerBase
         await using var conn = new SqlConnection(connectionString);
         await conn.OpenAsync();
 
+        int rowNum = 2; // assuming header is row 1
         foreach (var record in records)
         {
-            var d = (IDictionary<string, object>)record;
+            try
+            {
+                var d = (IDictionary<string, object>)record;
+                var brandId = ConvertToInt(d, "BrandId");
 
-            await using var cmd = new SqlCommand(@"
-            INSERT INTO Products
-            (BrandId, ProductName, CostPrice, RetailPrice, WholesalePrice, Size,
-             Quantity, Branch, ProductMesurementOption, ActualQuantity, BufferStocks,
-             Description, Packaging, CreatedAt, IsDeleted, CreatedBy)
-            VALUES (@BrandId, @ProductName, @CostPrice, @RetailPrice, @WholesalePrice, @Size,
-                    @Quantity, @Branch, @ProductMesurementOption, @ActualQuantity, @BufferStocks,
-                    @Description, @Packaging, GETDATE(), 0, 'ITAdministrator');
-        ", conn);
+                // ✅ Check if BrandId exists
+                await using var checkCmd = new SqlCommand("SELECT COUNT(*) FROM ProductBrands WHERE Id=@BrandId", conn);
+                checkCmd.Parameters.AddWithValue("@BrandId", brandId);
+                var exists = (int)await checkCmd.ExecuteScalarAsync() > 0;
+                if (!exists)
+                {
+                    throw new Exception($"BrandId {brandId} does not exist in ProductBrands. CSV Row: {rowNum}");
+                }
 
-            cmd.Parameters.AddWithValue("@BrandId", ConvertToInt(d, "BrandId"));
-            cmd.Parameters.AddWithValue("@ProductName", d.TryGetValue("ProductName", out var name) ? name?.ToString() ?? "" : "");
-            cmd.Parameters.AddWithValue("@Description", d.TryGetValue("Description", out var description) ? description?.ToString() ?? "" : "");
-            cmd.Parameters.AddWithValue("@CostPrice", ConvertToDecimal(d, "CostPrice"));
-            cmd.Parameters.AddWithValue("@RetailPrice", ConvertToDecimal(d, "RetailPrice"));
-            cmd.Parameters.AddWithValue("@WholesalePrice", ConvertToDecimal(d, "WholesalePrice"));
-            cmd.Parameters.AddWithValue("@Size", ConvertToDecimal(d, "Size"));
-            cmd.Parameters.AddWithValue("@Quantity", ConvertToInt(d, "Quantity"));
-            cmd.Parameters.AddWithValue("@Branch", ConvertToInt(d, "Branch"));
-            cmd.Parameters.AddWithValue("@ProductMesurementOption", MapMeasurement(d.TryGetValue("ProductMesurementOption", out var m) ? m?.ToString() : null));
-            cmd.Parameters.AddWithValue("@ActualQuantity", ConvertToDecimal(d, "ActualQuantity"));
-            cmd.Parameters.AddWithValue("@BufferStocks", ConvertToDecimal(d, "BufferStocks"));
-            cmd.Parameters.AddWithValue("@Packaging", d.TryGetValue("Packaging", out var p) ? p?.ToString() ?? "" : "");
+                await using var cmd = new SqlCommand(@"
+                    INSERT INTO Products
+                    (BrandId, ProductName, CostPrice, RetailPrice, WholesalePrice, Size,
+                     Quantity, Branch, ProductMesurementOption, ActualQuantity, BufferStocks,
+                     Description, Packaging, CreatedAt, IsDeleted, CreatedBy)
+                    VALUES (@BrandId, @ProductName, @CostPrice, @RetailPrice, @WholesalePrice, @Size,
+                            @Quantity, @Branch, @ProductMesurementOption, @ActualQuantity, @BufferStocks,
+                            @Description, @Packaging, GETDATE(), 0, 'ITAdministrator');
+                ", conn);
 
-            await cmd.ExecuteNonQueryAsync();
+                cmd.Parameters.AddWithValue("@BrandId", brandId);
+                cmd.Parameters.AddWithValue("@ProductName", d.TryGetValue("ProductName", out var name) ? name?.ToString() ?? "" : "");
+                cmd.Parameters.AddWithValue("@Description", d.TryGetValue("Description", out var description) ? description?.ToString() ?? "" : "");
+                cmd.Parameters.AddWithValue("@CostPrice", ConvertToDecimal(d, "CostPrice"));
+                cmd.Parameters.AddWithValue("@RetailPrice", ConvertToDecimal(d, "RetailPrice"));
+                cmd.Parameters.AddWithValue("@WholesalePrice", ConvertToDecimal(d, "WholeSalePrice"));
+                cmd.Parameters.AddWithValue("@Size", ConvertToDecimal(d, "Size"));
+                cmd.Parameters.AddWithValue("@Quantity", ConvertToInt(d, "Quantity"));
+                cmd.Parameters.AddWithValue("@Branch", ConvertToInt(d, "Branch"));
+                cmd.Parameters.AddWithValue("@ProductMesurementOption", MapMeasurement(d.TryGetValue("ProductMesurementOption", out var m) ? m?.ToString() : null));
+                cmd.Parameters.AddWithValue("@ActualQuantity", ConvertToDecimal(d, "ActualQuantity"));
+                cmd.Parameters.AddWithValue("@BufferStocks", ConvertToDecimal(d, "BufferStocks"));
+                cmd.Parameters.AddWithValue("@Packaging", d.TryGetValue("Packaging", out var p) ? p?.ToString() ?? "" : "");
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in CSV row {rowNum}: {ex.Message}");
+            }
+            rowNum++;
         }
     }
 
