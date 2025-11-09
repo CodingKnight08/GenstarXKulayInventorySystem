@@ -29,15 +29,18 @@ builder.Services.AddControllers();
 // ✅ Enable CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowClient", policy =>
-        policy.WithOrigins(
-            "https://localhost:7035",
-            "https://genstar-kulay.runasp.net",
-            "https://genstarxkulayinventorysystemserver-b6hggeaqfsc9fkag.canadacentral-01.azurewebsites.net"
-        )
-        .AllowAnyMethod()
-        .AllowAnyHeader());
+    options.AddPolicy("AllowAll", policy =>
+        policy
+            .WithOrigins(
+                "https://localhost:7035",                     // Local dev client
+                "http://genstar-kulay-inventory.runasp.net"  // Hosted client
+            )
+            .AllowAnyMethod()    // Allow GET, POST, PUT, DELETE, etc.
+            .AllowAnyHeader()    // Allow any headers
+            .AllowCredentials()  // Allow cookies or auth headers if needed
+    );
 });
+
 
 // ✅ Identity
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -172,7 +175,7 @@ app.UseBlazorFrameworkFiles();
 
 app.UseRouting();
 
-app.UseCors("AllowClient");
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 

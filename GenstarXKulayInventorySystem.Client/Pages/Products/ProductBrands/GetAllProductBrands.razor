@@ -58,6 +58,9 @@
 
 
                 </Columns>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.h6" Align="Align.Center">No Brands Found.</MudText>
+                </NoRecordsContent>
                 <PagerContent>
                     <MudDataGridPager ShowPageNumber=true T="ProductBrandDto" PageSizeOptions=@(new int[] { 5, 10, 20 }) />
                 </PagerContent>

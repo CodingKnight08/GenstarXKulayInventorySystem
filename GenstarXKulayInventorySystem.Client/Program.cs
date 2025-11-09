@@ -5,29 +5,29 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
-using System.Net.Http.Json;
+using System.Net.Http.Headers;
+using System.Net.Http;
 
+// Create the WebAssembly host
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+// Get API base URL from configuration or use host base address
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress;
 
-builder.Services.AddTransient<AuthorizationMessageHandler>();
+// Add Blazored LocalStorage
+builder.Services.AddBlazoredLocalStorage();
 
-var settingsFile = builder.HostEnvironment.IsDevelopment()
-    ? "appsettings.Development.json"
-    : "appsettings.json";
+// Add authorization & authentication
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<UserState>();
+builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
+    sp.GetRequiredService<JwtAuthenticationStateProvider>());
 
-using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
-var config = await http.GetFromJsonAsync<Dictionary<string, string>>(settingsFile);
-
-var apiBaseUrl = config?["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress;
-
-builder.Services.AddHttpClient("ServerAPI", client =>
-{
-    client.BaseAddress = new Uri(apiBaseUrl);
-}).AddHttpMessageHandler<AuthorizationMessageHandler>();
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ServerAPI"));
+// Add MudBlazor services with snackbar configuration
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
@@ -36,14 +36,43 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.VisibleStateDuration = 3000;
     config.SnackbarConfiguration.ShowCloseIcon = true;
 });
-builder.Services.AddScoped<UserState>();
-builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<JwtAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
 
-
-
+// Configure HttpClient to include JWT automatically
+builder.Services.AddScoped(sp =>
+{
+    var localStorage = sp.GetRequiredService<ILocalStorageService>();
+    var handler = new AuthorizationMessageHandler(localStorage);
+    return new HttpClient(handler)
+    {
+        BaseAddress = new Uri(apiBaseUrl)
+    };
+});
 
 await builder.Build().RunAsync();
-        
+
+
+// ------------------------------
+// Custom DelegatingHandler to attach JWT from LocalStorage
+// ------------------------------
+public class AuthorizationMessageHandler : DelegatingHandler
+{
+    private readonly ILocalStorageService _localStorage;
+
+    public AuthorizationMessageHandler(ILocalStorageService localStorage)
+    {
+        _localStorage = localStorage;
+        InnerHandler = new HttpClientHandler(); // default inner handler
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var token = await _localStorage.GetItemAsync<string>("authToken");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        return await base.SendAsync(request, cancellationToken);
+    }
+}
