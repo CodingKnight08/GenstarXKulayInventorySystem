@@ -130,6 +130,7 @@ builder.Services.AddScoped<ISaleItemService, SaleItemService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
 builder.Services.AddScoped<IOperationsProviderService, OperationsProviderService>();
+builder.Services.AddScoped<IReturnSalesService, ReturnSalesService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]) });
