@@ -28,4 +28,5 @@ public class DailySale:BaseEntity
     public bool HasDiscount { get; set; }
     public bool IsApproved { get; set; }
     public virtual ICollection<SaleItem> SaleItems { get; set; } = new HashSet<SaleItem>();
+    public virtual ICollection<ReturnSale> ReturnSales { get; set; } = new HashSet<ReturnSale>();
 }

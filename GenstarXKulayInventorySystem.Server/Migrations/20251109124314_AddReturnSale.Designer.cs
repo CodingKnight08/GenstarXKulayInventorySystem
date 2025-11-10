@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251109124314_AddReturnSale")]
+    partial class AddReturnSale
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -223,7 +226,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
                     b.Property<string>("SalesNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SalesOption")
                         .HasColumnType("int");
@@ -826,65 +829,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.ToTable("Registrations");
                 });
 
-            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.ReturnSale", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Branch")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateOfReturn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("NameOfClient")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ReasonForReturn")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SalesNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal?>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("SalesNumber");
-
-                    b.ToTable("ReturnSales");
-                });
-
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.SaleItem", b =>
                 {
                     b.Property<int>("Id")
@@ -1324,25 +1268,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Navigation("PurchaseOrder");
                 });
 
-            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.ReturnSale", b =>
-                {
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.Product", "Product")
-                        .WithMany("ReturnSales")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.DailySale", "DailySale")
-                        .WithMany("ReturnSales")
-                        .HasForeignKey("SalesNumber")
-                        .HasPrincipalKey("SalesNumber")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DailySale");
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.SaleItem", b =>
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.DailySale", "DailySale")
@@ -1418,8 +1343,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.DailySale", b =>
                 {
-                    b.Navigation("ReturnSales");
-
                     b.Navigation("SaleItems");
                 });
 
@@ -1437,8 +1360,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>
                 {
-                    b.Navigation("ReturnSales");
-
                     b.Navigation("SaleItems");
                 });
 

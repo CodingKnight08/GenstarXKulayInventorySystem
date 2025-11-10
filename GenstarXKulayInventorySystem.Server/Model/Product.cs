@@ -31,5 +31,6 @@ public class Product:BaseEntity
     public decimal ActualQuantity { get; set; } = 0;
     public decimal? BufferStocks { get; set; } = 0;
     public virtual ICollection<SaleItem> SaleItems { get; set; } = new HashSet<SaleItem>();
+    public virtual ICollection<ReturnSale> ReturnSales { get; set; } = new HashSet<ReturnSale>();
 
 }

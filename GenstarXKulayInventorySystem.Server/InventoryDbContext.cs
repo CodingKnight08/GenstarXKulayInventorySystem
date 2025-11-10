@@ -180,6 +180,22 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(dsr => dsr.LandedCost).HasColumnType("decimal(18,2)");
             entity.Property(dsr => dsr.GrossProfit).HasColumnType("decimal(18,2)");
         });
+        modelBuilder.Entity<ReturnSale>(entity =>
+        {
+            // Link to DailySale via SalesNumber
+            entity.HasOne(rs => rs.DailySale)
+                  .WithMany(ds => ds.ReturnSales)
+                  .HasPrincipalKey(ds => ds.SalesNumber)
+                  .HasForeignKey(rs => rs.SalesNumber);
+
+            // Link to Product via ProductId
+            entity.HasOne(rs => rs.Product)
+                  .WithMany(p => p.ReturnSales)  // explicitly define reverse navigation
+                  .HasForeignKey(rs => rs.ProductId)  // explicitly specify FK
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+
 
         base.OnModelCreating(modelBuilder);
     }
@@ -203,6 +219,7 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<DailySaleReport> DailySaleReports { get; set; }
     public DbSet<Registration> Registrations { get; set; }
     public DbSet<OperationsProvider> OperationsProviders { get; set; }
+    public DbSet<ReturnSale> ReturnSales { get; set; }
 
     public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {
