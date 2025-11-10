@@ -19,7 +19,11 @@
           <MudNavLink Href="/productcategory" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage" IconColor="@Color.Error">Category</MudNavLink>
     </MudNavGroup>
    
-    <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
+    <MudNavGroup Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary" Title="Sales">
+        <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QueryStats" IconColor="@Color.Surface">Daily Sales</MudNavLink>
+        <MudNavLink Href="/returnsales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Restore" IconColor="@Color.Warning">Return Sales</MudNavLink>
+    </MudNavGroup>
+    
     <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
     <MudNavGroup Icon="@Icons.Material.Filled.Inventory" IconColor="@Color.Default" Title="Orders">
         <MudNavLink Href="/purchase-order" Match="NavLinkMatch.Prefix">Purchase Orders</MudNavLink>
