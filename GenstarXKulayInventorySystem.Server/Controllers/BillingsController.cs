@@ -1,9 +1,11 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class BillingsController : ControllerBase
