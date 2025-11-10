@@ -56,6 +56,7 @@ public class AutoMapperProfile: Profile
         _ = CreateMap<Registration, RegistrationDto>().ReverseMap();
         _ = CreateMap<OperationsProvider, OperationsProviderDto>()
             .ForMember(dest => dest.Billings, opt => opt.Ignore()).ReverseMap();
+        _ = CreateMap<ReturnSale, ReturnSalesDto>().ReverseMap();
 
     }
 
