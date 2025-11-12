@@ -7,6 +7,7 @@ using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
+using static MudBlazor.Icons.Custom;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Reports;
 
@@ -24,6 +25,7 @@ public partial class CreateDailySaleReport
     protected List<DailySaleDto> CollectedSales { get; set; } = new List<DailySaleDto>();
     protected List<BillingDto> Expenses { get; set; } = new();
     protected List<DailySaleDto> AllDailySaleTobeAdded { get; set; } = new List<DailySaleDto>();
+    protected List<PurchaseOrderDto> PurchaseOrders { get; set; } = new();
     protected DateTime ReportDate { get; set; } = DateTime.UtcNow;
     protected bool IsLoading { get; set; } = false;
     protected bool IsSaving { get; set; }  = false;
@@ -31,6 +33,7 @@ public partial class CreateDailySaleReport
     protected decimal TotalLandedCost { get; set; }
     protected decimal TotalItemsSales { get; set; }
     protected decimal TotalNetIncome { get; set; }
+    protected decimal TotalPurchaseOrder { get; set; }
     protected override async Task OnParametersSetAsync()
     {
         IsLoading = true;
@@ -40,6 +43,7 @@ public partial class CreateDailySaleReport
             await LoadUnpaidSales();
             await LoadCollectedSales();
             await LoadExpenses();
+            await LoadPurchaseOrder();
             AssignFields();
             OnExpensesChange();
             AllDailySaleTobeAdded.AddRange(PaidSales);
@@ -79,6 +83,7 @@ public partial class CreateDailySaleReport
             await LoadUnpaidSales();
             await LoadCollectedSales();
             await LoadExpenses();
+            await LoadPurchaseOrder();
 
             AssignFields();
 
@@ -210,9 +215,39 @@ public partial class CreateDailySaleReport
             Logger.LogError(ex, "Error loading expenses");
         }
     }
-
+    protected async Task LoadPurchaseOrder()
+    {
+        try
+        {
+            PurchaseShipToOption branch;
+            switch (Branch)
+            {
+                case BranchOption.Polomolok:
+                    branch= PurchaseShipToOption.Polomolok;
+                    break;
+                case BranchOption.GeneralSantosCity:
+                    branch =  PurchaseShipToOption.GeneralSantosCity;
+                    break;
+                case BranchOption.Warehouse:
+                    branch = PurchaseShipToOption.Warehouse;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(branch), Branch, null);
+            }
+            var response = await HttpClient.GetAsync($"api/purchaseorder/all/{branch}/{ReportDate:yyyy-MM-dd}");
+            if (response.IsSuccessStatusCode) { 
+                var purchaseOrders = await response.Content.ReadFromJsonAsync<List<PurchaseOrderDto>>();
+                PurchaseOrders = purchaseOrders ?? new List<PurchaseOrderDto>();
+            }
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError(ex, "Error loading purchase orders");
+        }
+    }
     protected void AssignFields()
     {
+        TotalPurchaseOrder = PurchaseOrders.Sum(e => e.AssumeTotalAmount);
         DailySaleReport.InvoiceCash = PaidSales
                          .Where(ds => ds.SalesOption == PurchaseRecieptOption.BIR
                                    && ds.PaymentType != PaymentMethod.BankCheque)
@@ -241,6 +276,7 @@ public partial class CreateDailySaleReport
         DailySaleReport.BeginningBalance = DailySaleReport.TotalCash;
         DailySaleReport.Others = Expenses
             .Where(e => e.Category == BillingCategory.Electric || e.Category == BillingCategory.Internet || e.Category == BillingCategory.Telephone || e.Category == BillingCategory.Water || e.Category == BillingCategory.Other).Sum(e => e.Amount);
+        TotalNetIncome = (TotalItemsSales - TotalLandedCost) - (DailySaleReport.TotalExpenses ?? 0) - TotalPurchaseOrder;
     }
 
     protected async Task SubmitReport()
@@ -290,13 +326,13 @@ public partial class CreateDailySaleReport
             + (DailySaleReport.CollectionChecks ?? 0)
             - DailySaleReport.TotalExpenses;
         OnTotalSalesTodayChange();
-        TotalNetIncome = (TotalItemsSales - TotalLandedCost) - DailySaleReport.TotalExpenses ?? 0;
+        TotalNetIncome = (TotalItemsSales - TotalLandedCost) - (DailySaleReport.TotalExpenses ?? 0) - TotalPurchaseOrder;
         StateHasChanged();
     }
 
     protected void OnTotalSalesTodayChange()
     {
-        DailySaleReport.TotalSalesToday = (DailySaleReport.BeginningBalance ?? 0) + (DailySaleReport.CashIn ?? 0) - DailySaleReport.TotalExpenses;
+        DailySaleReport.TotalSalesToday = (DailySaleReport.BeginningBalance ?? 0) + (DailySaleReport.CashIn ?? 0) - DailySaleReport.TotalExpenses - (TotalPurchaseOrder);
         StateHasChanged();
     }
 

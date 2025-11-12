@@ -338,13 +338,15 @@ else
                     </MudGrid>
                 </MudItem>
                 <MudItem xl="4" lg="4">
-                    <MudNumericField T="decimal?" 
-                        @bind-Value="DailySaleReport.TotalExpenses"
-                        Adornment="Adornment.Start"
-                        Label="Total Expenses"
-                        AdornmentText="₱"
-                        HideSpinButtons=true
-                        Format="F2" />
+                        <MudNumericField 
+                            T="decimal"
+                            Label="Purchase Order"
+                            Adornment="Adornment.Start"
+                            AdornmentText="₱"
+                            Format="F2"
+                            Value="TotalPurchaseOrder"
+                            HideSpinButtons=true
+                            ReadOnly=true />
                 </MudItem>
 
                 <MudItem xl="7" lg="7">
@@ -356,6 +358,15 @@ else
                                   MaxLines="3"
                                    />
                 </MudItem>
+                    <MudItem xl="4" lg="4">
+                        <MudNumericField T="decimal?"
+                                         @bind-Value="DailySaleReport.TotalExpenses"
+                                         Adornment="Adornment.Start"
+                                         Label="Total Expenses"
+                                         AdornmentText="₱"
+                                         HideSpinButtons=true
+                                         Format="F2" />
+                    </MudItem>
 
                 <MudItem xl="7" lg="7">
                     <MudTextField @bind-Value="DailySaleReport.PreparedBy" Label="Prepared By:" />
@@ -379,7 +390,7 @@ else
 
                 </MudItem>
                   <MudItem sm="4">
-                    <MudNumericField T="decimal" @bind-Value="TotalNetIncome" Label="Net Income"  Format="F2" HideSpinButtons=true />
+                    <MudNumericField T="decimal" Value="TotalNetIncome" Label="Net Income"  Format="F2" HideSpinButtons=true />
 
                 </MudItem>
                 </MudGrid>
