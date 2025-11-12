@@ -34,8 +34,12 @@ public class InvolvePaintsDto
     public int BrandId { get; set; }
     public string BrandName { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
-    public decimal? Size { get; set; }
+    public decimal? Size { get; set; } = 1;
+    public decimal Quantity { get; set; } = 1;
     public ProductMesurementOption UnitMeasurement { get; set; }
     public decimal ProductCost { get; set; }
     public ProductMesurementOption ProductUnit { get; set; }
+    public decimal TotalCost { get; set; }
+    [JsonIgnore]
+    public decimal Amount => ProductCost * (Size ?? 1) * (Quantity == 0 ? 1 : Quantity);
 }
