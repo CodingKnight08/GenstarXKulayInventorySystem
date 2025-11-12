@@ -47,6 +47,7 @@ else
                         <MudTh>Receipt No.</MudTh>
                         <MudTh>Client</MudTh>
                         <MudTh>Type</MudTh>
+                        <MudTh>Amount</MudTh>
                         <MudTh>Status</MudTh>
                         <MudTh>Action</MudTh>
                     </HeaderContent>
@@ -59,6 +60,8 @@ else
                         <MudTd>@context.RecieptReference</MudTd>
                         <MudTd>@context.NameOfClient</MudTd>
                         <MudTd>@(context.SalesOption == PurchaseRecieptOption.BIR ? "Invoice" : "Non-Voice")</MudTd>
+                        <MudTd>₱ @String.Format("{0:N2}", context.TotalAmount ?? 0)</MudTd>
+
                         <MudTd>
                             <MudText Color="@(context.IsApproved? Color.Success: Color.Warning)" Typo="Typo.subtitle2">
                                 @(context.IsApproved ? "Approved" : "Pending")
