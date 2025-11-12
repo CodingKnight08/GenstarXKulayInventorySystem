@@ -40,8 +40,13 @@ public partial class GetAllSaleItemsToBeAdded
                 if (saleItem != null)
                 {
                     bool exists = SaleItemsToBeAdded.Any(x =>
-                        x.ProductId == saleItem.ProductId ||
-                        string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
+                                x.PaintCategory != PaintCategory.Mix &&  // allow multiple Mix items
+                                (
+                                    (x.ProductId != null && x.ProductId == saleItem.ProductId) ||
+                                    (!string.IsNullOrWhiteSpace(x.ItemName) &&
+                                     string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase))
+                                ));
+
 
                     if (!exists)
                     {
