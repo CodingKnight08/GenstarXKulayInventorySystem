@@ -1,9 +1,12 @@
 ﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
-@using GenstarXKulayInventorySystem.Shared.DTOS;
-<MudDialog>
+@using GenstarXKulayInventorySystem.Shared.DTOS
+
+<MudDialog MaxWidth="MaxWidth.Medium" FullWidth="true">
     <DialogContent>
-        <MudGrid Spacing="6">
-            <MudItem xl="6" xs="12">
+        <MudGrid Spacing="3">
+
+            <!-- Brand selection -->
+            <MudItem xs="12" sm="6">
                 <MudAutocomplete T="ProductBrandDto"
                                  Label="Select Brand"
                                  Dense="true"
@@ -13,42 +16,77 @@
                                  ValueChanged="OnBrandSelect"
                                  ToStringFunc="b => b?.BrandName"
                                  MaxItems="100"
-                                 Clearable="true"
-                                 CoerceText="false"
-                                 CoerceValue="false"
-                                 ResetValueOnEmptyText="false" />
+                                 Clearable="true" />
             </MudItem>
-            <MudItem xl="6">
+
+            <!-- Product selection -->
+            <MudItem xs="12" sm="6">
                 <MudAutocomplete T="ProductDto"
                                  Label="Select Product"
                                  Dense="true"
                                  Clearable="true"
                                  Value="SelectedProduct"
-                                 ResetValueOnEmptyText="true"
-                                 SearchFunc="SearchProducts"
                                  ValueChanged="OnProductSelect"
                                  ToStringFunc="p => p.ProductName"
+                                 SearchFunc="SearchProducts"
                                  MaxItems="500"
                                  Placeholder="Type to search product..."
                                  ShowProgressIndicator="IsProductLoading" />
             </MudItem>
-            <MudItem xl="4">
-                <MudNumericField T="decimal?" Label="Size" @bind-Value="AddedPaint.Size" Variant="Variant.Text" Placeholder="Enter Size eg. 1000 (ml)" />
+
+            <!-- Size input -->
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="decimal?"
+                                 Label="Size"
+                                 Value="AddedPaint.Size"
+                                 Variant="Variant.Text"
+                                 Placeholder="Enter Size (e.g., 1000 ml)"
+                                 Immediate="true"
+                                 HideSpinButtons="true"
+                                 ValueChanged="OnSizeChanged" />
             </MudItem>
-            <MudItem xl="3">
-                <MudSelect T="ProductMesurementOption" @bind-Value="AddedPaint.UnitMeasurement" Label="Unit">
+
+            <!-- Quantity input -->
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="decimal"
+                                 Label="Quantity"
+                                 Value="AddedPaint.Quantity"
+                                 Variant="Variant.Text"
+                                 Placeholder="Enter Quantity"
+                                 HideSpinButtons="true"
+                                 Immediate="true"
+                                 ValueChanged="@(v => OnValueChanged(v))" />
+            </MudItem>
+
+            <!-- Unit selection -->
+            <MudItem xs="12" sm="4">
+                <MudSelect T="ProductMesurementOption"
+                           @bind-Value="AddedPaint.UnitMeasurement"
+                           Label="Unit"
+                           Dense="true">
                     @foreach (var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
                     {
-                        <MudSelectItem T="ProductMesurementOption" Value="@unit">
-                            @unit.ToString()
-                        </MudSelectItem>
+                        <MudSelectItem T="ProductMesurementOption" Value="@unit">@unit</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
+
+            <!-- Display calculated amount -->
+            <MudItem xs="12">
+                <MudText Typo="Typo.h6" Color="Color.Info" Class="text-end">
+                    Total Amount: ₱ @AddedPaint.TotalCost.ToString("N2")
+                </MudText>
+            </MudItem>
+
         </MudGrid>
     </DialogContent>
+
     <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Default" Size="Size.Small" OnClick="Cancel">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick="Add" Disabled="!IsValid" >Add</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" Size="Size.Small" OnClick="Cancel">
+            Cancel
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick="Add" Disabled="!IsValid">
+            Add
+        </MudButton>
     </DialogActions>
 </MudDialog>
