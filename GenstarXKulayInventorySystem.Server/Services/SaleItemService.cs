@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -98,7 +99,7 @@ public class SaleItemService:ISaleItemService
                 return false;
             }
             var saleItem = _mapper.Map<SaleItem>(saleItemDto);
-            saleItem.CreatedAt = DateTime.UtcNow;
+            saleItem.CreatedAt = PhilippineTime.Now;
             saleItem.CreatedBy = GetCurrentUsername();
             _ = await _context.SaleItems.AddAsync(saleItem);
             int result = await _context.SaveChangesAsync();
@@ -121,7 +122,7 @@ public class SaleItemService:ISaleItemService
         try
         {
             var saleItems = _mapper.Map<SaleItem>(saleItem);
-            saleItem.UpdatedAt = DateTime.UtcNow;
+            saleItem.UpdatedAt = PhilippineTime.Now;
             saleItem.UpdatedBy = GetCurrentUsername();
             _ = _context.SaleItems.Update(saleItems);
             int result = await _context.SaveChangesAsync();
