@@ -8,12 +8,14 @@
         <MudTh>Item Name</MudTh>
         <MudTh>Size</MudTh>
         <MudTh>Unit</MudTh>
+        <MudTh>Amount</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Brand">@context.BrandName</MudTd>
         <MudTd DataLabel="Paint Name">@context.ProductName</MudTd>
         <MudTd DataLabel="Size">@context.Size</MudTd>
         <MudTd DataLabel="Unit">@context.UnitMeasurement</MudTd>
+        <MudTd>@context.Amount</MudTd>
     </RowTemplate>
     <NoRecordsContent>
         <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Warning">No Items Added!</MudText>
