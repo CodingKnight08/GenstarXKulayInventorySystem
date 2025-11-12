@@ -11,7 +11,7 @@
                 <MudTh>Quantity</MudTh>
                 <MudTh>Paint Category</MudTh>
                 <MudTh>Price</MudTh>
-                <MudTh>Description</MudTh>
+                <MudTh>Item Amount</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -20,8 +20,8 @@
                 <MudTd>@context.UnitMeasurement</MudTd>
                 <MudTd>@context.Quantity</MudTd>
                 <MudTd>@context.PaintCategory</MudTd>
-                <MudTd>@context.ItemPrice</MudTd>
-                <MudTd>@context.Description</MudTd>
+                <MudTd>₱ @String.Format("{0:N2}", context.ItemPrice)</MudTd>
+                <MudTd>₱ @String.Format("{0:N2}", context.TotalPrice)</MudTd>
                 <MudTd>
                     <MudIconButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(() => RemoveSaleItem(context))" />
                 </MudTd>
@@ -32,6 +32,24 @@
                     No Sale Item Products
                 </MudText>
             </NoRecordsContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[] { 5, 10, 20 }" />
+            </PagerContent>
         </MudTable>
+        
+    </MudCard>
+    <MudCard Elevation="0" Class="d-flex flex-row align-items-center justify-content-end mt-4">
+        <MudItem sm="4">
+            <MudNumericField T="decimal"
+                             HideSpinButtons="true"
+                             Value="TotalAmount"
+                             FullWidth="false"
+                             Format="N2"
+                             Adornment="Adornment.Start"
+                             AdornmentText="₱"
+                             AdornmentColor="Color.Default"
+                             Label="Total Amount" Variant="Variant.Text" />
+        </MudItem>
+        
     </MudCard>
 </MudCard>

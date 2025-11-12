@@ -14,7 +14,7 @@ public partial class GetAllSaleItemsToBeAdded
     
     protected List<SaleItemDto> SaleItemsToBeAdded { get; set; } = new List<SaleItemDto>();
     protected bool IsLoading { get; set; } = false;
-
+    protected decimal TotalAmount { get; set; } = 0;
     protected async Task AddSaleItem()
     {
         var dialog = await Dialog.ShowAsync<CreateSaleItem>("Add Sale Item",
@@ -46,7 +46,7 @@ public partial class GetAllSaleItemsToBeAdded
                     if (!exists)
                     {
                         SaleItemsToBeAdded.Add(saleItem);
-                        StateHasChanged();
+                       
                         await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
                         SnackBar.Add("Item has been added!", Severity.Success);
                     }
@@ -54,6 +54,8 @@ public partial class GetAllSaleItemsToBeAdded
                     {
                         SnackBar.Add("Item already exists in the list!", Severity.Warning);
                     }
+                    TotalAmount = SaleItemsToBeAdded.Sum(x => x.TotalPrice);
+                    StateHasChanged();
                 }
             }
         }
@@ -72,6 +74,7 @@ public partial class GetAllSaleItemsToBeAdded
             if (t.Result == true)
             {
                 SaleItemsToBeAdded.Remove(item);
+                TotalAmount = SaleItemsToBeAdded.Sum(x => x.TotalPrice);
                 StateHasChanged();
                 await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
                 SnackBar.Add($"'{item.ItemName}' removed successfully.", Severity.Info);
