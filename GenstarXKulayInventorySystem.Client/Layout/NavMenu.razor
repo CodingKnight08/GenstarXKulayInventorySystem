@@ -25,8 +25,12 @@
         <MudNavLink Href="/purchase-order" Match="NavLinkMatch.Prefix">Purchase Orders</MudNavLink>
         <MudNavLink Href="/received-order" Match="NavLinkMatch.Prefix">Recieve Orders</MudNavLink>
     </MudNavGroup>
-  
+   <MudNavGroup Title="Request Orders" Icon="@Icons.Material.Filled.DriveFileMove" IconColor="@Color.Tertiary">
+        <MudNavLink Href="/requestitems" Match="NavLinkMatch.Prefix">Request Items</MudNavLink>    
+        <MudNavLink Href="/receiveitems" Match="NavLinkMatch.Prefix">Receive Items</MudNavLink>
+    </MudNavGroup>
     <MudNavLink Href="/reports" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="@Color.Secondary">Reports</MudNavLink>
+    <MudNavLink Href="/documents" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.FactCheck" IconColor="@Color.Surface">Documents</MudNavLink>
     <MudNavGroup Icon="@Icons.Material.Filled.Groups" IconColor="@Color.Tertiary" Title="Group">
         <MudNavLink Href="/suppliers" Match="NavLinkMatch.Prefix">Suppliers</MudNavLink>
         <MudNavLink Href="/clients" Match="NavLinkMatch.Prefix">Clients</MudNavLink>
