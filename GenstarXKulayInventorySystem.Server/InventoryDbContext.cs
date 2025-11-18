@@ -180,6 +180,42 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(dsr => dsr.LandedCost).HasColumnType("decimal(18,2)");
             entity.Property(dsr => dsr.GrossProfit).HasColumnType("decimal(18,2)");
         });
+        modelBuilder.Entity<RequestProductItem>(entity =>
+        {
+            entity.HasOne(rpi => rpi.Product)
+          .WithMany()
+          .HasForeignKey(rpi => rpi.ProductId)
+          .OnDelete(DeleteBehavior.SetNull);
+
+
+            entity.Property(rpi => rpi.Branch).HasConversion<int>();
+            entity.Property(rpi => rpi.SourceProduct).HasConversion<int>();
+
+         
+
+            entity.Property(rpi => rpi.ProductName)
+                  .HasMaxLength(200)
+                  .IsRequired(false);
+           
+        });
+
+        modelBuilder.Entity<PullOutRequest>(entity =>
+        {
+            entity.Property(p => p.Note)
+                  .HasMaxLength(500);
+
+            entity.Property(p => p.BranchRequestee)
+                  .HasConversion<int>();
+
+            entity.Property(p => p.BranchRequestedTo)
+                  .HasConversion<int>();
+
+            entity.HasMany(p => p.RequestProductItems)
+                  .WithOne(rpi => rpi.PullOutRequest)
+                  .HasForeignKey(rpi => rpi.PullOutRequestId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
 
         base.OnModelCreating(modelBuilder);
     }
@@ -203,6 +239,8 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<DailySaleReport> DailySaleReports { get; set; }
     public DbSet<Registration> Registrations { get; set; }
     public DbSet<OperationsProvider> OperationsProviders { get; set; }
+    public DbSet<RequestProductItem> RequestProductItems { get; set; }
+    public DbSet<PullOutRequest> PullOutRequests { get; set; }
 
     public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {
