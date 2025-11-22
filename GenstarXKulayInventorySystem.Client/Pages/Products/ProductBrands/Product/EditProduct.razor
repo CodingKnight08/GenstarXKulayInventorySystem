@@ -26,17 +26,18 @@ else
             <MudGrid Spacing="2">
                 <!-- Product Name -->
                 <MudItem xl="12">
-                    <MudTextField @bind-Value="UpdatedProduct.ProductName"
+                    <MudTextField @bind-Value="UpdatedProduct.MasterProduct.ProductName"
                                   Label="Product Name"
                                   Required="true"
                                   Margin="Margin.Dense"
                                   FullWidth="true"
+                                  ReadOnly=true
                                   RequiredError="Product Name Required" />
                 </MudItem>
 
                 <!-- Description -->
                 <MudItem xs="12" sm="12">
-                    <MudTextField @bind-Value="UpdatedProduct.Description"
+                    <MudTextField @bind-Value="UpdatedProduct.MasterProduct.Description"
                                   Label="Description"
                                   Margin="Margin.Dense"
                                   Lines="3"
@@ -77,7 +78,7 @@ else
 
 
                 </MudItem>
-                <!-- Category Dropdown -->
+               @*  <!-- Category Dropdown -->
                 <MudItem xs="12" sm="6">
                     <MudSelect T="int?"
                                Label="Category"
@@ -95,7 +96,7 @@ else
                                   Label="Color"
                                   Margin="Margin.Dense"
                                   FullWidth="true" />
-                </MudItem>
+                </MudItem>*@
                 <MudItem xs="12" lg="6" sm="6">
                     <MudNumericField @bind-Value="UpdatedProduct.ActualQuantity"
                                      Label="Quantity"
@@ -103,7 +104,7 @@ else
                                      FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" sm="6" lg="6">
-                    <MudNumericField T="decimal"
+                    <MudNumericField T="decimal?"
                                      @bind-Value="@UpdatedProduct.CostPrice"
                                      Label="Cost Price"
                                      Adornment="Adornment.Start"
@@ -131,7 +132,7 @@ else
 
                 <MudItem xs="12" sm="6" lg="6">
                     <MudNumericField T="decimal?"
-                                     @bind-Value="@UpdatedProduct.WholesalePrice"
+                                     @bind-Value="@UpdatedProduct.WholeSalePrice"
                                      Label="Wholesale Price"
                                      Adornment="Adornment.Start"
                                      AdornmentText="₱"
@@ -143,7 +144,7 @@ else
                 </MudItem>
 
                 <MudItem xs="12" lg="6">
-                    <MudTextField @bind-Value="UpdatedProduct.Packaging" Label="Packaging" Margin=Margin.Dense Lines="1" Placeholder="e.g (1x12)" />
+                    <MudTextField @bind-Value="UpdatedProduct.MasterProduct.Packaging" Label="Packaging" Margin=Margin.Dense Lines="1" Placeholder="e.g (1x12)" />
                 </MudItem>
                 <MudItem xs="12" sm="6" lg="6">
                     <MudSelect T="BranchOption" @bind-Value="UpdatedProduct.Branch" Label="Branch" ReadOnly=true>
