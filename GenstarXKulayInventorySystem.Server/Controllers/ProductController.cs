@@ -44,7 +44,7 @@ public class ProductController : ControllerBase
         }
     }
     [HttpGet("paged/by/{brandId:int}/{branch}")]
-    public async Task<ActionResult<ProductPageResultDto<ProductDto>>> GetProductsByBrandAndBranchPaged(
+    public async Task<ActionResult<BranchProductPageResultDto<BranchProductDto>>> GetProductsByBrandAndBranchPaged(
     int brandId,
     BranchOption branch,
     [FromQuery] int skip = 0,
@@ -55,12 +55,12 @@ public class ProductController : ControllerBase
             var products = await _productService.GetAllProductByBrandAndBranch(brandId, branch);
 
             if (products == null || !products.Any())
-                return new ProductPageResultDto<ProductDto> { Products = new(), TotalCount = 0 };
+                return new BranchProductPageResultDto<BranchProductDto > { Products = new(), TotalCount = 0 };
 
             var total = products.Count;
             var pagedItems = products.Skip(skip).Take(take).ToList();
 
-            return Ok(new ProductPageResultDto<ProductDto>
+            return Ok(new BranchProductPageResultDto<BranchProductDto>
             {
                 Products = pagedItems,
                 TotalCount = total
@@ -88,14 +88,14 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet("all/products/by/{brandId:int}/{branch}")]
-    public async Task<ActionResult<List<ProductDto>>> GetAllProductByBrandAndBranch(int brandId,BranchOption branch, [FromQuery] int skip = 0,[FromQuery] int take = 10)
+    public async Task<ActionResult<List<BranchProductDto>>> GetAllProductByBrandAndBranch(int brandId,BranchOption branch)
     {
         try
         {
-            var products = await _productService.GetAllProductsAsyncByBranch(brandId, branch, skip, take);
+            var products = await _productService.GetAllProductByBrandAndBranch(brandId, branch);
 
             if (products == null || !products.Any())
-                return Ok(new List<ProductDto>());
+                return Ok(new List<BranchProductDto>());
 
             return Ok(products);
         }
@@ -108,7 +108,7 @@ public class ProductController : ControllerBase
 
     // GET: api/products/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProductDto?>> GetById(int id)
+    public async Task<ActionResult<BranchProductDto?>> GetById(int id)
     {
         var product = await _productService.GetByIdAsync(id);
         if (product == null)
@@ -138,7 +138,7 @@ public class ProductController : ControllerBase
 
     // PUT: api/products/5
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, ProductDto dto)
+    public async Task<IActionResult> Update(int id, BranchProductDto dto)
     {
         if (id != dto.Id)
             return BadRequest();
