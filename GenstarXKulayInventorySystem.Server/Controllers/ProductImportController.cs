@@ -20,7 +20,75 @@ public class ProductImportController : ControllerBase
     {
         _config = config;
     }
+    [HttpPost("upload-brands")]
+    public async Task<IActionResult> ImportCsv(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
 
+        var connectionString = _config.GetConnectionString("DefaultConnection");
+
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HeaderValidated = null,
+            MissingFieldFound = null
+        };
+
+        using var stream = file.OpenReadStream();
+        using var reader = new StreamReader(stream);
+        using var csv = new CsvReader(reader, config);
+        var records = csv.GetRecords<dynamic>();
+
+        await using var conn = new SqlConnection(connectionString);
+        await conn.OpenAsync();
+
+        int rowNum = 2; // header row = 1
+
+        foreach (var record in records)
+        {
+            try
+            {
+                var d = (IDictionary<string, object>)record;
+
+                // Read Id
+                if (!d.TryGetValue("Id", out var idRaw) || !int.TryParse(idRaw?.ToString(), out var brandId))
+                    throw new Exception("CSV must contain a valid Id column.");
+
+                // Read BrandName (required)
+                var brandName = d.TryGetValue("BrandName", out var name) ? name?.ToString()?.Trim() : null;
+                if (string.IsNullOrEmpty(brandName))
+                    throw new Exception("BrandName is required.");
+
+                // Read Description (optional)
+                var description = d.TryGetValue("Description", out var desc) ? desc?.ToString()?.Trim() : "";
+
+                // Insert ProductBrand using ID from CSV
+                await using var cmd = new SqlCommand(@"
+                    SET IDENTITY_INSERT ProductBrands ON;
+
+                    INSERT INTO ProductBrands
+                    (Id, BrandName, Description, CreatedAt, CreatedBy, IsDeleted)
+                    VALUES (@Id, @BrandName, @Description, GETDATE(), 'ITAdministrator', 0);
+
+                    SET IDENTITY_INSERT ProductBrands OFF;
+                ", conn);
+
+                cmd.Parameters.AddWithValue("@Id", brandId);
+                cmd.Parameters.AddWithValue("@BrandName", brandName);
+                cmd.Parameters.AddWithValue("@Description", description ?? "");
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error in CSV row {rowNum}: {ex.Message}");
+            }
+
+            rowNum++;
+        }
+
+        return Ok("Product brands imported successfully.");
+    }
     [HttpPost("upload")]
     public async Task<IActionResult> Upload(IFormFile file)
     {
@@ -128,6 +196,75 @@ public class ProductImportController : ControllerBase
     // ======================
     // 📗 CSV Import Method
     // ======================
+    //private async Task ImportCsvAsync(string filePath, string connectionString)
+    //{
+    //    var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+    //    {
+    //        HeaderValidated = null,
+    //        MissingFieldFound = null,
+    //    };
+
+    //    using var reader = new StreamReader(filePath);
+    //    using var csv = new CsvReader(reader, config);
+    //    var records = csv.GetRecords<dynamic>();
+
+    //    await using var conn = new SqlConnection(connectionString);
+    //    await conn.OpenAsync();
+
+    //    int rowNum = 2; // row 1 = header
+
+    //    foreach (var record in records)
+    //    {
+    //        try
+    //        {
+    //            var d = (IDictionary<string, object>)record;
+
+    //            // Convert BrandId (nullable)
+    //            int? brandId = null;
+    //            if (d.TryGetValue("BrandId", out var b) && int.TryParse(b?.ToString(), out var parsedBrand))
+    //                brandId = parsedBrand;
+
+    //            // If BrandId exists, validate it
+    //            if (brandId.HasValue)
+    //            {
+    //                await using var checkCmd = new SqlCommand(@"
+    //                SELECT COUNT(*) FROM ProductBrands WHERE Id = @BrandId
+    //            ", conn);
+
+    //                checkCmd.Parameters.AddWithValue("@BrandId", brandId.Value);
+    //                var exists = (int)await checkCmd.ExecuteScalarAsync() > 0;
+
+    //                if (!exists)
+    //                    throw new Exception($"BrandId {brandId.Value} does not exist in ProductBrands.");
+    //            }
+
+    //            // Insert only model fields
+    //            await using var cmd = new SqlCommand(@"
+    //            INSERT INTO GlobalProducts
+    //            (BrandId, ProductName, Description, Packaging, CreatedAt, IsDeleted, CreatedBy)
+    //            VALUES (@BrandId, @ProductName, @Description, @Packaging, GETDATE(), 0, 'ITAdministrator');
+    //        ", conn);
+
+    //            cmd.Parameters.AddWithValue("@BrandId", (object?)brandId ?? DBNull.Value);
+    //            cmd.Parameters.AddWithValue("@ProductName",
+    //                d.TryGetValue("ProductName", out var name) ? name?.ToString() ?? "" : "");
+
+    //            cmd.Parameters.AddWithValue("@Description",
+    //                d.TryGetValue("Description", out var desc) ? desc?.ToString() ?? "" : "");
+
+    //            cmd.Parameters.AddWithValue("@Packaging",
+    //                d.TryGetValue("Packaging", out var pack) ? pack?.ToString() ?? "" : "");
+
+    //            await cmd.ExecuteNonQueryAsync();
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            throw new Exception($"Error in CSV row {rowNum}: {ex.Message}");
+    //        }
+
+    //        rowNum++;
+    //    }
+    //}
     private async Task ImportCsvAsync(string filePath, string connectionString)
     {
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
@@ -143,56 +280,113 @@ public class ProductImportController : ControllerBase
         await using var conn = new SqlConnection(connectionString);
         await conn.OpenAsync();
 
-        int rowNum = 2; // assuming header is row 1
+        int rowNum = 2;
+
         foreach (var record in records)
         {
             try
             {
                 var d = (IDictionary<string, object>)record;
-                var brandId = ConvertToInt(d, "BrandId");
 
-                // ✅ Check if BrandId exists
-                await using var checkCmd = new SqlCommand("SELECT COUNT(*) FROM ProductBrands WHERE Id=@BrandId", conn);
-                checkCmd.Parameters.AddWithValue("@BrandId", brandId);
-                var exists = (int)await checkCmd.ExecuteScalarAsync() > 0;
-                if (!exists)
+                // -----------------------------
+                // 1) Read CSV Id → MasterProductId
+                // -----------------------------
+                if (!d.TryGetValue("Id", out var idRaw) || !int.TryParse(idRaw?.ToString(), out var masterProductId))
+                    throw new Exception("CSV must contain a valid Id column for MasterProductId.");
+
+                // -----------------------------
+                // 2) BrandId validation (optional)
+                // -----------------------------
+                int? brandId = null;
+                if (d.TryGetValue("BrandId", out var b) && int.TryParse(b?.ToString(), out var parsedBrand))
+                    brandId = parsedBrand;
+
+                if (brandId.HasValue)
                 {
-                    throw new Exception($"BrandId {brandId} does not exist in ProductBrands. CSV Row: {rowNum}");
+                    await using var checkCmd = new SqlCommand(
+                        "SELECT COUNT(*) FROM ProductBrands WHERE Id = @BrandId",
+                        conn
+                    );
+                    checkCmd.Parameters.AddWithValue("@BrandId", brandId.Value);
+
+                    if ((int)await checkCmd.ExecuteScalarAsync() == 0)
+                        throw new Exception($"BrandId {brandId} does not exist.");
                 }
 
-                await using var cmd = new SqlCommand(@"
-                    INSERT INTO Products
-                    (BrandId, ProductName, CostPrice, RetailPrice, WholesalePrice, Size,
-                     Quantity, Branch, ProductMesurementOption, ActualQuantity, BufferStocks,
-                     Description, Packaging, CreatedAt, IsDeleted, CreatedBy)
-                    VALUES (@BrandId, @ProductName, @CostPrice, @RetailPrice, @WholesalePrice, @Size,
-                            @Quantity, @Branch, @ProductMesurementOption, @ActualQuantity, @BufferStocks,
-                            @Description, @Packaging, GETDATE(), 0, 'ITAdministrator');
-                ", conn);
+                // -----------------------------
+                // 3) Insert GlobalProduct (Master)
+                // -----------------------------
+                await using var insertMaster = new SqlCommand(@"
+                SET IDENTITY_INSERT GlobalProducts ON;
 
-                cmd.Parameters.AddWithValue("@BrandId", brandId);
-                cmd.Parameters.AddWithValue("@ProductName", d.TryGetValue("ProductName", out var name) ? name?.ToString() ?? "" : "");
-                cmd.Parameters.AddWithValue("@Description", d.TryGetValue("Description", out var description) ? description?.ToString() ?? "" : "");
-                cmd.Parameters.AddWithValue("@CostPrice", ConvertToDecimal(d, "CostPrice"));
-                cmd.Parameters.AddWithValue("@RetailPrice", ConvertToDecimal(d, "RetailPrice"));
-                cmd.Parameters.AddWithValue("@WholesalePrice", ConvertToDecimal(d, "WholeSalePrice"));
-                cmd.Parameters.AddWithValue("@Size", ConvertToDecimal(d, "Size"));
-                cmd.Parameters.AddWithValue("@Quantity", ConvertToInt(d, "Quantity"));
-                cmd.Parameters.AddWithValue("@Branch", ConvertToInt(d, "Branch"));
-                cmd.Parameters.AddWithValue("@ProductMesurementOption", MapMeasurement(d.TryGetValue("ProductMesurementOption", out var m) ? m?.ToString() : null));
-                cmd.Parameters.AddWithValue("@ActualQuantity", ConvertToDecimal(d, "ActualQuantity"));
-                cmd.Parameters.AddWithValue("@BufferStocks", ConvertToDecimal(d, "BufferStocks"));
-                cmd.Parameters.AddWithValue("@Packaging", d.TryGetValue("Packaging", out var p) ? p?.ToString() ?? "" : "");
+                INSERT INTO GlobalProducts
+                (Id, BrandId, ProductName, Description, Packaging, CreatedAt, CreatedBy, IsDeleted)
+                VALUES (@Id, @BrandId, @ProductName, @Description, @Packaging,
+                        GETDATE(), 'ITAdministrator', 0);
 
-                await cmd.ExecuteNonQueryAsync();
+                SET IDENTITY_INSERT GlobalProducts OFF;
+            ", conn);
+
+                insertMaster.Parameters.AddWithValue("@Id", masterProductId);
+                insertMaster.Parameters.AddWithValue("@BrandId", (object?)brandId ?? DBNull.Value);
+                insertMaster.Parameters.AddWithValue("@ProductName", d.TryGetValue("ProductName", out var name) ? name?.ToString() ?? "" : "");
+                insertMaster.Parameters.AddWithValue("@Description", d.TryGetValue("Description", out var desc) ? desc?.ToString() ?? "" : "");
+                insertMaster.Parameters.AddWithValue("@Packaging", d.TryGetValue("Packaging", out var pack) ? pack?.ToString() ?? "" : "");
+
+                await insertMaster.ExecuteNonQueryAsync();
+
+                // -----------------------------
+                // 4) Insert BranchProduct (Child)
+                // -----------------------------
+                await using var insertBranch = new SqlCommand(@"
+                INSERT INTO BranchProducts
+                (MasterProductId, Branch, CostPrice, RetailPrice, WholeSalePrice, Size,
+                 ActualQuantity, BufferStocks, ProductMesurementOption, CreatedAt, CreatedBy, IsDeleted)
+                VALUES
+                (@MasterProductId, @Branch, @CostPrice, @RetailPrice, @WholeSalePrice, @Size,
+                 @ActualQuantity, @BufferStocks, @ProductMesurementOption, GETDATE(), 'ITAdministrator', 0);
+                 ", conn);
+
+                // MasterProductId
+                insertBranch.Parameters.AddWithValue("@MasterProductId", masterProductId);
+
+                // BranchOption enum
+                insertBranch.Parameters.AddWithValue("@Branch",
+                    d.TryGetValue("Branch", out var branch) && int.TryParse(branch?.ToString(), out var branchVal)
+                    ? branchVal
+                    : 0
+                );
+
+                // Prices and quantities
+                insertBranch.Parameters.AddWithValue("@CostPrice", ConvertToDecimal(d, "CostPrice"));
+                insertBranch.Parameters.AddWithValue("@RetailPrice", ConvertToDecimal(d, "RetailPrice"));
+                insertBranch.Parameters.AddWithValue("@WholeSalePrice", ConvertToDecimal(d, "WholeSalePrice"));
+                insertBranch.Parameters.AddWithValue("@Size", ConvertToDecimal(d, "Size"));
+                insertBranch.Parameters.AddWithValue("@ActualQuantity", ConvertToDecimal(d, "ActualQuantity"));
+                insertBranch.Parameters.AddWithValue("@BufferStocks", ConvertToDecimal(d, "BufferStocks"));
+
+                // ProductMesurementOption (read directly as int, default to 0)
+                int productMeasurement = 0;
+                if (d.TryGetValue("ProductMesurementOption", out var measure) && int.TryParse(measure?.ToString(), out var parsed))
+                {
+                    productMeasurement = parsed;
+                }
+                insertBranch.Parameters.AddWithValue("@ProductMesurementOption", productMeasurement);
+
+                await insertBranch.ExecuteNonQueryAsync();
+
+
             }
             catch (Exception ex)
             {
                 throw new Exception($"Error in CSV row {rowNum}: {ex.Message}");
             }
+
             rowNum++;
         }
     }
+
+
 
     // ======================
     // 🔧 Helper Methods
@@ -209,11 +403,6 @@ public class ProductImportController : ControllerBase
         return decimal.TryParse(value, out var result) ? result : 0;
     }
 
-    private int ConvertToInt(IDictionary<string, object> d, string key)
-    {
-        return d.TryGetValue(key, out var value) && int.TryParse(value?.ToString(), out var result)
-            ? result : 0;
-    }
 
     private decimal ConvertToDecimal(IDictionary<string, object> d, string key)
     {
@@ -248,4 +437,7 @@ public class ProductImportController : ControllerBase
             _ => (int)ProductMesurementOption.Piece
         };
     }
+
+
+    
 }
