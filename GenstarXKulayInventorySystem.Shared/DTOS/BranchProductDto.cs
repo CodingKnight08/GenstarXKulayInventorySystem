@@ -14,4 +14,5 @@ public class BranchProductDto:BaseEntityDto
     public decimal? Size { get; set; } = 0;
     public decimal ActualQuantity { get; set; } = 0;
     public decimal BufferStocks { get; set; } = 0;
+    public ProductMesurementOption? ProductMesurementOption { get; set; }
 }
