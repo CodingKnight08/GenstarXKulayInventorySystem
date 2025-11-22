@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251121232532_MasterProduct")]
+    partial class MasterProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -449,6 +452,9 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("ProductBrandId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ProductName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -462,7 +468,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BrandId");
+                    b.HasIndex("ProductBrandId");
 
                     b.ToTable("GlobalProducts");
                 });
@@ -527,6 +533,9 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int>("Branch")
                         .HasColumnType("int");
 
+                    b.Property<int?>("BrandId")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("BufferStocks")
                         .HasColumnType("decimal(18,2)");
 
@@ -584,6 +593,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
 
                     b.HasIndex("ProductCategoryId");
 
@@ -1441,19 +1452,25 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.GlobalProduct", b =>
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductBrand", "ProductBrand")
-                        .WithMany("GlobalProducts")
-                        .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany()
+                        .HasForeignKey("ProductBrandId");
 
                     b.Navigation("ProductBrand");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>
                 {
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductBrand", "ProductBrand")
+                        .WithMany("Products")
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductCategory", "ProductCategory")
                         .WithMany("Products")
                         .HasForeignKey("ProductCategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ProductBrand");
 
                     b.Navigation("ProductCategory");
                 });
@@ -1622,7 +1639,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.ProductBrand", b =>
                 {
-                    b.Navigation("GlobalProducts");
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.ProductCategory", b =>
