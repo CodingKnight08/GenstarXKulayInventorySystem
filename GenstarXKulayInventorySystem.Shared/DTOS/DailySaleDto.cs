@@ -25,5 +25,6 @@ public class DailySaleDto:BaseEntityDto
     public bool IsPaid { get; set; }
     public bool HasDiscount { get; set; }
     public bool IsApproved { get; set; }
+    public bool IsChargedSales { get; set; }
     public List<SaleItemDto> SaleItems { get; set; } = new List<SaleItemDto>();
 }

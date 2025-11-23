@@ -9,8 +9,8 @@ public class SaleItemDto:BaseEntityDto
     public int DailySaleId { get; set; }
     [JsonIgnore]
     public DailySaleDto? DailySale { get; set; }
-    public int? ProductId { get; set; }
-    public ProductDto? Product { get; set; }
+    public int? BranchProductId { get; set; }
+    public BranchProductDto? BranchProduct { get; set; }
     public string ItemName { get; set; } = string.Empty;
     public decimal? Size { get; set; } = 1;
     public string Description { get; set; } = string.Empty;

@@ -128,19 +128,27 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(si => si.DailySaleId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(si => si.Product)
-                  .WithMany(p => p.SaleItems)
-                  .HasForeignKey(si => si.ProductId)
-                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(si => si.BranchProduct)
+                 .WithMany(bp => bp.SaleItems)
+                 .HasForeignKey(si => si.BranchProductId)
+                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Decimal fields
             entity.Property(si => si.ItemPrice).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Size).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Quantity).HasColumnType("decimal(18,2)");
 
-            entity.Property(si => si.BranchPurchased).HasConversion<int>();
-            entity.Property(si => si.UnitMeasurement).HasConversion<int>();
-            entity.Property(si => si.ProductPricingOption).HasConversion<int>();
-            entity.Property(si => si.PaintCategory).HasConversion<int>();
+            entity.Property(si => si.BranchPurchased)
+                  .HasConversion<int>();
+
+            entity.Property(si => si.UnitMeasurement)
+                  .HasConversion<int>();
+
+            entity.Property(si => si.ProductPricingOption)
+                  .HasConversion<int>();
+
+            entity.Property(si => si.PaintCategory)
+                  .HasConversion<int>();
         });
 
         modelBuilder.Entity<Model.Client>(entity =>
@@ -206,7 +214,10 @@ public class InventoryDbContext: IdentityDbContext<User>
         modelBuilder.Entity<BranchProduct>(entity =>
         {
             entity.Property(bp => bp.Branch)
-                  .HasConversion<int>(); 
+                  .HasConversion<int>();
+
+            entity.Property(bp => bp.ProductMesurementOption)
+                  .HasConversion<int>();
 
             entity.Property(bp => bp.CostPrice).HasColumnType("decimal(18,2)");
             entity.Property(bp => bp.RetailPrice).HasColumnType("decimal(18,2)");
@@ -215,7 +226,12 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(bp => bp.ActualQuantity).HasColumnType("decimal(18,2)");
             entity.Property(bp => bp.BufferStocks).HasColumnType("decimal(18,2)");
 
+            entity.HasMany(bp => bp.SaleItems)
+                  .WithOne(si => si.BranchProduct)
+                  .HasForeignKey(si => si.BranchProductId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
+
         modelBuilder.Entity<RequestProductItem>(entity =>
         {
             entity.HasOne(rpi => rpi.Product)
