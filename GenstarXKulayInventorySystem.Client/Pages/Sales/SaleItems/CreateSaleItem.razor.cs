@@ -19,8 +19,8 @@ public partial class CreateSaleItem
     [Inject] protected UserState UserState { get; set; } = default!;
     protected SaleItemDto SaleItemDto { get; set; } = new SaleItemDto();
     protected List<ProductBrandDto> ProductBrands { get; set; } = new List<ProductBrandDto>();
-    protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
-    protected ProductDto? SelectedProductFromList { get; set; } = new ProductDto();
+    protected List<BranchProductDto> Products { get; set; } = new List<BranchProductDto>();
+    protected BranchProductDto? SelectedProductFromList { get; set; } = new BranchProductDto();
     protected List<InvolvePaintsDto> Paints { get; set; } = new List<InvolvePaintsDto>();
     protected string BrandName { get; set; } = string.Empty;
     protected ProductBrandDto? SelectedBrand { get; set; } = new ProductBrandDto();
@@ -68,13 +68,13 @@ public partial class CreateSaleItem
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                Products = new List<ProductDto>();
+                Products = new List<BranchProductDto>();
                 Snackbar.Add("Products for the selected brand is low.", Severity.Warning);
                 return;
             }
             response.EnsureSuccessStatusCode();
-            var products = await response.Content.ReadFromJsonAsync<List<ProductDto>>();
-            Products = products ?? new List<ProductDto>();
+            var products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>();
+            Products = products ?? new List<BranchProductDto>();
 
         }
         catch (Exception ex) { 
@@ -105,34 +105,36 @@ public partial class CreateSaleItem
     }
 
 
-    protected Task<IEnumerable<ProductDto>> SearchProductsDto(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<BranchProductDto>> SearchProductsDto(string value, CancellationToken cancellationToken)
     {
         if (Products is null || !Products.Any())
-            return Task.FromResult(Enumerable.Empty<ProductDto>());
+            return Task.FromResult(Enumerable.Empty<BranchProductDto>());
 
         var result = Products
-            .Where(p => string.IsNullOrWhiteSpace(value) ||
-                        p.ProductName.Contains(value, StringComparison.OrdinalIgnoreCase))
-            .GroupBy(p => p.Id)         
-            .Select(g => g.First());
+                  .Where(p => string.IsNullOrWhiteSpace(value) ||
+                              ((p.MasterProduct?.ProductName ?? string.Empty)
+                                  .Contains(value, StringComparison.OrdinalIgnoreCase)))
+                  .GroupBy(p => p.Id)
+                  .Select(g => g.First());
+
 
         return Task.FromResult(result);
     }
 
-    protected async Task OnProductSelectDto(ProductDto product)
+    protected async Task OnProductSelectDto(BranchProductDto product)
     {
         if (product is null)
         {
             SelectedProductFromList = null;
-            SaleItemDto.ProductId = null;
+            SaleItemDto.BranchProductId = null;
             SaleItemDto.ItemName = string.Empty;
             return;
         }
 
         SelectedProductFromList = product;
-        SelectedProduct = product.ProductName;
-        SaleItemDto.ProductId = product.Id;
-        SaleItemDto.ItemName = product.ProductName;
+        SelectedProduct = product.MasterProduct?.ProductName ?? string.Empty;
+        SaleItemDto.BranchProductId = product.Id;
+        SaleItemDto.ItemName = product.MasterProduct?.ProductName ?? string.Empty;
         SaleItemDto.UnitMeasurement = product.ProductMesurementOption.GetValueOrDefault();
 
         await OnWholeSaleChanged(IsWholeSale);
@@ -152,9 +154,9 @@ public partial class CreateSaleItem
         {
             BrandName = text;
             SelectedBrand = null;
-            Products = new List<ProductDto>();
+            Products = new List<BranchProductDto>();
             SelectedProduct = string.Empty;
-            SaleItemDto.ProductId = null;
+            SaleItemDto.BranchProductId = null;
             SaleItemDto.ItemName = string.Empty;
         }
     }
@@ -162,7 +164,7 @@ public partial class CreateSaleItem
     {
         SelectedProduct = text;
         SaleItemDto.ItemName = text;
-        SaleItemDto.ProductId = null;
+        SaleItemDto.BranchProductId = null;
         SelectedProductFromList = null;
         
     }
@@ -170,12 +172,12 @@ public partial class CreateSaleItem
    protected void OnPaintCategoryChange(PaintCategory paintType)
     {
         SaleItemDto.PaintCategory = paintType;
-        SaleItemDto.ProductId = null;
+        SaleItemDto.BranchProductId = null;
         SaleItemDto.ItemName = string.Empty;
         SelectedProduct = string.Empty;
         SaleItemDto.ItemPrice = 0;
         SelectedBrand = new ProductBrandDto();
-        Products = new List<ProductDto>();
+        Products = new List<BranchProductDto>();
         if(paintType == PaintCategory.Repack)
         {
             IsRepack = true;
@@ -190,7 +192,7 @@ public partial class CreateSaleItem
             SelectedBrand = null;
             Products.Clear();
             SelectedProductFromList = null;
-            SaleItemDto.ProductId = null;
+            SaleItemDto.BranchProductId = null;
             SaleItemDto.ItemName = string.Empty;
             return;
         }
@@ -200,7 +202,7 @@ public partial class CreateSaleItem
 
         // Clear old selections
         SelectedProductFromList = null;
-        SaleItemDto.ProductId = null;
+        SaleItemDto.BranchProductId = null;
         SaleItemDto.ItemName = string.Empty;
 
         await LoadBrandProducts();
@@ -214,11 +216,11 @@ public partial class CreateSaleItem
             ComputeNotBelowWholeSale();
         }
         SaleItemDto.ItemPrice = PriceItem;
-        if (SaleItemDto.ProductId != null && IsWholeSale && SaleItemDto.ItemPrice == SelectedProductFromList?.WholesalePrice.GetValueOrDefault())
+        if (SaleItemDto.BranchProductId != null && IsWholeSale && SaleItemDto.ItemPrice == SelectedProductFromList?.WholeSalePrice.GetValueOrDefault())
         {
             SaleItemDto.ProductPricingOption = ProductPricingOption.WholeSale;
         }
-        else if (SaleItemDto.ProductId !=null && !IsWholeSale && SaleItemDto.ItemPrice == SelectedProductFromList?.RetailPrice)
+        else if (SaleItemDto.BranchProductId !=null && !IsWholeSale && SaleItemDto.ItemPrice == SelectedProductFromList?.RetailPrice)
         {
             SaleItemDto.ProductPricingOption = ProductPricingOption.Retail;
         }
@@ -238,8 +240,8 @@ public partial class CreateSaleItem
     protected bool ShouldShowSaleType()
     {
         return SaleItemDto.PaintCategory == PaintCategory.Solid
-               && SelectedProductFromList?.WholesalePrice.HasValue == true
-               && SelectedProductFromList.WholesalePrice.Value > 0;
+               && SelectedProductFromList?.WholeSalePrice.HasValue == true
+               && SelectedProductFromList.WholeSalePrice.Value > 0;
 
     }
     protected async Task OnWholeSaleChanged(bool value)
@@ -250,7 +252,7 @@ public partial class CreateSaleItem
             return;
 
         if (IsWholeSale)
-            PriceItem = SelectedProductFromList.WholesalePrice.GetValueOrDefault();
+            PriceItem = SelectedProductFromList.WholeSalePrice.GetValueOrDefault();
         else
             PriceItem = SelectedProductFromList.RetailPrice.GetValueOrDefault();
 
@@ -311,12 +313,12 @@ public partial class CreateSaleItem
 
     protected void ComputeNotBelowWholeSale()
     {
-        if(SaleItemDto.ProductId != null && SelectedProductFromList != null && PriceItem > 0)
+        if(SaleItemDto.BranchProductId != null && SelectedProductFromList != null && PriceItem > 0)
         {
             decimal basePrice;
-            if (SelectedProductFromList.WholesalePrice.HasValue && SelectedProductFromList.WholesalePrice.Value > 0)
+            if (SelectedProductFromList.WholeSalePrice.HasValue && SelectedProductFromList.WholeSalePrice.Value > 0)
             {
-                basePrice = SelectedProductFromList.WholesalePrice ?? 0 * SaleItemDto.Size ?? 1 * SaleItemDto.Quantity;
+                basePrice = SelectedProductFromList.WholeSalePrice ?? 0 * SaleItemDto.Size ?? 1 * SaleItemDto.Quantity;
                 decimal retailBasePrice = SelectedProductFromList.RetailPrice * SaleItemDto.Size ?? 1 * SaleItemDto.Quantity;
                 if (SaleItemDto.TotalPrice < basePrice)
                 {
