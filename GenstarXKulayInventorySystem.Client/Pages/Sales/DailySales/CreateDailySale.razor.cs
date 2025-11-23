@@ -111,6 +111,7 @@ public partial class CreateDailySale
 
             Sale.HasDiscount = Sale.SaleItems.Any(x => x.HasDiscount);
             Sale.IsApproved = !Sale.HasDiscount;
+            Sale.IsChargedSales = Sale.PaymentType == null;
 
             var response = await HttpClient.PostAsJsonAsync("api/sales", Sale);
             response.EnsureSuccessStatusCode();
