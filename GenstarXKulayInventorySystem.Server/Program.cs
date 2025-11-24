@@ -33,7 +33,9 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 "https://localhost:7035",                     // Local dev client
-                "http://genstar-kulay-inventory.runasp.net"  // Hosted client
+                "http://genstar-kulay-inventory.runasp.net",
+                "http://twodragon88.premiumasp.net",
+                "http://twodragon88-corp.premiumasp.net"
             )
             .AllowAnyMethod()    // Allow GET, POST, PUT, DELETE, etc.
             .AllowAnyHeader()    // Allow any headers
