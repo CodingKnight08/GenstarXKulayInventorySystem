@@ -12,4 +12,5 @@ public class GlobalProduct:BaseEntity
     public string? Description { get; set; }
     public string Packaging { get; set; } = string.Empty;
     public ICollection<BranchProduct> BranchProducts { get; set; }  = new HashSet<BranchProduct>();
+    public ICollection<RequestProductItem> RequestItems { get; set; } = new HashSet<RequestProductItem>();
 }

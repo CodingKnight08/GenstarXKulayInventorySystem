@@ -48,7 +48,7 @@ public class AutoMapperProfile : Profile
                .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => DeserializeInvolvePaints(src.DataList)))
                .ReverseMap()
                .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => SerializeInvolvePaints(src.DataList)));
-        _ = CreateMap<GenstarXKulayInventorySystem.Server.Model.Client, ClientDto>()
+        _ = CreateMap<Model.Client, ClientDto>()
                  .ForMember(dest => dest.DailySales, opt => opt.MapFrom(src => src.DailySales))
                  .ReverseMap();
 
@@ -57,10 +57,8 @@ public class AutoMapperProfile : Profile
         _ = CreateMap<OperationsProvider, OperationsProviderDto>()
             .ForMember(dest => dest.Billings, opt => opt.Ignore()).ReverseMap();
 
-        _ = CreateMap<RequestProductItem, RequestProductItemDto>()
-            .ForMember(dest => dest.ProductCode, opt => opt.MapFrom(src => DeserializeRequestedProduct(src.ProductCode)))
-            .ReverseMap()
-            .ForMember(dest => dest.ProductCode, opt => opt.MapFrom(src => SerializeRequestedProduct(src.ProductCode)));
+        _ = CreateMap<RequestProductItem, RequestProductItemDto>().ReverseMap();
+
         _ = CreateMap<PullOutRequest, PullOutRequestDto>().ReverseMap();
         _ = CreateMap<GlobalProduct, GlobalProductDto>().ReverseMap();
         _ = CreateMap<BranchProduct, BranchProductDto>().ReverseMap();
@@ -78,13 +76,5 @@ public class AutoMapperProfile : Profile
         return JsonSerializer.Serialize(productData, options);
     }
 
-    private ProductRequestedDto? DeserializeRequestedProduct(string requestedProductJson)
-    {
-        ProductRequestedDto? requestedProduct = JsonSerializer.Deserialize<ProductRequestedDto>(requestedProductJson, options);
-        return requestedProduct;
-    } 
-    private string SerializeRequestedProduct(ProductRequestedDto requestedProduct)
-    {
-        return JsonSerializer.Serialize(requestedProduct, options);
-    }
+    
 }

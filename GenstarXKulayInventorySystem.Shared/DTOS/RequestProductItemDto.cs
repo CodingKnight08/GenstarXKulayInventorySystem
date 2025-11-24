@@ -13,14 +13,7 @@ public class RequestProductItemDto:BaseEntityDto
     public BranchOption Branch { get; set; }
     public BranchOption SourceProduct { get; set; } = BranchOption.Warehouse;
     public DateTime DateRecieved { get; set; }
-    public ProductRequestedDto ProductCode { get; set; } =  new ProductRequestedDto();
+    public string ProductCode { get; set; } = string.Empty;
     public string Remarks { get; set; } = string.Empty;
 }
 
-public class ProductRequestedDto
-{
-    public int ProductId { get; set; }
-    public string ProductName { get; set; } = string.Empty;
-    public int AvailableQuantity { get; set; } 
-
-    }

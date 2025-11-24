@@ -14,4 +14,6 @@ public class GlobalProductDto:BaseEntityDto
     public string Packaging { get; set; } = string.Empty;
     [JsonIgnore]
     public List<BranchProductDto> BranchProducts { get; set; } = new List<BranchProductDto>();
+    [JsonIgnore]
+    public List<RequestProductItemDto> RequestItems { get; set; } = new List<RequestProductItemDto>();
 }

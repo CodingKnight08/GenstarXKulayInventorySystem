@@ -234,22 +234,22 @@ public class InventoryDbContext: IdentityDbContext<User>
 
         modelBuilder.Entity<RequestProductItem>(entity =>
         {
-            entity.HasOne(rpi => rpi.Product)
-          .WithMany()
-          .HasForeignKey(rpi => rpi.ProductId)
-          .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(rpi => rpi.MasterProduct)
+                  .WithMany(g => g.RequestItems)
+                  .HasForeignKey(rpi => rpi.MasterProductId)
+                  .OnDelete(DeleteBehavior.SetNull);
 
+            entity.Property(rpi => rpi.Branch)
+                  .HasConversion<int>();
 
-            entity.Property(rpi => rpi.Branch).HasConversion<int>();
-            entity.Property(rpi => rpi.SourceProduct).HasConversion<int>();
-
-         
+            entity.Property(rpi => rpi.SourceProduct)
+                  .HasConversion<int>();
 
             entity.Property(rpi => rpi.ProductName)
                   .HasMaxLength(200)
                   .IsRequired(false);
-           
         });
+
 
         modelBuilder.Entity<PullOutRequest>(entity =>
         {

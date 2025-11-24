@@ -7,8 +7,8 @@ public class RequestProductItem:BaseEntity
     public int Id { get; set; }
     public int PullOutRequestId { get; set; }
     public PullOutRequest PullOutRequest { get; set; } = null!;
-    public int? ProductId { get; set; } //product Id sa requester
-    public Product? Product { get; set; }
+    public int? MasterProductId { get; set; }
+    public GlobalProduct? MasterProduct { get; set; } // just name
     public string ProductName { get; set; } = string.Empty;
     public int RequestedQuantity { get; set; }
     public int ReleasedQuantity { get; set; }
