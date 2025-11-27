@@ -1,11 +1,16 @@
-﻿using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+﻿using System.Text.Json.Serialization;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Shared.DTOS;
 public class RequestProductItemDto:BaseEntityDto
 {
     public int Id { get; set; }
-    public int? ProductId { get; set; } //product Id sa requester
-    public ProductDto? Product { get; set; }
+    public int PullOutRequestId { get; set; }
+    [JsonIgnore]
+    public PullOutRequestDto? PullOutRequest { get; set; } = null!;
+    public int? MasterProductId { get; set; }
+    [JsonIgnore]
+    public GlobalProductDto? MasterProduct { get; set; } // just name
     public string ProductName { get; set; } = string.Empty;
     public int RequestedQuantity { get; set; }
     public int ReleasedQuantity { get; set; }
