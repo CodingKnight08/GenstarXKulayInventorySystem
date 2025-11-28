@@ -9,9 +9,13 @@ namespace GenstarXKulayInventorySystem.Server.Controllers;
 public class PullOutController : ControllerBase
 {
     private readonly IPullOutRequestService _service;
-    public PullOutController(IPullOutRequestService service)
+    private readonly ILogger<PullOutController> _logger;
+    private readonly IRequestItemsService _itemsService;
+    public PullOutController(IPullOutRequestService service, ILogger<PullOutController> logger, IRequestItemsService itemsService)
     {
         _service = service;
+        _logger = logger;
+        _itemsService = itemsService;
     }
 
 
@@ -29,6 +33,15 @@ public class PullOutController : ControllerBase
         return Ok(requesters);
     }
 
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<PullOutRequestDto>> GetRequestById(int id)
+    {
+        var request = await _service.GetPullOutRequestById(id);
+        if (request == null)
+            return NotFound("Request not found");
+        return Ok(request);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreatePullOutRequest(PullOutRequestDto dto)
     {
@@ -43,6 +56,52 @@ public class PullOutController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> UpdatePullOutRequest(PullOutRequestDto dto)
+    {
+        try
+        {
+            var result = await _service.UpdatePullOutRequest(dto);
+            if (!result)
+                return BadRequest("Update failed");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+    [HttpPut("items")]
+    public async Task<IActionResult> UpdatePullOutRequestItems(List<RequestProductItemDto> dto)
+    {
+        try
+        {
+            var result = await _service.UpdateRequestItems(dto);
+            if (!result)
+                return BadRequest("Update failed");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+    [HttpPut("status")]
+    public async Task<IActionResult> UpdateRequestItems(RequestProductItemDto dto)
+    {
+        try
+        {
+            var result = await _itemsService.UpdateItemStatus(dto);
+            if (!result)
+                return BadRequest("Update failed");
+            return Ok(result);
+        }
+        catch(Exception ex)
+        {
+           return StatusCode(500, ex.Message);
         }
     }
 }

@@ -43,6 +43,23 @@ public class ProductController : ControllerBase
             return StatusCode(500, $"Error retrieving products: {ex.Message}");
         }
     }
+
+    [HttpGet("all/global/{brandId:int}")]
+    public async Task<ActionResult<List<GlobalProductDto>>> GetAllGlobalProducts(int brandId)
+    {
+        try
+        {
+            var products = await _productService.GetAllGlobalProductsByBrand(brandId);
+            if (products == null || !products.Any())
+                return Ok(new List<GlobalProductDto>());
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
+        }
+    }
+
     [HttpGet("paged/by/{brandId:int}/{branch}")]
     public async Task<ActionResult<BranchProductPageResultDto<BranchProductDto>>> GetProductsByBrandAndBranchPaged(
     int brandId,
