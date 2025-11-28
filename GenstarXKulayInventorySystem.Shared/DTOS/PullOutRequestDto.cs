@@ -9,6 +9,7 @@ public class PullOutRequestDto:BaseEntityDto
     public BranchOption BranchRequestee { get; set; }
     public BranchOption BranchRequestedTo { get; set; } = BranchOption.Warehouse;
     public bool Delivered { get; set; }
+    public DeliveryStatusOption Status { get; set; } = DeliveryStatusOption.Pending;
     public DateTime? DateDelivered { get; set; } 
     public string Note { get; set; } = string.Empty;
     public List<RequestProductItemDto> RequestProductItems { get; set; } = new List<RequestProductItemDto>();
