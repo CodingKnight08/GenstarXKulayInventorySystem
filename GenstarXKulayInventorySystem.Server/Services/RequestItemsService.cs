@@ -64,9 +64,33 @@ public class RequestItemsService:IRequestItemsService
             return false;
         }
     }
+    public async Task<bool> UpdateItemStatus(RequestProductItemDto dto)
+    {
+        try
+        {
+            var existReq = await _context.RequestProductItems.FirstOrDefaultAsync(e => e.Id == dto.Id && !e.IsDeleted);
+            if (existReq == null)
+            {
+                return false;
+            }
+            existReq.IsReceived = dto.IsReceived;
+            existReq.DateRecieved = PhilippineTime.Now;
+            existReq.UpdatedAt = PhilippineTime.Now;
+            existReq.UpdatedBy = GetCurrentUsername();
+
+            int result =  await  _context.SaveChangesAsync();
+            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, "Error in updating request product item status");
+            return false;
+        }
+    }
  
 }
 public interface IRequestItemsService
 {
     Task<bool> CreateRequestProductItem(RequestProductItemDto model);
+    Task<bool> UpdateItemStatus(RequestProductItemDto dto);
 }

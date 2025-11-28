@@ -68,7 +68,11 @@ public class ProductService:IProductService
         return _mapper.Map<List<BranchProductDto>>(products);
     }
 
-
+    public async Task<List<GlobalProductDto>> GetAllGlobalProductsByBrand(int brandId)
+    {
+        var globalProducts = await _context.GlobalProducts.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted && e.BrandId == brandId).ToListAsync() ?? new List<GlobalProduct>();
+        return globalProducts.Select(product => _mapper.Map<GlobalProductDto>(product)).ToList();
+    }
 
 
     public async Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take)
@@ -337,6 +341,7 @@ public class ProductService:IProductService
 public interface IProductService
 {
     Task<List<ProductDto>> GetAllAsync(int brandId);
+    Task<List<GlobalProductDto>> GetAllGlobalProductsByBrand(int brandId);
     Task<List<BranchProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
     Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take);
     Task<int> GetProductCountAsync(int brandId, BranchOption branch);

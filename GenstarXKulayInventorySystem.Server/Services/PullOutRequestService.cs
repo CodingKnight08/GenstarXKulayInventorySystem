@@ -52,15 +52,25 @@ public class PullOutRequestService:IPullOutRequestService
         List<PullOutRequestDto> requests = _mapper.Map<List<PullOutRequestDto>>(pullOuts);
             return requests;
     }
-
+    public async Task<PullOutRequestDto?> GetPullOutRequestById(int id)
+    {
+        var pullOut = await _context.PullOutRequests
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(p => p.RequestProductItems)
+            .Where(p => !p.IsDeleted && p.Id == id)
+            .FirstOrDefaultAsync();
+        if (pullOut == null)
+            return null;
+        var pullOutDto = _mapper.Map<PullOutRequestDto>(pullOut);
+        return pullOutDto;
+    }
     public async Task<bool> CreatePullOutRequest(PullOutRequestDto pullOutRequest)
     {
         try
         {
             var exist = await _context.PullOutRequests.AsNoTracking().AsSplitQuery().Include(p => p.RequestProductItems)
-                .Where(e=> !e.IsDeleted && e.RequestProductItems.Count == pullOutRequest.RequestProductItems.Count
-                            && e.BranchRequestee == pullOutRequest.BranchRequestee
-                            && e.BranchRequestedTo == pullOutRequest.BranchRequestedTo)
+                .Where(e=> !e.IsDeleted && e.Id == pullOutRequest.Id)
                 .FirstOrDefaultAsync();
 
             if(exist !=null)
@@ -78,11 +88,101 @@ public class PullOutRequestService:IPullOutRequestService
         }
     }
 
+    public async Task<bool> UpdatePullOutRequest(PullOutRequestDto model)
+    {
+        try
+        {
+            var exist = await _context.PullOutRequests
+                .FirstOrDefaultAsync(e => !e.IsDeleted && e.Id == model.Id);
+
+            if (exist == null)
+                return false;
+
+            _mapper.Map(model, exist);
+            exist.UpdatedAt = PhilippineTime.Now;
+
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating PullOutRequest");
+            return false;
+        }
+    }
+
+
+    public async Task<bool> UpdateRequestItems(List<RequestProductItemDto> items)
+    {
+        try
+        {
+            if (items == null || !items.Any())
+                return false;
+
+            int pullOutRequestId = items.First().PullOutRequestId;
+
+            // ✅ Load existing items for this request
+            var existingItems = await _context.RequestProductItems
+                .Where(x => x.PullOutRequestId == pullOutRequestId && !x.IsDeleted)
+                .ToListAsync();
+
+            // =============================
+            // DELETE removed items
+            // =============================
+            var toRemove = existingItems
+                .Where(e => !items.Any(i => i.Id == e.Id))
+                .ToList();
+
+            foreach (var item in toRemove)
+                _context.RequestProductItems.Remove(item);
+            // or soft-delete:
+            // item.IsDeleted = true;
+
+            // =============================
+            // ADD / UPDATE items
+            // =============================
+            foreach (var dto in items)
+            {
+                var entity = existingItems.FirstOrDefault(e => e.Id == dto.Id);
+
+                if (entity != null)
+                {
+                    // ✅ UPDATE
+                    _mapper.Map(dto, entity);
+                    entity.UpdatedAt = PhilippineTime.Now;
+                }
+                else
+                {
+                    // ✅ ADD
+                    var newItem = _mapper.Map<RequestProductItem>(dto);
+                    newItem.CreatedAt = PhilippineTime.Now;
+
+                    _context.RequestProductItems.Add(newItem);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating RequestProductItems");
+            return false;
+        }
+    }
+
+
+
+
 
 }
 public interface IPullOutRequestService
 {
     Task<List<PullOutRequestDto>> GetAllPullOutRequestByBranch(BranchOption branch);
     Task<List<PullOutRequestDto>> GetAllRequesteePullOuts(BranchOption branch);
+    Task<PullOutRequestDto?> GetPullOutRequestById(int id);
     Task<bool> CreatePullOutRequest(PullOutRequestDto pullOutRequest);
+    Task<bool> UpdatePullOutRequest(PullOutRequestDto model);
+    Task<bool> UpdateRequestItems(List<RequestProductItemDto> items);
 }
