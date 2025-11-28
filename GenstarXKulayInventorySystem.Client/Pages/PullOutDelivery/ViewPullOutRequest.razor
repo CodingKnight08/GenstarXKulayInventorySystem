@@ -1,4 +1,6 @@
 ﻿@page "/view-pull-out-request/{PullOutId:int}"
+@using GenstarXKulayInventorySystem.Shared.Helpers
+@using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
 
 
 <MudMainContent Class="w-auto h-100 d-flex flex-column gap-3">
@@ -21,7 +23,16 @@
 
    
             <MudText Typo="Typo.h5" Class="mb-4">Pull-Out Request #@PullOutRequest.Id</MudText>
-
+            <MudCard Elevation="0" Class="d-flex flex-row align-items-center justify-content-end">
+                @if (!IsEdit)
+                {
+                    <MudIconButton Color="Color.Success" Icon="@Icons.Material.Filled.Edit" OnClick="ToggleEdit" />
+                }
+                else
+                {
+                    <MudButton Color="Color.Info" StartIcon="@Icons.Material.Filled.Check" OnClick="ToggleEdit">Done</MudButton>
+                }
+            </MudCard>
             <MudGrid>
                 <MudItem xs="12" md="4">
                     <MudText><b>Date Requested:</b> @PullOutRequest.DateRequest.ToString("MMM dd, yyyy")</MudText>
@@ -35,8 +46,35 @@
                     <MudText><b>Requested To:</b> @PullOutRequest.BranchRequestedTo.ToString()</MudText>
                 </MudItem>
 
-                <MudItem xs="12" md="4">
-                    <MudText><b>Status:</b> @(PullOutRequest.Delivered ? "Delivered" : "Pending")</MudText>
+                <MudItem xs="12" md="4" lg="3"  Class="d-flex flex-row align-items-center gap-2">
+                    <label class="fw-bold">Status:</label>
+                    @if (!IsEdit)
+                    {
+                        <MudChip T="string"
+                                 Color="@MapColor(UtilitiesHelper.GetStatusColorKey(PullOutRequest.Status))"
+                                 Variant="Variant.Filled">
+                            @UtilitiesHelper.GetStatusLabel(PullOutRequest.Status)
+                        </MudChip>
+                    }
+                    else
+                    {
+
+
+                        <MudSelect T="DeliveryStatusOption"
+                                   Value="PullOutRequest.Status"
+                                   ValueChanged="@(async (DeliveryStatusOption value) => await OnPullOutStatusChange(value))"
+                                   Variant="Variant.Text"
+                                   Dense="true">
+
+                            @foreach (DeliveryStatusOption status in Enum.GetValues(typeof(DeliveryStatusOption)))
+                            {
+                                <MudSelectItem T="DeliveryStatusOption" Value="status">
+                                    @UtilitiesHelper.GetStatusLabel(status)
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+
+                    }
                 </MudItem>
 
                 
@@ -45,6 +83,7 @@
             <MudDivider Class="my-4" />
 
             <MudText Typo="Typo.h6">Requested Items</MudText>
+         
 
             <MudTable Items="PullOutRequest.RequestProductItems" Dense="true" Hover="true" Class="mt-3 px-2" Elevation="5" Bordered=true>
                 <HeaderContent>
@@ -60,9 +99,30 @@
                     <MudTd>@context.RequestedQuantity</MudTd>
                     <MudTd>@context.ReleasedQuantity</MudTd>
                     <MudTd>
-                        <MudChip T="string" Color="@(context.IsReceived? Color.Success: Color.Warning)" Variant="Variant.Filled">
-                            @(context.IsReceived ? "Received" : "Pending")
-                        </MudChip>
+                        @if (!IsEdit)
+                        {
+                            <MudChip T="string"
+                                     Color="@(context.IsReceived ? Color.Info : Color.Warning)"
+                                     Variant="Variant.Filled"
+                                     Size="Size.Small">
+                                @(context.IsReceived ? "Delivered" : "Pending")
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudSelect T="bool"
+                                   Value="@context.IsReceived"
+                                   Dense="true"
+                                   Disabled="!IsEdit"
+                                   ValueChanged="@(async (bool value) => await OnStatusChanged(value, context))">
+                            <MudSelectItem T="bool" Value="false">
+                                Pending
+                            </MudSelectItem>
+                            <MudSelectItem T="bool" Value="true">
+                                Delivered
+                            </MudSelectItem>
+                        </MudSelect>
+                        }
                     </MudTd>
                     <MudTd>@context.Branch</MudTd>
                 </RowTemplate>

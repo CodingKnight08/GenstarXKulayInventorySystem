@@ -1,5 +1,125 @@
-﻿<h3>ViewPullDelivery</h3>
+﻿@page "/pullout/detail/{Id:int}"
+@using GenstarXKulayInventorySystem.Shared.Helpers
+@using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
 
-@code {
+<MudMainContent Class="w-auto">
+    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Row=false Class="w-100"> 
+        <MudCard Class="w-100 p-3 d-flex flex-column align-items-center justify-content-center gap-2" Elevation="0">
+            @if (IsLoading)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true"  Size="Size.Medium" Rounded="true"/>
+                <MudText Typo="Typo.h6" Align="Align.Center">Loading...</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.h5" Class="mb-4">Pull-Out Request #@PullOutRequest.Id</MudText>
+                
+                <MudCard Class="w-100 d-flex flex-row align-items-center justify-content-end gap-3" Elevation="0">
+                    @if (!IsEdit)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Success"
+                                       Variant="Variant.Text"
+                                       Size="Size.Medium"
+                                       OnClick="@(() => IsEdit = true)" />
+                    }
+                    else
+                    {
+                        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="UpdatePullOut">Save</MudButton>
+                        <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="CancelEdit">Cancel</MudButton>
+                    }
+                </MudCard>
+               
 
-}
+                <MudGrid>
+                    <MudItem xs="12" md="4">
+                        <MudText><b>Date Requested:</b> @PullOutRequest.DateRequest.ToString("MMM dd, yyyy")</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="4">
+                        <MudText><b>Requested By:</b> @PullOutRequest.BranchRequestee.ToString()</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="4" lg="3" xl2 Class="d-flex flew-row gap-2 align-items-center">
+                        <label class="fw-bold">Status:</label>
+                        @if (IsEdit)
+                        {
+                            <MudSelect @bind-Value="EditablePullOut.Status" T="DeliveryStatusOption" Variant="Variant.Text" Dense="true">
+                                @foreach (DeliveryStatusOption status in Enum.GetValues(typeof(DeliveryStatusOption)))
+                                {
+                                    <MudSelectItem Value="status">@UtilitiesHelper.GetStatusLabel(status)</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        else
+                        {
+                            <MudChip T="string"
+                                     Color="@MapColor(UtilitiesHelper.GetStatusColorKey(PullOutRequest.Status))"
+                                     Variant="Variant.Filled">
+                                @UtilitiesHelper.GetStatusLabel(PullOutRequest.Status)
+                            </MudChip>
+                        }
+
+
+                    </MudItem>
+                    <MudItem xs="12" Class="d-flex flex-column gap-2">
+                        <label class="fw-bold">Notes:</label>
+                        @if (IsEdit)
+                        {
+                            <MudTextField @bind-Value="EditablePullOut.Note" Lines="3" Placeholder="Enter notes..." FullWidth="true" />
+                        }
+                        else
+                        {
+                            <p>@PullOutRequest.Note</p>
+                        }
+                    </MudItem>
+
+                </MudGrid>
+
+                <MudDivider Class="my-4" />
+
+                <MudText Typo="Typo.h6">Requested Items</MudText>
+
+                <MudTable 
+                    Items="EditablePullOut.RequestProductItems" 
+                    Dense="true"
+                    Hover="true" 
+                    Class="mt-3 px-2 w-100"
+                    Elevation="5" 
+                    Bordered=true>
+                    <HeaderContent>
+                        <MudTh>Product Name</MudTh>
+                        <MudTh>Requested Qty</MudTh>
+                        <MudTh>Released Qty</MudTh>
+                        <MudTh>Status</MudTh>
+                        <MudTh>Branch</MudTh>
+                        <MudTh>Remarks</MudTh>
+                    </HeaderContent>
+
+                    <RowTemplate>
+                        <MudTd>@context.ProductName</MudTd>
+                        <MudTd>@context.RequestedQuantity</MudTd>
+                        <MudTd>
+                           <MudNumericField T="int" @bind-Value="context.ReleasedQuantity" ReadOnly="!IsEdit" HideSpinButtons=true Variant="Variant.Text"/>
+                        </MudTd>
+
+
+                        <MudTd>
+                            <MudChip T="string" Color="@(context.IsReceived? Color.Success: Color.Warning)" Variant="Variant.Filled">
+                                @(context.IsReceived ? "Received" : "Pending")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>@context.Branch</MudTd>
+                        <MudTd>
+                            <MudTextField @bind-Value="context.Remarks" Variant="Variant.Text" ReadOnly="!IsEdit"  />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+
+                <MudDivider Class="my-4" />
+
+             
+            }
+        </MudCard>
+    </MudStack>
+</MudMainContent>

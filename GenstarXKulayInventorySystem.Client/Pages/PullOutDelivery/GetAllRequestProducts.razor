@@ -1,14 +1,14 @@
 ﻿@page "/requestitems"
 @using GenstarXKulayInventorySystem.Shared.DTOS;
 <MudMainContent Class="w-auto h-100">
-    <MudCard Elevation="0" Class="d-flex flex-row align-items-center justify-content-end w-100 mt-2">
+    <MudCard Elevation="0" Class="d-flex flex-row align-items-center justify-content-end w-100 mt-2 py-4">
         <MudButton StartIcon="@Icons.Material.Filled.AddCircle"
         Variant="Variant.Filled"
         Color="Color.Info"
          OnClick="RequestPullOut"
         Class="me-4">Add PullOut</MudButton>
     </MudCard>
-    <MudCard Elevation="0" Class="w-100 h-75 d-flex flex-column align-items-center justify-content-center">
+    <MudCard Elevation="0" Class="w-100 d-flex flex-column align-items-center justify-content-center">
         <div class="px-4 w-100">
             @* adds left & right padding *@
             <MudTable Class="w-100"
