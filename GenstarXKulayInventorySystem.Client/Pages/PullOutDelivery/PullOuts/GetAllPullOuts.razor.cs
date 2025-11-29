@@ -21,7 +21,7 @@ public partial class GetAllPullOuts
     private BranchOption Branch { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        Branch = /*UserState.Branch ??*/ BranchOption.Warehouse;
+        Branch = UserState.Branch ?? BranchOption.Warehouse;
         await LoadPullOutRequests();
 
     }

@@ -3,7 +3,9 @@
 @using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
 
 <MudMainContent Class="w-auto">
+    <MudBreadcrumbs Items="_items" Class="p-3" />
     <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Row=false Class="w-100"> 
+        
         <MudCard Class="w-100 p-3 d-flex flex-column align-items-center justify-content-center gap-2" Elevation="0">
             @if (IsLoading)
             {
