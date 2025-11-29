@@ -108,6 +108,66 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.ToTable("Billings");
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.BranchProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("ActualQuantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Branch")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("BufferStocks")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("CostPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MasterProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductMesurementOption")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RetailPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("Size")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("WholeSalePrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MasterProductId");
+
+                    b.ToTable("BranchProducts");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Client", b =>
                 {
                     b.Property<int>("Id")
@@ -199,6 +259,9 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsChargedSales")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
@@ -360,6 +423,56 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.ToTable("DailySaleReports");
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.GlobalProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BrandId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Packaging")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
+
+                    b.ToTable("GlobalProducts");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.OperationsProvider", b =>
                 {
                     b.Property<int>("Id")
@@ -420,9 +533,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int>("Branch")
                         .HasColumnType("int");
 
-                    b.Property<int?>("BrandId")
-                        .HasColumnType("int");
-
                     b.Property<decimal?>("BufferStocks")
                         .HasColumnType("decimal(18,2)");
 
@@ -480,8 +590,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BrandId");
 
                     b.HasIndex("ProductCategoryId");
 
@@ -562,6 +670,60 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProductCategories");
+                });
+
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PullOutRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BranchRequestedTo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BranchRequestee")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DateDelivered")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateRequest")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Delivered")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PullOutRequests");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrder", b =>
@@ -826,6 +988,77 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.ToTable("Registrations");
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.RequestProductItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Branch")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateRecieved")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReceived")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MasterProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProductName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("PullOutRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReleasedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Remarks")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RequestedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SourceProduct")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MasterProductId");
+
+                    b.HasIndex("PullOutRequestId");
+
+                    b.ToTable("RequestProductItems");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.SaleItem", b =>
                 {
                     b.Property<int>("Id")
@@ -833,6 +1066,9 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BranchProductId")
+                        .HasColumnType("int");
 
                     b.Property<int>("BranchPurchased")
                         .HasColumnType("int");
@@ -895,6 +1131,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BranchProductId");
 
                     b.HasIndex("DailySaleId");
 
@@ -1187,6 +1425,16 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Navigation("OperationsProvider");
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.BranchProduct", b =>
+                {
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.GlobalProduct", "MasterProduct")
+                        .WithMany("BranchProducts")
+                        .HasForeignKey("MasterProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("MasterProduct");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.DailySale", b =>
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.Client", "Client")
@@ -1204,19 +1452,22 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Navigation("DailySaleReport");
                 });
 
-            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.GlobalProduct", b =>
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductBrand", "ProductBrand")
-                        .WithMany("Products")
+                        .WithMany("GlobalProducts")
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("ProductBrand");
+                });
+
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Product", b =>
+                {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.ProductCategory", "ProductCategory")
                         .WithMany("Products")
                         .HasForeignKey("ProductCategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ProductBrand");
 
                     b.Navigation("ProductCategory");
                 });
@@ -1265,21 +1516,43 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Navigation("PurchaseOrder");
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.RequestProductItem", b =>
+                {
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.GlobalProduct", "MasterProduct")
+                        .WithMany("RequestItems")
+                        .HasForeignKey("MasterProductId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.PullOutRequest", "PullOutRequest")
+                        .WithMany("RequestProductItems")
+                        .HasForeignKey("PullOutRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MasterProduct");
+
+                    b.Navigation("PullOutRequest");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.SaleItem", b =>
                 {
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.BranchProduct", "BranchProduct")
+                        .WithMany("SaleItems")
+                        .HasForeignKey("BranchProductId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.DailySale", "DailySale")
                         .WithMany("SaleItems")
                         .HasForeignKey("DailySaleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.Product", "Product")
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.Product", null)
                         .WithMany("SaleItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("BranchProduct");
 
                     b.Navigation("DailySale");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1333,6 +1606,11 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.BranchProduct", b =>
+                {
+                    b.Navigation("SaleItems");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Client", b =>
                 {
                     b.Navigation("DailySales");
@@ -1350,6 +1628,13 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Navigation("DailySales");
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.GlobalProduct", b =>
+                {
+                    b.Navigation("BranchProducts");
+
+                    b.Navigation("RequestItems");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.OperationsProvider", b =>
                 {
                     b.Navigation("Billings");
@@ -1362,12 +1647,17 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.ProductBrand", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("GlobalProducts");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.ProductCategory", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PullOutRequest", b =>
+                {
+                    b.Navigation("RequestProductItems");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.PurchaseOrder", b =>

@@ -73,7 +73,6 @@ public class SaleItemService:ISaleItemService
         List<SaleItem> salesItems = await _context.SaleItems
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(si=> si.Product)
             .Where(si => !si.IsDeleted && !si.IsDeducted).ToListAsync();
         if(salesItems == null || salesItems.Count == 0)
         {

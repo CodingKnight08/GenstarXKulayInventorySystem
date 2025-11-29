@@ -22,10 +22,6 @@ public class InventoryDbContext: IdentityDbContext<User>
         // Product → ProductBrand, ProductCategory
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasOne(p => p.ProductBrand)
-                  .WithMany(b => b.Products)
-                  .HasForeignKey(p => p.BrandId)
-                  .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(p => p.ProductCategory)
                   .WithMany(c => c.Products)
@@ -132,19 +128,27 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(si => si.DailySaleId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(si => si.Product)
-                  .WithMany(p => p.SaleItems)
-                  .HasForeignKey(si => si.ProductId)
-                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(si => si.BranchProduct)
+                 .WithMany(bp => bp.SaleItems)
+                 .HasForeignKey(si => si.BranchProductId)
+                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Decimal fields
             entity.Property(si => si.ItemPrice).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Size).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Quantity).HasColumnType("decimal(18,2)");
 
-            entity.Property(si => si.BranchPurchased).HasConversion<int>();
-            entity.Property(si => si.UnitMeasurement).HasConversion<int>();
-            entity.Property(si => si.ProductPricingOption).HasConversion<int>();
-            entity.Property(si => si.PaintCategory).HasConversion<int>();
+            entity.Property(si => si.BranchPurchased)
+                  .HasConversion<int>();
+
+            entity.Property(si => si.UnitMeasurement)
+                  .HasConversion<int>();
+
+            entity.Property(si => si.ProductPricingOption)
+                  .HasConversion<int>();
+
+            entity.Property(si => si.PaintCategory)
+                  .HasConversion<int>();
         });
 
         modelBuilder.Entity<Model.Client>(entity =>
@@ -180,6 +184,90 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(dsr => dsr.LandedCost).HasColumnType("decimal(18,2)");
             entity.Property(dsr => dsr.GrossProfit).HasColumnType("decimal(18,2)");
         });
+        modelBuilder.Entity<GlobalProduct>(entity =>
+        {
+
+            modelBuilder.Entity<GlobalProduct>(entity =>
+            {
+                entity.HasOne(g => g.ProductBrand)
+                      .WithMany(b => b.GlobalProducts)      
+                      .HasForeignKey(g => g.BrandId)
+                      .OnDelete(DeleteBehavior.SetNull);    
+            });
+
+
+            entity.Property(g => g.ProductName)
+                  .HasMaxLength(200)
+                  .IsRequired();
+
+            entity.Property(g => g.Description)
+                  .HasMaxLength(500);
+
+            entity.Property(g => g.Packaging)
+                  .HasMaxLength(200);
+
+            entity.HasMany(g => g.BranchProducts)
+                  .WithOne(bp => bp.MasterProduct)
+                  .HasForeignKey(bp => bp.MasterProductId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<BranchProduct>(entity =>
+        {
+            entity.Property(bp => bp.Branch)
+                  .HasConversion<int>();
+
+            entity.Property(bp => bp.ProductMesurementOption)
+                  .HasConversion<int>();
+
+            entity.Property(bp => bp.CostPrice).HasColumnType("decimal(18,2)");
+            entity.Property(bp => bp.RetailPrice).HasColumnType("decimal(18,2)");
+            entity.Property(bp => bp.WholeSalePrice).HasColumnType("decimal(18,2)");
+            entity.Property(bp => bp.Size).HasColumnType("decimal(18,2)");
+            entity.Property(bp => bp.ActualQuantity).HasColumnType("decimal(18,2)");
+            entity.Property(bp => bp.BufferStocks).HasColumnType("decimal(18,2)");
+
+            entity.HasMany(bp => bp.SaleItems)
+                  .WithOne(si => si.BranchProduct)
+                  .HasForeignKey(si => si.BranchProductId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<RequestProductItem>(entity =>
+        {
+            entity.HasOne(rpi => rpi.MasterProduct)
+                  .WithMany(g => g.RequestItems)
+                  .HasForeignKey(rpi => rpi.MasterProductId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.Property(rpi => rpi.Branch)
+                  .HasConversion<int>();
+
+            entity.Property(rpi => rpi.SourceProduct)
+                  .HasConversion<int>();
+
+            entity.Property(rpi => rpi.ProductName)
+                  .HasMaxLength(200)
+                  .IsRequired(false);
+        });
+
+
+        modelBuilder.Entity<PullOutRequest>(entity =>
+        {
+            entity.Property(p => p.Note)
+                  .HasMaxLength(500);
+
+            entity.Property(p => p.BranchRequestee)
+                  .HasConversion<int>();
+
+            entity.Property(p => p.BranchRequestedTo)
+                  .HasConversion<int>();
+
+            entity.HasMany(p => p.RequestProductItems)
+                  .WithOne(rpi => rpi.PullOutRequest)
+                  .HasForeignKey(rpi => rpi.PullOutRequestId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
 
         base.OnModelCreating(modelBuilder);
     }
@@ -203,6 +291,10 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<DailySaleReport> DailySaleReports { get; set; }
     public DbSet<Registration> Registrations { get; set; }
     public DbSet<OperationsProvider> OperationsProviders { get; set; }
+    public DbSet<RequestProductItem> RequestProductItems { get; set; }
+    public DbSet<PullOutRequest> PullOutRequests { get; set; }
+    public DbSet<GlobalProduct> GlobalProducts { get; set; }
+    public DbSet<BranchProduct> BranchProducts { get; set; }
 
     public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {

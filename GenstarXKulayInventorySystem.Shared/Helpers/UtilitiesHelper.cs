@@ -1,4 +1,5 @@
 ﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+using System.Drawing;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
@@ -147,6 +148,23 @@ public static class UtilitiesHelper
         unit == ProductMesurementOption.Meter;
 
 
+    public static string GetStatusColorKey(DeliveryStatusOption status) => status switch
+    {
+        DeliveryStatusOption.Pending => "warning",
+        DeliveryStatusOption.OnTheWay => "info",
+        DeliveryStatusOption.Delivered => "success",
+        DeliveryStatusOption.Cancelled => "error",
+        _ => "default"
+    };
+
+    public static string GetStatusLabel(DeliveryStatusOption status) => status switch
+    {
+        DeliveryStatusOption.Pending => "Pending",
+        DeliveryStatusOption.OnTheWay => "On The Way",
+        DeliveryStatusOption.Delivered => "Delivered",
+        DeliveryStatusOption.Cancelled => "Cancelled",
+        _ => "Unknown"
+    };
 
     public enum PaymentMethod
     {
@@ -168,5 +186,13 @@ public static class UtilitiesHelper
         ThreeMonths = 4,
         OneYear = 5
     }
-    
+
+    public enum DeliveryStatusOption
+    {
+        Pending,
+        OnTheWay,
+        Delivered,
+        Cancelled
+    }
+
 }

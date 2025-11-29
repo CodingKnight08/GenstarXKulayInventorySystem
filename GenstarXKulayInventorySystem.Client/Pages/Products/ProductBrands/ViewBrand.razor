@@ -76,7 +76,7 @@
         <MudCard Elevation="0">
 
                 <MudCardContent>
-                    <MudTable T="ProductDto"
+                    <MudTable T="BranchProductDto"
                               @ref="productTable"
                               ServerData="ServerLoadData"
                               Hover="true"
@@ -91,10 +91,8 @@
                             </MudTh>
                             <MudTh>Size</MudTh>
                             <MudTh>Unit</MudTh>
-                            <MudTh>Category</MudTh>
                             <MudTh>Quantity</MudTh>
                             <MudTh>Lvl Stock</MudTh>
-                            <MudTh>Color</MudTh>
                             <MudTh>Capital Price</MudTh>
                             <MudTh>Retail Price</MudTh>
                             <MudTh>Wholesale Price</MudTh>
@@ -104,26 +102,21 @@
                         <RowTemplate>
                             <MudTd Style="position:sticky; left:0; z-index:1; background:white;"
                                    DataLabel="Product Name">
-                                @context.ProductName
+                            @(context.MasterProduct?.ProductName ?? "--")
                             </MudTd>
                             <MudTd DataLabel="Size">@context.Size</MudTd>
-                            <MudTd DataLabel="Unit">@context.ProductMesurementOption.ToString()</MudTd>
-                            <MudTd DataLabel="Category">
-                                @(
-                                                        context.ProductCategoryId != null
-                                                        ? Categories.FirstOrDefault(c => c.Id == context.ProductCategoryId)?.Name ?? "None"
-                                                        : "None"
-                                                        )
+                        <MudTd DataLabel="Unit">
+                            @(context.ProductMesurementOption?.ToString() ?? "--")
                         </MudTd>
+                            
                         <MudTd DataLabel="Quantity"
                                Style=@($"color:{(context.ActualQuantity < context.BufferStocks ? "red" : "inherit")}")>
                             @context.ActualQuantity
                         </MudTd>
                         <MudTd DataLabel="LevelStock">@context.BufferStocks</MudTd>
-                        <MudTd DataLabel="Color">@context.Color</MudTd>
                         <MudTd DataLabel="Capital"> ₱ @context.CostPrice</MudTd>
                         <MudTd DataLabel="RetailPrice"> ₱@context.RetailPrice</MudTd>
-                        <MudTd DataLabel="Wholesale"> ₱@context.WholesalePrice</MudTd>
+                        <MudTd DataLabel="Wholesale"> ₱@context.WholeSalePrice</MudTd>
                         <MudTd DataLabel="Action">
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Color="Color.Success"

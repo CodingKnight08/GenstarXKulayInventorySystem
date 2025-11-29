@@ -1,0 +1,79 @@
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="4" Class="mb-5">
+
+            <!-- DATE -->
+            <MudItem xs="12" md="4">
+                <MudDatePicker Date="NewPullOut.DateRequest"
+                               Label="Request Date"
+                               ReadOnly="true" />
+            </MudItem>
+
+            <!-- BRANCH -->
+            <MudItem xs="12" md="4">
+                <MudSelect T="BranchOption"
+                           Label="Request To"
+                           Value="NewPullOut.BranchRequestedTo"
+                           ValueChanged="OnBranchChanged"
+                           Required="true">
+
+                    @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
+                    {
+                        <MudSelectItem T="BranchOption" Value="@branch">@branch</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" Class="d-flex flex-row align-items-center justify-content-end">
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="AddItem">Add Items</MudButton>
+            </MudItem>
+            <!-- REQUEST PRODUCT LIST COMPONENT -->
+            <MudItem xs="12">
+               <MudTable Items="RequestedItems" Hover=true Bordered=true Dense=true Elevation="5">
+                   <HeaderContent>
+                       <MudTh>Product Name</MudTh>
+                       <MudTh>Quantity</MudTh>
+                       <MudTh>Released Quantity</MudTh>
+                       <MudTh>Remarks</MudTh>
+                       <MudTh>Actions</MudTh>
+                   </HeaderContent>
+                   <RowTemplate>
+                       <MudTd>@context.ProductName</MudTd>
+                       <MudTd>@context.RequestedQuantity</MudTd>
+                       <MudTd>@context.ReleasedQuantity</MudTd>
+                       <MudTd>@context.Remarks</MudTd>
+                       <MudTd>
+                           <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Text" Color="Color.Error" />
+                       </MudTd>
+                   </RowTemplate>
+                   <NoRecordsContent>
+                        <MudText Align="Align.Center" Class="pa-4">No requested products added.</MudText>
+                   </NoRecordsContent>
+               </MudTable>
+            </MudItem>
+
+        </MudGrid>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Error"
+                   OnClick="Cancel">Cancel</MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   Disabled="!CanSubmit"
+                   OnClick="SubmitRequest">
+            @if (IsSubmitting)
+            {
+                <MudProgressCircular Size="Size.Medium" Indeterminate="true" Class="mr-2" />
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>Request</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

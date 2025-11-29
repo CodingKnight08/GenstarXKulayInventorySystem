@@ -27,14 +27,14 @@
 
                 <MudItem xl="5" lg="6" md="6" sm="12">
 
-                <MudAutocomplete T="ProductDto"
+                <MudAutocomplete T="BranchProductDto"
                                  Label="Item Name"
                                  Dense="true"
                                  Placeholder="Select Item"
                                  SearchFunc="SearchProductsDto"
                                  Value="SelectedProductFromList"
                                  ValueChanged="OnProductSelectDto"
-                                 ToStringFunc="p => p?.ProductName"
+                                 ToStringFunc="p => p?.MasterProduct?.ProductName ?? string.Empty"
                                  Clearable="true"
                                  CoerceText="false"
                                  CoerceValue="false"
@@ -64,7 +64,7 @@
                 <MudNumericField T="decimal?" Value="SaleItemDto.Size"  Placeholder="Item Size eg. 1.5ml" Label="Item Size" HideSpinButtons="true" Variant="Variant.Text" Required=true ValueChanged="OnSizeChanged"/>
             </MudItem>
             <MudItem xl="3" lg="5" md="6" sm="12">
-                <MudSelect T="ProductMesurementOption" @bind-Value="SaleItemDto.UnitMeasurement" Label="Unit" Disabled="@(SaleItemDto.ProductId !=null)">
+                <MudSelect T="ProductMesurementOption" @bind-Value="SaleItemDto.UnitMeasurement" Label="Unit" Disabled="@(SaleItemDto.BranchProduct !=null)">
                     @foreach(var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
                     {
                         <MudSelectItem T="ProductMesurementOption" Value="@unit">

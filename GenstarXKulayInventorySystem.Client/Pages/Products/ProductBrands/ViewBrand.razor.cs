@@ -15,10 +15,10 @@ public partial class ViewBrand
     [Inject] protected UserState UserState { get; set; } = default!;
     [Inject] protected ILogger<ViewBrand> Logger { get; set; } = default!;
     protected ProductBrandDto Brand { get; set; } = new ProductBrandDto();
-    protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
+    protected List<BranchProductDto> Products { get; set; } = new List<BranchProductDto>();
     protected List<ProductCategoryDto> Categories { get; set; } = new List<ProductCategoryDto>();
     protected BranchOption Branch { get; set; }
-    protected MudTable<ProductDto>? productTable;
+    protected MudTable<BranchProductDto>? productTable;
     protected bool IsLoading = false;
     protected string? ErrorMessage { get; set; }
     protected List<BreadcrumbItem> items = new();
@@ -33,6 +33,7 @@ public partial class ViewBrand
         await LoadBrandAsync();
         //await LoadProductsAsync();
         await LoadCategoriesAsync();
+        await LoadBranchProducts();
         items =
         [
             new("Brands", href: $"/productbrands"),
@@ -77,34 +78,62 @@ public partial class ViewBrand
         }
     }
 
-    protected async Task<TableData<ProductDto>> ServerLoadData(TableState state, CancellationToken cancellationToken)
+    protected async Task<TableData<BranchProductDto>> ServerLoadData(TableState state, CancellationToken cancellationToken)
     {
         try
         {
             var skip = state.Page * state.PageSize;
             var take = state.PageSize;
 
-            var response = await HttpClient.GetAsync(
-                $"api/product/paged/by/{BrandId}/{Branch}?skip={skip}&take={take}",
-                cancellationToken);
+            var url = $"api/product/paged/by/{BrandId}/{Branch}?skip={skip}&take={take}";
 
-            response.EnsureSuccessStatusCode();
+            Logger.LogInformation($"Loading products → {url}");
 
-            var result = await response.Content.ReadFromJsonAsync<ProductPageResultDto<ProductDto>>(cancellationToken: cancellationToken);
+            var response = await HttpClient.GetAsync(url, cancellationToken);
 
-            if (result is null)
-                return new TableData<ProductDto> { Items = new List<ProductDto>(), TotalItems = 0 };
-
-            return new TableData<ProductDto>
+            if (!response.IsSuccessStatusCode)
             {
-                Items = result.Products,
-                TotalItems = result.TotalCount
+                var serverMsg = await response.Content.ReadAsStringAsync(cancellationToken);
+                Logger.LogError($"Server returned {response.StatusCode}: {serverMsg}");
+
+                return new TableData<BranchProductDto>
+                {
+                    Items = new List<BranchProductDto>(),
+                    TotalItems = 0
+                };
+            }
+
+            var result = await response.Content
+                .ReadFromJsonAsync<BranchProductPageResultDto<BranchProductDto>>(cancellationToken);
+
+            return new TableData<BranchProductDto>
+            {
+                Items = result?.Products ?? new List<BranchProductDto>(),
+                TotalItems = result?.TotalCount ?? 0
             };
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Error loading products: {ex.Message}");
-            return new TableData<ProductDto> { Items = new List<ProductDto>(), TotalItems = 0 };
+            Logger.LogError($"Client Error loading products: {ex.Message}");
+            return new TableData<BranchProductDto>
+            {
+                Items = new List<BranchProductDto>(),
+                TotalItems = 0
+            };
+        }
+    }
+    protected async Task LoadBranchProducts()
+    {
+        try
+        {
+            var response = await HttpClient.GetAsync($"api/product/all/products/by/{BrandId}/{Branch}");
+            response.EnsureSuccessStatusCode();
+            Products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>() ?? new List<BranchProductDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching brand: {ex.Message}");
+            ErrorMessage = "Failed to load brand details. Please try again later.";
         }
     }
     private async Task OnBranchChanged(BranchOption newBranch)

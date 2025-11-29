@@ -4,22 +4,34 @@
 <MudMainContent>
     <h3>📦 Upload Product CSV or Excel</h3>
 
-    <InputFile OnChange="UploadFile" />
-    <p>@StatusMessage</p>
+    <div class="mb-4">
+        <h5>Import Products</h5>
+        <InputFile OnChange="UploadProductFile" />
+        <p>@ProductStatusMessage</p>
+    </div>
+
+    <div class="mb-4">
+        <h5>Import Product Brands</h5>
+        <InputFile OnChange="UploadBrandFile" />
+        <p>@BrandStatusMessage</p>
+    </div>
 </MudMainContent>
 
-
 @code {
-    private string StatusMessage = "";
+    private string ProductStatusMessage = "";
+    private string BrandStatusMessage = "";
 
-    private async Task UploadFile(InputFileChangeEventArgs e)
+    // ----------------------------
+    // Upload Products CSV
+    // ----------------------------
+    private async Task UploadProductFile(InputFileChangeEventArgs e)
     {
         try
         {
             var file = e.File;
             if (file == null)
             {
-                StatusMessage = "❌ No file selected.";
+                ProductStatusMessage = "❌ No file selected.";
                 return;
             }
 
@@ -29,11 +41,39 @@
             var response = await Http.PostAsync("api/productimport/upload", content);
             var result = await response.Content.ReadAsStringAsync();
 
-            StatusMessage = response.IsSuccessStatusCode ? result : $"❌ Failed: {result}";
+            ProductStatusMessage = response.IsSuccessStatusCode ? result : $"❌ Failed: {result}";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"❌ Error: {ex.Message}";
+            ProductStatusMessage = $"❌ Error: {ex.Message}";
+        }
+    }
+
+    // ----------------------------
+    // Upload Brands CSV
+    // ----------------------------
+    private async Task UploadBrandFile(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file == null)
+            {
+                BrandStatusMessage = "❌ No file selected.";
+                return;
+            }
+
+            var content = new MultipartFormDataContent();
+            content.Add(new StreamContent(file.OpenReadStream(50 * 1024 * 1024)), "file", file.Name);
+
+            var response = await Http.PostAsync("api/productimport/upload-brands", content);
+            var result = await response.Content.ReadAsStringAsync();
+
+            BrandStatusMessage = response.IsSuccessStatusCode ? result : $"❌ Failed: {result}";
+        }
+        catch (Exception ex)
+        {
+            BrandStatusMessage = $"❌ Error: {ex.Message}";
         }
     }
 }

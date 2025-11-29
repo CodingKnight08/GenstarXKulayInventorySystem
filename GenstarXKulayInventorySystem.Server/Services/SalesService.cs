@@ -131,7 +131,7 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(ds => ds.SaleItems)
-                .ThenInclude(si => si.Product)
+            .ThenInclude(bp => bp.BranchProduct)
             .Where(ds => !ds.IsDeleted
                       && ds.IsApproved
                       && ds.Branch == branch
@@ -187,14 +187,15 @@ public class SalesService:ISalesService
         var unpaidDailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(s => s.SaleItems)
+            .ThenInclude(bp => bp.BranchProduct)
             .Where(ds => !ds.IsDeleted
                       && !ds.IsPaid
                       && ds.IsApproved
                       && ds.Branch == branch
                       && ds.UpdatedAt == null
                       && ds.PaymentType == null
-                      && ds.DateOfSales >= startOfDay
-                      && ds.DateOfSales < endOfDay)
+                      && ds.IsChargedSales)
             .ToListAsync();
 
         if (unpaidDailySales.Count == 0)
@@ -251,7 +252,7 @@ public class SalesService:ISalesService
             sale.DateOfSales = phNow;
             sale.CreatedAt = phNow;
             sale.CreatedBy = GetCurrentUsername();
-
+            
             sale.TotalAmount = Math.Round(
                 (saleDto.SaleItems?.Sum(x =>
                     (x.ItemPrice * x.Quantity * (x.Size ?? 1))

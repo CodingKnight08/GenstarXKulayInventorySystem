@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Security.Claims;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 using static MudBlazor.Icons.Custom;
 
 
@@ -40,40 +41,46 @@ public class ProductService:IProductService
     public async Task<List<ProductDto>> GetAllAsync(int brandId)
     {
         var products = await _context.Products.AsNoTracking().AsSplitQuery()
-            .Include(p => p.ProductBrand)
             .Include(p => p.ProductCategory)
-            .Where(p => p.BrandId == brandId && !p.IsDeleted)
+            .Where(p => !p.IsDeleted)
             .OrderBy(e => e.ProductName)
             .ToListAsync() ?? new List<Product>(); ;
 
         
         return products.Select(product => _mapper.Map<ProductDto>(product)).ToList();
     }
-    public async Task<List<ProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch)
+    public async Task<List<BranchProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch)
     {
-        var products = await _context.Products
+        var products = await _context.BranchProducts
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(p => p.BrandId == brandId
-                     && p.Branch == branch
-                     && !p.IsDeleted
-                     && p.ActualQuantity > p.BufferStocks)
-            .OrderBy(p => p.ProductName)
+            .Include(bp => bp.MasterProduct)
+            .Where(p =>
+                p.Branch == branch &&
+                !p.IsDeleted &&
+                p.ActualQuantity > p.BufferStocks &&
+                p.MasterProduct != null &&
+                p.MasterProduct.BrandId == brandId
+            )
+            .OrderBy(p => p.MasterProduct!.ProductName)  // safe because filtered above
             .ToListAsync();
 
-        if (products.Count == 0)
-            return new List<ProductDto>();
-
-        return products.Select(product => _mapper.Map<ProductDto>(product)).ToList();
+        return _mapper.Map<List<BranchProductDto>>(products);
     }
+
+    public async Task<List<GlobalProductDto>> GetAllGlobalProductsByBrand(int brandId)
+    {
+        var globalProducts = await _context.GlobalProducts.AsNoTracking().AsSplitQuery().Where(e => !e.IsDeleted && e.BrandId == brandId).ToListAsync() ?? new List<GlobalProduct>();
+        return globalProducts.Select(product => _mapper.Map<GlobalProductDto>(product)).ToList();
+    }
+
 
     public async Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take)
     {
         var products = await _context.Products
            .AsNoTracking()
            .AsSplitQuery()
-           .Where(p => p.BrandId == brandId
-                    && p.Branch == branch
+           .Where(p => p.Branch == branch
                     && !p.IsDeleted
                     )
            .ToListAsync();
@@ -86,17 +93,20 @@ public class ProductService:IProductService
 
     public async Task<int> GetProductCountAsync(int brandId, BranchOption branch)
     {
-        var products = await _context.Products.AsNoTracking().AsSplitQuery().Where(p => p.BrandId == brandId && p.Branch == branch && !p.IsDeleted).ToListAsync();
+        var products = await _context.BranchProducts
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(p => p.MasterProduct)
+            .Where(p =>  p.Branch == branch && !p.IsDeleted).ToListAsync();
         return products.Count();
     }
-    public async Task<ProductDto?> GetByIdAsync(int id)
+    public async Task<BranchProductDto?> GetByIdAsync(int id)
     {
-        var product = await _context.Products
-            .Include(p => p.ProductBrand)
-            .Include(p => p.ProductCategory)
+        var product = await _context.BranchProducts
+            .Include(p => p.MasterProduct)
             .FirstOrDefaultAsync(p => p.Id == id);
 
-        return product == null ? null : _mapper.Map<ProductDto>(product);
+        return product == null ? null : _mapper.Map<BranchProductDto>(product);
     }
 
     public async Task<bool> AddAsync(ProductDto productDto)
@@ -105,7 +115,7 @@ public class ProductService:IProductService
         {
             var existingProduct = await _context.Products.AsNoTracking().AsSplitQuery()
                 .FirstOrDefaultAsync(x => x.ProductName == productDto.ProductName &&
-                                          x.BrandId == productDto.BrandId && x.Size == productDto.Size && x.ProductMesurementOption == productDto.ProductMesurementOption && x.Branch == productDto.Branch);
+                                           x.Size == productDto.Size && x.ProductMesurementOption == productDto.ProductMesurementOption && x.Branch == productDto.Branch);
             if (existingProduct != null)
                 return false;
 
@@ -125,20 +135,18 @@ public class ProductService:IProductService
         }
     }
 
-    public async Task<bool> UpdateAsync(ProductDto productDto)
+    public async Task<bool> UpdateAsync(BranchProductDto productDto)
     {
         try
         {
-            var existingProduct = await _context.Products
-                .Include(p => p.ProductBrand)
-                .Include(p => p.ProductCategory)
+            var existingProduct = await _context.BranchProducts
                 .FirstOrDefaultAsync(p => p.Id == productDto.Id);
 
             if (existingProduct == null)
                 return false;
 
-            existingProduct.UpdatedAt = DateTime.UtcNow;
-            existingProduct.Quantity = (int)Math.Floor(productDto.ActualQuantity);
+            existingProduct.UpdatedAt = PhilippineTime.Now;
+            existingProduct.ActualQuantity = productDto.ActualQuantity;
 
             _mapper.Map(productDto, existingProduct);
 
@@ -157,12 +165,12 @@ public class ProductService:IProductService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _context.BranchProducts.FindAsync(id);
         if (product == null)
             return false;
         product.IsDeleted = true;
-        product.DeletedAt = DateTime.UtcNow;
-        _context.Products.Update(product);
+        product.DeletedAt = PhilippineTime.Now;
+        _context.BranchProducts.Update(product);
         await _context.SaveChangesAsync();
         return true;
     }
@@ -189,7 +197,6 @@ public class ProductService:IProductService
         var brands = await _context.ProductBrands
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(b => b.Products.Where(p => !p.IsDeleted && p.Branch == branch))
             .Where(b => !b.IsDeleted)
             .OrderBy(b=> b.BrandName)
             .ToListAsync();
@@ -242,7 +249,7 @@ public class ProductService:IProductService
         brand.IsDeleted = true;
 
         var associatedProducts = await _context.Products
-        .Where(p => p.BrandId == id && !p.IsDeleted)
+        .Where(p => !p.IsDeleted)
         .ToListAsync();
 
         foreach (var product in associatedProducts)
@@ -334,12 +341,13 @@ public class ProductService:IProductService
 public interface IProductService
 {
     Task<List<ProductDto>> GetAllAsync(int brandId);
-    Task<List<ProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
+    Task<List<GlobalProductDto>> GetAllGlobalProductsByBrand(int brandId);
+    Task<List<BranchProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
     Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take);
     Task<int> GetProductCountAsync(int brandId, BranchOption branch);
-    Task<ProductDto?> GetByIdAsync(int id);
+    Task<BranchProductDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(ProductDto productDto);
-    Task<bool> UpdateAsync(ProductDto productDto);
+    Task<bool> UpdateAsync(BranchProductDto productDto);
     Task<bool> DeleteAsync(int id);
 
     Task<int> GetAllBrandCount();

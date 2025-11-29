@@ -43,88 +43,88 @@ public class SalesHostedService : IHostedService, IDisposable
             var productService = scope.ServiceProvider.GetRequiredService<IProductService>();
 
             // Example calls:
-            List<SaleItemDto> sales = await salesItemService.GetAllUndeductedItemsAsync();
-            if (sales.Count != 0)
-            {
-                bool result = false;
-                ProductDto toBeUpdated = new();
-                foreach (var item in sales)
-                {
-                    decimal subtractedValue = UtilitiesHelper.ConvertItems(
-                                        item.Size ?? 1,
-                                        item.Quantity,
-                                        item.UnitMeasurement,
-                                        item.Product?.ProductMesurementOption
-                                            ?? ProductsEnumHelpers.ProductMesurementOption.Gallon
-                                        );
+            //List<SaleItemDto> sales = await salesItemService.GetAllUndeductedItemsAsync();
+            //if (sales.Count != 0)
+            //{
+            //    bool result = false;
+            //    ProductDto toBeUpdated = new();
+            //    foreach (var item in sales)
+            //    {
+            //        decimal subtractedValue = UtilitiesHelper.ConvertItems(
+            //                            item.Size ?? 1,
+            //                            item.Quantity,
+            //                            item.UnitMeasurement,
+            //                            item.Product?.ProductMesurementOption
+            //                                ?? ProductsEnumHelpers.ProductMesurementOption.Gallon
+            //                            );
 
-                    // Deduct from current quantity safely
-                    if (item.Product != null)
-                    {
-                        toBeUpdated = item.Product;
-                        toBeUpdated.ActualQuantity = (item.Product.ActualQuantity) - subtractedValue;
-                        result = await productService.UpdateAsync(toBeUpdated);
-                        if (result)
-                        {
-                            _logger.LogInformation("Process successful");
-                        }
-                    }
+            //        // Deduct from current quantity safely
+            //        if (item.Product != null)
+            //        {
+            //            toBeUpdated = item.Product;
+            //            toBeUpdated.ActualQuantity = (item.Product.ActualQuantity) - subtractedValue;
+            //            result = await productService.UpdateAsync(toBeUpdated);
+            //            if (result)
+            //            {
+            //                _logger.LogInformation("Process successful");
+            //            }
+            //        }
 
-                    else
-                    {
-                        foreach(var mixture in item.DataList)
-                        {
+            //        else
+            //        {
+            //            foreach(var mixture in item.DataList)
+            //            {
 
-                            toBeUpdated = await productService.GetByIdAsync(mixture.ProductId);
+            //                toBeUpdated = await productService.GetByIdAsync(mixture.ProductId);
 
-                            if (toBeUpdated is not null)
-                            {
-                                // ensure ProductMesurementOption has a value, otherwise default to Gallon
-                                var measurementOption = toBeUpdated.ProductMesurementOption
-                                                        ?? ProductsEnumHelpers.ProductMesurementOption.Gallon;
+            //                if (toBeUpdated is not null)
+            //                {
+            //                    // ensure ProductMesurementOption has a value, otherwise default to Gallon
+            //                    var measurementOption = toBeUpdated.ProductMesurementOption
+            //                                            ?? ProductsEnumHelpers.ProductMesurementOption.Gallon;
 
-                                decimal paintQuantityValue = UtilitiesHelper.ConvertItems(
-                                    mixture.Size ?? 1,
-                                    1,
-                                    mixture.UnitMeasurement,
-                                    measurementOption
-                                    );
+            //                    decimal paintQuantityValue = UtilitiesHelper.ConvertItems(
+            //                        mixture.Size ?? 1,
+            //                        1,
+            //                        mixture.UnitMeasurement,
+            //                        measurementOption
+            //                        );
 
-                                toBeUpdated.ActualQuantity -= paintQuantityValue;
+            //                    toBeUpdated.ActualQuantity -= paintQuantityValue;
 
-                                 result = await productService.UpdateAsync(toBeUpdated);
-                                if (result)
-                                {
-                                    _logger.LogInformation("Process successful for ProductId {ProductId}", toBeUpdated.Id);
-                                }
-                                else
-                                {
-                                    _logger.LogWarning("Failed to update product with Id {ProductId}", toBeUpdated.Id);
-                                }
-                            }
-                            else
-                            {
-                                _logger.LogWarning("Product with Id {ProductId} not found", mixture.ProductId);
-                            }
-                        }
+            //                     result = await productService.UpdateAsync(toBeUpdated);
+            //                    if (result)
+            //                    {
+            //                        _logger.LogInformation("Process successful for ProductId {ProductId}", toBeUpdated.Id);
+            //                    }
+            //                    else
+            //                    {
+            //                        _logger.LogWarning("Failed to update product with Id {ProductId}", toBeUpdated.Id);
+            //                    }
+            //                }
+            //                else
+            //                {
+            //                    _logger.LogWarning("Product with Id {ProductId} not found", mixture.ProductId);
+            //                }
+            //            }
 
-                    }
-                    if (result)
-                    {
-                        bool resultUpdate = await salesItemService.UpdateSaleItemStatus(item);
-                        if (resultUpdate)
-                        {
-                            _logger.LogInformation("Update sale item successfully");
-                        }
-                    }
+            //        }
+            //        if (result)
+            //        {
+            //            bool resultUpdate = await salesItemService.UpdateSaleItemStatus(item);
+            //            if (resultUpdate)
+            //            {
+            //                _logger.LogInformation("Update sale item successfully");
+            //            }
+            //        }
                    
                     
                     
-                }
-            }
+            //    }
+            //}
            // var products = await productService.GetAllAsync();
 
-            _logger.LogInformation("Fetched {SalesCount} sales and products.", sales.Count);
+            //_logger.LogInformation("Fetched {SalesCount} sales and products.", sales.Count);
         }
         catch (Exception ex)
         {

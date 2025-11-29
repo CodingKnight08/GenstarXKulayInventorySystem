@@ -33,7 +33,9 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins(
                 "https://localhost:7035",                     // Local dev client
-                "http://genstar-kulay-inventory.runasp.net"  // Hosted client
+                "http://genstar-kulay-inventory.runasp.net",
+                "http://twodragon88.premiumasp.net",
+                "http://twodragon88-corp.premiumasp.net"
             )
             .AllowAnyMethod()    // Allow GET, POST, PUT, DELETE, etc.
             .AllowAnyHeader()    // Allow any headers
@@ -130,6 +132,8 @@ builder.Services.AddScoped<ISaleItemService, SaleItemService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
 builder.Services.AddScoped<IOperationsProviderService, OperationsProviderService>();
+builder.Services.AddScoped<IPullOutRequestService, PullOutRequestService>();
+builder.Services.AddScoped<IRequestItemsService, RequestItemsService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]) });

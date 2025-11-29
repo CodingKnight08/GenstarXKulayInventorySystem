@@ -7,8 +7,8 @@ public class SaleItem:BaseEntity
     public int Id { get; set; }
     public int? DailySaleId { get; set; }
     public DailySale? DailySale { get; set; } 
-    public int? ProductId { get; set; }
-    public Product? Product { get; set; }
+    public int? BranchProductId { get; set; }
+    public BranchProduct? BranchProduct { get; set; }
     public string ItemName { get; set; } = string.Empty;
     public decimal Size { get; set; } 
     public string Description { get; set; } = string.Empty;

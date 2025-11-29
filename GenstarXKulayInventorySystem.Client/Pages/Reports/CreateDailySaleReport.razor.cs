@@ -356,7 +356,7 @@ public partial class CreateDailySaleReport
             {
                 if(item.PaintCategory != PaintCategory.Mix)
                 {
-                    decimal landedCost = (item.Product?.CostPrice ?? 0)
+                    decimal landedCost = (item.BranchProduct?.CostPrice ?? 0)
                    * (item.Size ?? 1)
                    * (item.Quantity);
 

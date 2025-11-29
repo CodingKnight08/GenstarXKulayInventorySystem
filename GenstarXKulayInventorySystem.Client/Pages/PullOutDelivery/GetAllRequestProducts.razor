@@ -1,0 +1,70 @@
+﻿@page "/requestitems"
+@using GenstarXKulayInventorySystem.Shared.DTOS;
+<MudMainContent Class="w-auto h-100">
+
+    <MudText Class="mt-4 px-3" Typo="Typo.h5" Align="Align.Left"> Pull Out Requests</MudText>
+    <MudCard Elevation="0" Class="d-flex flex-row align-items-center justify-content-end w-100 mt-2 py-4">
+        <MudButton StartIcon="@Icons.Material.Filled.AddCircle"
+        Variant="Variant.Filled"
+        Color="Color.Info"
+         OnClick="RequestPullOut"
+        Class="me-4">Add PullOut</MudButton>
+    </MudCard>
+
+    @if (!IsLoading)
+    {
+        <MudCard Elevation="0" Class="w-100 d-flex flex-column align-items-center justify-content-center">
+            <div class="px-4 w-100">
+            @* adds left & right padding *@
+                <MudTable T="PullOutRequestDto"
+                          Items="PullOuts"
+                          RowsPerPage="@PageTake"
+                          CurrentPage="@PageSkip"
+                          CurrentPageChanged="OnPageChanged"
+                          RowsPerPageChanged="OnRowsPerPageChanged"
+                          Bordered
+                          Dense
+                          Hover
+                          Elevation="10">
+                      
+            
+
+                <HeaderContent>
+                    <MudTh>Date Requested</MudTh>
+                    <MudTh>Requested From</MudTh>
+                    <MudTh>Date Arrived</MudTh>
+                    <MudTh>Note</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd>@context.DateRequest.ToString("MMMM dd, yyyy hh:mm tt")</MudTd>
+                    <MudTd>@context.BranchRequestedTo.ToString()</MudTd>
+                    <MudTd>@(context.DateDelivered?.ToString("MMMM dd, yyyy hh:mm tt") ?? "Not Delivered Yet")</MudTd>
+                    <MudTd Class="text-truncate">@context.Note</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Variant="Variant.Text" Size="Size.Small" OnClick="() => ViewPullOutDetails(context.Id)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Text" Size="Size.Small" />
+                    </MudTd>
+                </RowTemplate>
+
+                <NoRecordsContent>
+                    <MudText>No Request Items</MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] {5,10,15,20}"/>
+                </PagerContent>
+            </MudTable>
+        </div>
+
+      
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Elevation="0" Class="w-100 d-flex flex-column align-items-center justify-content-center">
+            <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Medium" Rounded="true" />
+            <MudText Align="Align.Center" Typo="Typo.h6">Loading..</MudText>
+        </MudCard>
+    }
+</MudMainContent>
