@@ -5,21 +5,37 @@
         @if (!IsLoading)
         {
             <MudCard Class="p-4 w-100" Elevation="0">
-                <MudTable Items="PullOuts" Hover="true" Bordered="true" Striped="true" Dense="true">
+                <MudTable Items="PullOuts" 
+                        Hover="true"
+                        Bordered="true" 
+                        Striped="true" 
+                        Dense="true" 
+                        RowsPerPage="@PageTake"
+                          CurrentPage="@PageSkip"
+                          CurrentPageChanged="OnPageChanged"
+                          RowsPerPageChanged="OnRowsPerPageChanged">
                     <HeaderContent>
                         <MudTh>Pull Out ID</MudTh>
                         <MudTh>Date Requested</MudTh>
                         <MudTh>Branch</MudTh>
+                        <MudTh>Status</MudTh>
                         <MudTh>Actions</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Pull Out ID">@context.Id.ToString("D10")</MudTd>
                         <MudTd DataLabel="Delivery Date">@context.DateRequest.ToString("MMMM dd,yyyy")</MudTd>
                         <MudTd DataLabel="Customer Name">@context.BranchRequestee.ToString()</MudTd>
+                        <MudTd>@context.Status.ToString()</MudTd>
                         <MudTd>
                             <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Variant="Variant.Text" OnClick="() => ViewPullOut(context.Id)"/>
                         </MudTd>
                     </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Align="Align.Center">No Pull Out Deliveries</MudText>
+                    </NoRecordsContent>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] {10,15,20}" />
+                    </PagerContent>
                 </MudTable>
             </MudCard>
         }

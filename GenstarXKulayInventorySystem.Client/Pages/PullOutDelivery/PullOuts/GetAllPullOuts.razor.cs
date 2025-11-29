@@ -8,6 +8,10 @@ namespace GenstarXKulayInventorySystem.Client.Pages.PullOutDelivery.PullOuts;
 
 public partial class GetAllPullOuts
 {
+    [Parameter, SupplyParameterFromQuery(Name = "pageskip")]
+    public int PageSkip { get; set; } = 0;
+    [Parameter, SupplyParameterFromQuery(Name = "pagetake")]
+    public int PageTake { get; set; } = 10;
     [Inject] protected UserState UserState { get; set; } = default!;
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
@@ -17,8 +21,17 @@ public partial class GetAllPullOuts
     private BranchOption Branch { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        Branch = UserState.Branch ?? BranchOption.Warehouse;
+        Branch = /*UserState.Branch ??*/ BranchOption.Warehouse;
         await LoadPullOutRequests();
+
+    }
+    protected override void OnParametersSet()
+    {
+        if (PageTake <= 0)
+            PageTake = 5;
+
+        if (PageSkip < 0)
+            PageSkip = 0;
 
     }
 
@@ -53,6 +66,26 @@ public partial class GetAllPullOuts
 
     private void ViewPullOut(int id)
     {
-        NavigationManager.NavigateTo($"/pullout/detail/{id}");
+        NavigationManager.NavigateTo($"/pullout/detail/{id}?pageskip={PageSkip}&pagetake={PageTake}");
+    }
+    private void OnPageChanged(int page)
+    {
+        PageSkip = page;
+        UpdateQuery();
+    }
+
+    private void OnRowsPerPageChanged(int size)
+    {
+        PageTake = size;
+        PageSkip = 0;
+        UpdateQuery();
+    }
+
+    private void UpdateQuery()
+    {
+        NavigationManager.NavigateTo(
+            $"/pullouts?pageskip={PageSkip}&pagetake={PageTake}",
+            replace: true
+        );
     }
 }
