@@ -8,18 +8,24 @@
          OnClick="RequestPullOut"
         Class="me-4">Add PullOut</MudButton>
     </MudCard>
-    <MudCard Elevation="0" Class="w-100 d-flex flex-column align-items-center justify-content-center">
-        <div class="px-4 w-100">
+
+    @if (!IsLoading)
+    {
+        <MudCard Elevation="0" Class="w-100 d-flex flex-column align-items-center justify-content-center">
+            <div class="px-4 w-100">
             @* adds left & right padding *@
-            <MudTable Class="w-100"
-                      Items="PullOuts"
-                      T="PullOutRequestDto"
-                      Bordered=true
-                      Dense=true
-                      Elevation="10"
-                      Hover=true
+                <MudTable T="PullOutRequestDto"
+                          Items="PullOuts"
+                          RowsPerPage="@PageTake"
+                          CurrentPage="@PageSkip"
+                          CurrentPageChanged="OnPageChanged"
+                          RowsPerPageChanged="OnRowsPerPageChanged"
+                          Bordered
+                          Dense
+                          Hover
+                          Elevation="10">
                       
-            >
+            
 
                 <HeaderContent>
                     <MudTh>Date Requested</MudTh>
@@ -43,10 +49,20 @@
                 <NoRecordsContent>
                     <MudText>No Request Items</MudText>
                 </NoRecordsContent>
-
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] {5,10,15,20}"/>
+                </PagerContent>
             </MudTable>
         </div>
 
       
-    </MudCard>
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Elevation="0" Class="w-100 d-flex flex-column align-items-center justify-content-center">
+            <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Medium" Rounded="true" />
+            <MudText Align="Align.Center" Typo="Typo.h6">Loading..</MudText>
+        </MudCard>
+    }
 </MudMainContent>

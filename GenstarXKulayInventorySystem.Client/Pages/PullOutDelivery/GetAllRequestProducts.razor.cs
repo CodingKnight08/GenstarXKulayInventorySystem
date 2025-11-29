@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -9,6 +10,10 @@ namespace GenstarXKulayInventorySystem.Client.Pages.PullOutDelivery;
 
 public partial class GetAllRequestProducts
 {
+    [Parameter, SupplyParameterFromQuery(Name = "pageskip")]
+    public int PageSkip { get; set; } = 0;
+    [Parameter, SupplyParameterFromQuery(Name = "pagetake")]
+    public int PageTake { get; set; } = 10;
     [Inject] public UserState UserState { get; set; } = default!;
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ISnackbar SnackBar { get; set; } = default!;
@@ -18,12 +23,21 @@ public partial class GetAllRequestProducts
     protected bool IsLoading { get; set; } = false;
     protected List<PullOutRequestDto> PullOuts { get; set; } = new List<PullOutRequestDto>();
     protected BranchOption Branch { get; set; }
+    
     protected override async Task OnInitializedAsync()
     {
         Branch = UserState.Branch ?? BranchOption.GeneralSantosCity;
         await LoadData();
     }
+    protected override void OnParametersSet()
+    {
+         if(PageTake <= 0)
+            PageTake = 5;
 
+        if (PageSkip < 0)
+            PageSkip = 0;
+
+    }
     protected async Task LoadData()
     {
         IsLoading = true;
@@ -93,6 +107,26 @@ public partial class GetAllRequestProducts
 
     protected void ViewPullOutDetails(int pullOutId)
     {
-        NavigationManager.NavigateTo($"/view-pull-out-request/{pullOutId}");
+        NavigationManager.NavigateTo($"/view-pull-out-request/{pullOutId}?pageskip={PageSkip}&pagetake={PageTake}");
+    }
+    private void OnPageChanged(int page)
+    {
+        PageSkip = page;
+        UpdateQuery();
+    }
+
+    private void OnRowsPerPageChanged(int size)
+    {
+        PageTake = size;
+        PageSkip = 0;
+        UpdateQuery();
+    }
+
+    private void UpdateQuery()
+    {
+        NavigationManager.NavigateTo(
+            $"/requestitems?pageskip={PageSkip}&pagetake={PageTake}",
+            replace: true
+        );
     }
 }
