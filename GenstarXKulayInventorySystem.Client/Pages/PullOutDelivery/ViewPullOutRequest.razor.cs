@@ -9,6 +9,9 @@ namespace GenstarXKulayInventorySystem.Client.Pages.PullOutDelivery;
 public partial class ViewPullOutRequest
 {
     [Parameter] public int PullOutId { get; set; }
+    [Parameter, SupplyParameterFromQuery] public int PageSkip { get; set; } = 0;
+    [Parameter, SupplyParameterFromQuery] public int PageTake { get; set; } = 5;
+
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private UserState UserState { get; set; } = default!;
     [Inject] private ILogger<ViewPullOutRequest> Logger { get; set; } = default!;
@@ -16,14 +19,14 @@ public partial class ViewPullOutRequest
     private PullOutRequestDto PullOutRequest { get; set; } = new PullOutRequestDto();
     private bool IsLoading { get; set; } = false;
     private bool IsEdit { get; set; } = false;
-    private List<BreadcrumbItem> _items =
-   [
-     
-        new("Request Items", href: "/requestitems"),
-        new("View Pull Out", href: null, disabled: true)
-   ];
+    private List<BreadcrumbItem> _items = new();
     protected override async Task OnParametersSetAsync()
     {
+        _items =
+   [
+       new("Request Items", href: $"/requestitems?pageskip={PageSkip}&pagetake={PageTake}"),
+        new("View Pull Out", href: null, disabled: true)
+   ];
         await LoadPullOut();
     }
 

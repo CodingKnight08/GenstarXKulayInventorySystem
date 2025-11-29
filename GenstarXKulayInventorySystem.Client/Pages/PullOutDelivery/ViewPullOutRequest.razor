@@ -6,11 +6,13 @@
 <MudMainContent Class="w-auto h-100 d-flex flex-column gap-3">
     <PageTitle>Pull Out Details</PageTitle>
     <MudBreadcrumbs Items="_items"></MudBreadcrumbs>
-    <MudCard Class="px-5">
+    <MudCard Class="px-5 d-flex flex-column align-content-center">
 
         @if (IsLoading)
         {
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            <MudCard Elevation="0" Class="w-100 d-flex justify-content-center">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </MudCard>
         }
         else if (PullOutRequest == null)
         {
@@ -92,6 +94,7 @@
                     <MudTh>Released Qty</MudTh>
                     <MudTh>Status</MudTh>
                     <MudTh>Branch</MudTh>
+                    <MudTh>Remarks</MudTh>
                 </HeaderContent>
 
                 <RowTemplate>
@@ -125,7 +128,14 @@
                         }
                     </MudTd>
                     <MudTd>@context.Branch</MudTd>
+                    <MudTd>@context.Remarks</MudTd>
                 </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Align="Align.Center" Typo="Typo.h6">No Records</MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] {5,10,15,20}"/>
+                </PagerContent>
             </MudTable>
 
             <MudDivider Class="my-4" />

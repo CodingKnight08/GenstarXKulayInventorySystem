@@ -1,6 +1,8 @@
 ﻿@page "/requestitems"
 @using GenstarXKulayInventorySystem.Shared.DTOS;
 <MudMainContent Class="w-auto h-100">
+
+    <MudText Class="mt-4 px-3" Typo="Typo.h5" Align="Align.Left"> Pull Out Requests</MudText>
     <MudCard Elevation="0" Class="d-flex flex-row align-items-center justify-content-end w-100 mt-2 py-4">
         <MudButton StartIcon="@Icons.Material.Filled.AddCircle"
         Variant="Variant.Filled"
@@ -38,7 +40,7 @@
                 <RowTemplate>
                     <MudTd>@context.DateRequest.ToString("MMMM dd, yyyy hh:mm tt")</MudTd>
                     <MudTd>@context.BranchRequestedTo.ToString()</MudTd>
-                    <MudTd>@(context.DateDelivered?.ToString("MMMM dd, yyyy") ?? "Not Delivered Yet")</MudTd>
+                    <MudTd>@(context.DateDelivered?.ToString("MMMM dd, yyyy hh:mm tt") ?? "Not Delivered Yet")</MudTd>
                     <MudTd Class="text-truncate">@context.Note</MudTd>
                     <MudTd>
                         <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Variant="Variant.Text" Size="Size.Small" OnClick="() => ViewPullOutDetails(context.Id)" />
