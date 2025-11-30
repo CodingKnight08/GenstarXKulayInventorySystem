@@ -249,7 +249,7 @@ public class SalesService:ISalesService
 
             var phNow = PhilippineTime.Now;
 
-            sale.DateOfSales = phNow;
+            sale.DateOfSales = saleDto.DateOfSales;
             sale.CreatedAt = phNow;
             sale.CreatedBy = GetCurrentUsername();
             
