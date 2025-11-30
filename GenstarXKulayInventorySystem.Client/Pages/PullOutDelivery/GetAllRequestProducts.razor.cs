@@ -32,7 +32,7 @@ public partial class GetAllRequestProducts
     protected override void OnParametersSet()
     {
          if(PageTake <= 0)
-            PageTake = 5;
+            PageTake = 10;
 
         if (PageSkip < 0)
             PageSkip = 0;
