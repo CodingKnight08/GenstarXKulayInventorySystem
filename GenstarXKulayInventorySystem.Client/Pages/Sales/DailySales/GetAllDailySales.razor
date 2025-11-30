@@ -33,8 +33,11 @@ else
         </MudItem>
         <MudItem xl="12" lg="12" md="12" sm="12">
                 <MudTable T="DailySaleDto" 
-                          @ref="dailySaleTable"
-                          ServerData="ServerLoadData"
+                          Items="Sales"
+                          RowsPerPage="@PageTake"
+                          CurrentPage="@CurrentPageIndex"
+                          CurrentPageChanged="OnPageChanged"
+                          RowsPerPageChanged="OnRowsPerPageChanged"
                           Dense=true
                           Hover=true
                           Square=true
