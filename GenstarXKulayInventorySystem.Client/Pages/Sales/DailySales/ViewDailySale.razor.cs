@@ -3,12 +3,20 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Sales.DailySales;
 
 public partial class ViewDailySale
 {
     [Parameter] public int Id { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "pageskip")]
+    public int PageSkip { get; set; } = 0;
+    [Parameter, SupplyParameterFromQuery(Name = "pagetake")]
+    public int PageTake { get; set; } = 10;
+
+    [Parameter, SupplyParameterFromQuery(Name = "date")]
+    public string? DateString { get; set; }
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] private UserState UserState { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
@@ -19,10 +27,36 @@ public partial class ViewDailySale
     protected DailySaleDto EditableSale { get; set; } = new DailySaleDto();
     protected bool IsLoading { get; set; } = false;
     protected bool IsEdit { get; set; } = false;
+    protected DateTime SelectedDate { get; set; } = PhilippineTime.Now;
     protected bool IsSameDate => Sales.DateOfSales.Date == UtilitiesHelper.GetPhilippineTime().Date || Sales.PaymentType == null;
+    protected List<BreadcrumbItem> _items { get; set; } = new List<BreadcrumbItem>();
     protected override async Task OnInitializedAsync()
     {
         await LoadSale();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (PageTake <= 0)
+            PageTake = 10;
+
+        if (PageSkip < 0)
+            PageSkip = 0;
+
+        if (!string.IsNullOrWhiteSpace(DateString))
+        {
+            if (DateTime.TryParse(DateString, out var parsedDate))
+            {
+                SelectedDate = parsedDate;
+            }
+        }
+
+        _items =
+           [
+               new("Daily Sales", href: $"/sales?pageskip={PageSkip}&pagetake={PageTake}&date={SelectedDate:yyyy-MM-dd}"),
+                    new("View Daily Sale", href: null, disabled: true)
+           ];
+
     }
 
     protected async Task LoadSaleItems()
@@ -59,12 +93,7 @@ public partial class ViewDailySale
         }
     }
 
-        protected List<BreadcrumbItem> _items =
-       [
-           new("Daily Sales", href: "/sales"),
-            new("View Daily Sale", href: null, disabled: true)
-       ];
-
+    
     protected void UpdateSale() {
         if (!IsEdit)
         {
