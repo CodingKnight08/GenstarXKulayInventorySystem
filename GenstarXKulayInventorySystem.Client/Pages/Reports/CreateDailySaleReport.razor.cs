@@ -26,7 +26,7 @@ public partial class CreateDailySaleReport
     protected List<BillingDto> Expenses { get; set; } = new();
     protected List<DailySaleDto> AllDailySaleTobeAdded { get; set; } = new List<DailySaleDto>();
     protected List<PurchaseOrderDto> PurchaseOrders { get; set; } = new();
-    protected DateTime ReportDate { get; set; } = DateTime.UtcNow;
+    protected DateTime ReportDate { get; set; } 
     protected bool IsLoading { get; set; } = false;
     protected bool IsSaving { get; set; }  = false;
     protected bool IsValid => DailySaleReport.CashIn > 0 && DailySaleReport.BeginningBalance > 0 && !string.IsNullOrWhiteSpace(DailySaleReport.PreparedBy) ;
@@ -39,6 +39,9 @@ public partial class CreateDailySaleReport
         IsLoading = true;
         try
         {
+            var now = PhilippineTime.Now;
+            ReportDate = now;
+            DailySaleReport.Date = ReportDate;
             await LoadPaidSales();
             await LoadUnpaidSales();
             await LoadCollectedSales();
