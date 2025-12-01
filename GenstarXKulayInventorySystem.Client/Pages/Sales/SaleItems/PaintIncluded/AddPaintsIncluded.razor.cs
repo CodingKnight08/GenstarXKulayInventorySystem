@@ -16,9 +16,9 @@ public partial class AddPaintsIncluded
 
 
     protected List<ProductBrandDto> Brands { get; set; } = new List<ProductBrandDto>();
-    protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
+    protected List<BranchProductDto> Products { get; set; } = new List<BranchProductDto>();
     protected ProductBrandDto SelectedBrand { get; set; } = new ProductBrandDto();
-    protected ProductDto SelectedProduct { get; set; } = new ProductDto();
+    protected BranchProductDto SelectedProduct { get; set; } = new BranchProductDto();
     protected string BrandName { get; set; } = string.Empty;
     protected InvolvePaintsDto AddedPaint { get; set; } = new InvolvePaintsDto();
 
@@ -59,8 +59,8 @@ public partial class AddPaintsIncluded
         {
             var response = await HttpClient.GetAsync($"api/product/all/by/{SelectedBrand.Id}/{Branch}");
             response.EnsureSuccessStatusCode();
-            var products = await response.Content.ReadFromJsonAsync<List<ProductDto>>();
-            Products = products ?? new List<ProductDto>();
+            var products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>();
+            Products = products ?? new List<BranchProductDto>();
         }
         catch (Exception ex) { 
             Logger.LogError(ex.Message);
@@ -87,14 +87,14 @@ public partial class AddPaintsIncluded
         return Task.FromResult(result);
     }
 
-    protected Task<IEnumerable<ProductDto>> SearchProducts(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<BranchProductDto>> SearchProducts(string value, CancellationToken cancellationToken)
     {
         if (Products is null || !Products.Any())
-            return Task.FromResult(Enumerable.Empty<ProductDto>());
+            return Task.FromResult(Enumerable.Empty<BranchProductDto>());
 
         var result = Products
             .Where(p => string.IsNullOrWhiteSpace(value) ||
-                        p.ProductNameAndUnit.Contains(value, StringComparison.OrdinalIgnoreCase))
+                        p.MasterProduct.ProductName.Contains(value, StringComparison.OrdinalIgnoreCase))
             .GroupBy(p => p.Id)
             .Select(g => g.First());
 
@@ -107,7 +107,7 @@ public partial class AddPaintsIncluded
         {
             SelectedBrand = new ProductBrandDto();
             Products.Clear();
-            SelectedProduct = new ProductDto();
+            SelectedProduct = new BranchProductDto();
             AddedPaint.ProductId = 0;
             return;
         }
@@ -116,7 +116,7 @@ public partial class AddPaintsIncluded
         BrandName = brand.BrandName;
 
         // Clear old selections
-        SelectedProduct = new ProductDto();
+        SelectedProduct = new BranchProductDto();
         AddedPaint.BrandId = brand.Id;
         AddedPaint.ProductId = 0;
         AddedPaint.BrandName = brand.BrandName;
@@ -126,21 +126,19 @@ public partial class AddPaintsIncluded
     }
 
 
-    protected void OnProductSelect(ProductDto product)
+    protected void OnProductSelect(BranchProductDto product)
     {
+
         if (product is null || Products is null)
             return;
 
-        SelectedProduct = Products.FirstOrDefault(p =>
-            !string.IsNullOrWhiteSpace(p.ProductName) &&
-            string.Equals(p.ProductName, product.ProductName, StringComparison.OrdinalIgnoreCase)
-        ) ?? new ProductDto();
+       SelectedProduct = product;
 
         if (SelectedProduct.Id != 0)
         {
             AddedPaint.ProductId = SelectedProduct.Id;
-            AddedPaint.ProductName = SelectedProduct.ProductName;
-            AddedPaint.ProductCost = SelectedProduct.CostPrice;
+            AddedPaint.ProductName = SelectedProduct.MasterProduct?.ProductName ?? string.Empty;
+            AddedPaint.ProductCost = SelectedProduct.CostPrice ?? 0;
             AddedPaint.ProductUnit = SelectedProduct.ProductMesurementOption ?? ProductMesurementOption.Gallon;
             StateHasChanged();
         }
@@ -158,5 +156,20 @@ public partial class AddPaintsIncluded
     protected void Cancel()
     {
         Dialog.Cancel();
+    }
+    protected void OnSizeChanged(decimal? size)
+    {
+        AddedPaint.Size = size;
+        ComputeTotalPrice();
+    }
+    protected void OnQuantityChanged(decimal quantity)
+    {
+        AddedPaint.Quantity = quantity;
+        ComputeTotalPrice();
+    }
+    protected void ComputeTotalPrice()
+    {
+        AddedPaint.ProductCost = (AddedPaint.Size ?? 0) * (SelectedProduct.CostPrice ?? 0) * (AddedPaint.Quantity);
+        StateHasChanged();
     }
 }
