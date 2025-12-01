@@ -198,6 +198,8 @@ public partial class CreateDailySale
     private void HandleSaleItemsChanged(List<SaleItemDto> saleItems)
     {
         Sale.SaleItems = saleItems; // 🔗 Bind sale items to DailySaleDto
+        Sale.TotalAmount = saleItems.Sum(item => item.TotalPrice); // 🔗 Update total amount
+        StateHasChanged();
     }
 
    
