@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Billings.OperationalBillings;
 
@@ -26,8 +27,8 @@ public partial class CreateOperationalBilling
     protected override async Task OnInitializedAsync()
     {
         Billing.Category = BillingCategory.Logistics;
-        Billing.DateOfBilling = DateTime.UtcNow;
-        Billing.Branch = UtilitiesHelper.GetBillingBranch(UserState.Branch.GetValueOrDefault());
+        Billing.DateOfBilling = PhilippineTime.Now;
+        Billing.Branch = GetBillingBranch(UserState.Branch.GetValueOrDefault());
         await LoadProviders();
     }
 
