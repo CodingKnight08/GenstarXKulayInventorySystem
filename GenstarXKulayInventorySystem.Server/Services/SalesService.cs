@@ -188,21 +188,27 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(s => s.SaleItems)
-            .ThenInclude(bp => bp.BranchProduct)
+                .ThenInclude(bp => bp.BranchProduct)
             .Where(ds => !ds.IsDeleted
                       && !ds.IsPaid
                       && ds.IsApproved
                       && ds.Branch == branch
                       && ds.UpdatedAt == null
                       && ds.PaymentType == null
-                      && ds.IsChargedSales)
+                      && ds.IsChargedSales
+                      && ds.PaymentTermsOption != PaymentTermsOption.Today
+                      && ds.CreatedAt >= startOfDay      
+                      && ds.CreatedAt < endOfDay)
+                    
+            // ✅ date filter end
             .ToListAsync();
 
-        if (unpaidDailySales.Count == 0)
+        if (!unpaidDailySales.Any())
             return new List<DailySaleDto>();
 
         return _mapper.Map<List<DailySaleDto>>(unpaidDailySales);
     }
+
 
     public async Task<List<DailySaleDto>> GetAllCollectionAsync(DateTime date, BranchOption branch)
     {
@@ -294,7 +300,12 @@ public class SalesService:ISalesService
 
             existingSale.UpdatedAt = PhilippineTime.Now;
             existingSale.UpdatedBy = GetCurrentUsername();
-
+            existingSale.TotalAmount = Math.Round(
+                (saleDto.SaleItems?.Sum(x =>
+                    (x.ItemPrice * x.Quantity * (x.Size ?? 1))
+                ) ?? 0)
+                + (saleDto.Commission ?? 0),
+                2);
             existingSale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
                 existingSale.DateOfSales,

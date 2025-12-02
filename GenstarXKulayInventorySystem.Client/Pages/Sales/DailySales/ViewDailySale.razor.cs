@@ -112,7 +112,9 @@ public partial class ViewDailySale
                 CreatedAt = Sales.CreatedAt,
                 CustomPaymentTermsOption = Sales.CustomPaymentTermsOption,
                 ExpectedPaymentDate = Sales.ExpectedPaymentDate,
-                SaleItems = Sales.SaleItems
+                SaleItems = Sales.SaleItems,
+                IsApproved = Sales.IsApproved,
+                Commission = Sales.Commission
 
             };
         }

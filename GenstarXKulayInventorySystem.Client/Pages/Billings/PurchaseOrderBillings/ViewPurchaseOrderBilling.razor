@@ -82,7 +82,7 @@
                         <MudTh>Unit</MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd>@context.Product?.ProductName</MudTd>
+                        <MudTd>@context.BranchProduct?.MasterProduct?.ProductName</MudTd>
                         <MudTd>@context.ItemQuantity</MudTd>
                         <MudTd>₱@context.ItemAmount?.ToString("N2")</MudTd>
 

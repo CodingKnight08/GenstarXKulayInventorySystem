@@ -32,7 +32,13 @@ public partial class CreateSaleItem
     protected bool OverridePrice { get; set; } = false;
     protected decimal PriceItem { get; set; } = 0;
 
-    protected bool IsValid => !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) && PriceItem > 0 && SaleItemDto.Quantity > 0;
+    protected bool IsValid =>
+     !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) &&
+     (
+         SaleItemDto.ItemName.Contains("catalyst", StringComparison.OrdinalIgnoreCase)
+         ||
+         (PriceItem > 0 && SaleItemDto.Quantity > 0)
+     );
     protected override async Task OnInitializedAsync()
     {
         await LoadBrands();
