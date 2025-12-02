@@ -102,9 +102,19 @@ public class BillingService:IBillingService
                 return false;
             var billing = _mapper.Map<Billing>(billingDto);
             var phNow = PhilippineTime.Now;
+            var today = phNow.Date;
             if (billing.IsPaid)
-            {
-                billing.DatePaid = phNow;
+{
+                // ✅ Paid but billing is for a past date (ex: yesterday)
+                if (billing.DateOfBilling.Date < today)
+                {
+                    billing.DatePaid = billing.DateOfBilling;
+                }
+                else
+                {
+                    // ✅ Paid today for today
+                    billing.DatePaid = phNow;
+                }
             }
             billing.CreatedBy = GetCurrentUsername();
             billing.CreatedAt = DateTime.UtcNow;

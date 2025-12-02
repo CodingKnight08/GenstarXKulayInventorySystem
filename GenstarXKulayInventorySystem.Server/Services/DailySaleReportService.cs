@@ -66,23 +66,21 @@ public class DailySaleReportService : IDailySaleReportService
         try
         {
             // Always use PH time instead of UTC
-            var phZone = UtilitiesHelper.PhilippineTime.Now;
-            var todayPH = phZone.Date;
+            
 
             // Check for existing report on the same PH date
             var existingReport = await _context.DailySaleReports
                 .AsNoTracking()
                 .FirstOrDefaultAsync(dr => !dr.IsDeleted &&
                                            dr.Branch == reportDto.Branch &&
-                                           dr.Date.Date == todayPH);
+                                           dr.Date.Date == reportDto.Date.Value.Date);
 
             if (existingReport != null)
                 return false;
 
             var report = _mapper.Map<DailySaleReport>(reportDto);
 
-            report.Date = phZone;
-            report.CreatedAt = phZone;
+            report.CreatedAt = reportDto.Date ?? PhilippineTime.Now;
             report.CreatedBy = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
 
             // Detach related entities to avoid EF re-insert issues
