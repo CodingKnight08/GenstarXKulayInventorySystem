@@ -21,12 +21,14 @@ public partial class ViewDailySaleReport
     protected List<DailySaleDto> NonVoice { get; set; } = new();
     protected List<DailySaleDto> ChargeSales { get; set; } = new List<DailySaleDto>();
     protected bool IsLoading { get; set; } = true;
+    protected decimal TotalNetIncome { get; set; } = 0;
     protected override async Task OnInitializedAsync()
     {
         await LoadReport();
         Invoices = DailySaleReport.DailySales.Where(x => x.SalesOption == PurchaseRecieptOption.BIR && x.PaymentType != null && x.UpdatedAt == null).ToList();
         NonVoice = DailySaleReport.DailySales.Where(x => x.SalesOption == PurchaseRecieptOption.NonBIR && x.PaymentType != null && x.UpdatedAt == null).ToList();
         ChargeSales = DailySaleReport.DailySales.Where(x => x.SalesOption == null || x.UpdatedAt.HasValue).ToList();
+        TotalNetIncome = (DailySaleReport.TotalSales - DailySaleReport.LandedCost ?? 0) - DailySaleReport.TotalExpenses ?? 0;
     }
 
     protected async Task LoadReport()
