@@ -8,7 +8,7 @@ using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 
 [ApiController]
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 public class SalesController : ControllerBase
 {
@@ -51,6 +51,16 @@ public class SalesController : ControllerBase
             return StatusCode(500, $"Error retrieving daily sales: {ex.Message}");
         }
     }
+    [HttpGet("all/{branch}/{date}")]
+    public async Task<ActionResult<List<DailySaleDto>>> GetDailySalesByBranch(
+        BranchOption branch,
+        DateTime date)
+    {
+        var sales = await _saleService.GetAllDailySaleByBranch(branch, date);
+
+        return Ok(sales ?? new List<DailySaleDto>());
+    }
+
 
     [HttpGet("all/range/{range}")]
     public async Task<ActionResult<List<DailySaleDto>>> GetDailySalesByRange(DateRangeOption range)

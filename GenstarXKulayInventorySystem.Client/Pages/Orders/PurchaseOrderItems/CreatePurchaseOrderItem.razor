@@ -23,14 +23,14 @@
 
             <!-- Product -->
             <MudItem xl="6" lg="6" sm="12">
-                <MudAutocomplete T="ProductDto"
+                <MudAutocomplete T="BranchProductDto"
                                  Label="Product Name"
                                  Dense="true"
                                  Placeholder="Type or select product"
                                  SearchFunc="SearchProducts"
                                  Value="SelectedProduct"
                                  ValueChanged="OnProductSelect"
-                                 ToStringFunc="p => p?.ProductNameAndUnit"
+                                 ToStringFunc="p => p?.MasterProduct?.ProductName"
                                  Clearable="true"
                                  CoerceText="false"
                                  CoerceValue="false"

@@ -32,7 +32,13 @@ public partial class CreateSaleItem
     protected bool OverridePrice { get; set; } = false;
     protected decimal PriceItem { get; set; } = 0;
 
-    protected bool IsValid => !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) && PriceItem > 0 && SaleItemDto.Quantity > 0;
+    protected bool IsValid =>
+     !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) &&
+     (
+         SaleItemDto.ItemName.Contains("catalyst", StringComparison.OrdinalIgnoreCase)
+         ||
+         (PriceItem > 0 && SaleItemDto.Quantity > 0)
+     );
     protected override async Task OnInitializedAsync()
     {
         await LoadBrands();
@@ -215,6 +221,10 @@ public partial class CreateSaleItem
         {
             ComputeNotBelowWholeSale();
         }
+        else
+        {
+            SaleItemDto.HasDiscount = SaleItemDto.TotalPrice - Paints.Sum(e => e.ProductCost) <= 0;
+        }
         SaleItemDto.ItemPrice = PriceItem;
         if (SaleItemDto.BranchProductId != null && IsWholeSale && SaleItemDto.ItemPrice == SelectedProductFromList?.WholeSalePrice.GetValueOrDefault())
         {
@@ -362,6 +372,19 @@ public partial class CreateSaleItem
     {
         SaleItemDto.Quantity = newQty;
         RecalculateTotalPrice();
+    }
+    protected void RemovePaintIncluded(InvolvePaintsDto item)
+    {
+        Paints.Remove(item);
+
+        RecalculateMixDiscount();
+        StateHasChanged();
+    }
+    private void RecalculateMixDiscount()
+    {
+        var paintsTotal = Paints.Sum(p => p.ProductCost);
+
+        SaleItemDto.HasDiscount = SaleItemDto.TotalPrice - paintsTotal <= 0;
     }
 
 }

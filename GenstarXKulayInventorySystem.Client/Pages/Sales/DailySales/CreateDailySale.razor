@@ -115,6 +115,18 @@
             <MudItem xl="12" lg="12" md="12" sm="12">
                 <GetAllSaleItemsToBeAdded OnSaleItemsChanged="HandleSaleItemsChanged" Branch="Sale.Branch" />
             </MudItem>
+            <MudItem xs="12" lg="4" Class="d-flex flex-row align-items-center justify-content-end">
+                <MudNumericField T="decimal?"
+                                 Variant="Variant.Outlined"
+                                 Label="Total Amount"
+                                 ReadOnly
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 AdornmentColor="Color.Default"
+                                 HideSpinButtons=true
+                                 Format="N2"
+                                 @bind-Value="Sale.TotalAmount"  />
+            </MudItem>
         </MudGrid>
 
         <!-- Footer buttons pinned to bottom -->

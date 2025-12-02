@@ -14,16 +14,16 @@ public partial class CreatePurchaseOrderItem
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
 
     protected List<ProductBrandDto> ProductBrands { get; set; } = new();
-    protected List<ProductDto> Products { get; set; } = new();
+    protected List<BranchProductDto> Products { get; set; } = new();
     protected PurchaseOrderItemDto PurchaseOrderItemDto { get; set; } = new();
 
     protected ProductBrandDto? SelectedBrand { get; set; }
-    protected ProductDto? SelectedProduct { get; set; }
+    protected BranchProductDto? SelectedProduct { get; set; }
     protected bool IsLoading { get; set; } = false;
 
     protected bool IsValid =>
         PurchaseOrderItemDto.ProductBrandId.HasValue &&
-        PurchaseOrderItemDto.ProductId.HasValue &&
+        PurchaseOrderItemDto.BranchProductId.HasValue &&
         PurchaseOrderItemDto.PurchaseItemMeasurementOption.HasValue &&
         PurchaseOrderItemDto.ItemQuantity > 0 &&
         PurchaseOrderItemDto.ItemAmount > 0;
@@ -65,7 +65,7 @@ public partial class CreatePurchaseOrderItem
                 Snackbar.Add("No products found for this brand.", Severity.Warning);
                 return;
             }
-            Products = await response.Content.ReadFromJsonAsync<List<ProductDto>>() ?? new();
+            Products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>() ?? new();
         }
         catch (Exception ex)
         {
@@ -84,14 +84,14 @@ public partial class CreatePurchaseOrderItem
         return Task.FromResult(result);
     }
 
-    protected Task<IEnumerable<ProductDto>> SearchProducts(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<BranchProductDto>> SearchProducts(string value, CancellationToken cancellationToken)
     {
         if (Products is null || !Products.Any())
-            return Task.FromResult(Enumerable.Empty<ProductDto>());
+            return Task.FromResult(Enumerable.Empty<BranchProductDto>());
 
         var result = Products
             .Where(p => string.IsNullOrWhiteSpace(value) ||
-                        p.ProductNameAndUnit.Contains(value, StringComparison.OrdinalIgnoreCase))
+                        p.MasterProduct.ProductName.Contains(value, StringComparison.OrdinalIgnoreCase))
             .GroupBy(p => p.Id)
             .Select(g => g.First());
         return Task.FromResult(result);
@@ -103,27 +103,27 @@ public partial class CreatePurchaseOrderItem
 
         PurchaseOrderItemDto.ProductBrandId = brand?.Id;
         PurchaseOrderItemDto.ProductBrand = brand;
-        PurchaseOrderItemDto.ProductId = null;
-        PurchaseOrderItemDto.Product = null;
+        PurchaseOrderItemDto.BranchProductId = null;
+        PurchaseOrderItemDto.BranchProduct = null;
         SelectedProduct = null;
 
         await LoadProductsByBrand(brand.Id);
     }
 
-    protected void OnProductSelect(ProductDto product)
+    protected void OnProductSelect(BranchProductDto product)
     {
         SelectedProduct = product;
 
         if (product is null)
         {
-            PurchaseOrderItemDto.ProductId = null;
-            PurchaseOrderItemDto.Product = null;
+            PurchaseOrderItemDto.BranchProductId = null;
+            PurchaseOrderItemDto.BranchProduct = null;
             PurchaseOrderItemDto.PurchaseItemMeasurementOption = null;
             return;
         }
 
-        PurchaseOrderItemDto.ProductId = product.Id;
-        PurchaseOrderItemDto.Product = product;
+        PurchaseOrderItemDto.BranchProductId = product.Id;
+        PurchaseOrderItemDto.BranchProduct = product;
         PurchaseOrderItemDto.PurchaseItemMeasurementOption = product.ProductMesurementOption;
     }
 

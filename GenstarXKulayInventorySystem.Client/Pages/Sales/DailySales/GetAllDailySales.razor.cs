@@ -1,14 +1,23 @@
-﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Sales.DailySales;
 
 public partial class GetAllDailySales
 {
+    [Parameter, SupplyParameterFromQuery(Name = "pageskip")]
+    public int PageSkip { get; set; } = 0;
+    [Parameter, SupplyParameterFromQuery(Name ="pagetake")]
+    public int PageTake { get; set; } = 10;
+    [Parameter, SupplyParameterFromQuery(Name = "date")]
+    public string? DateString { get; set; } 
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected ILogger<GetAllDailySales> Logger { get; set; } = default!;
@@ -21,11 +30,75 @@ public partial class GetAllDailySales
     protected bool IsLoading { get; set; } = false;
     protected DateTime Today { get; set; } = DateTime.Now;
     protected DateTime SelectedDate { get; set; } = DateTime.Now;
-    protected override void OnInitialized()
+    private int CurrentPageIndex { get; set; }
+    protected override void OnInitialized ()
     {
-        Branch = UserState.Branch.GetValueOrDefault(); 
+        Branch = UserState.Branch.GetValueOrDefault();
+        //await LoadData();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await LoadData();
+    }
+   
+    protected override async Task OnParametersSetAsync()
+    {
+        if (PageTake <= 0)
+            PageTake = 10;
+
+        if (PageSkip < 0)
+            PageSkip = 0;
+
+        if (!string.IsNullOrEmpty(DateString) && DateTime.TryParse(DateString, out var parsedDate))
+        {
+            SelectedDate = parsedDate;
+            
+        }
+        
+
+        CurrentPageIndex = PageTake > 0 ? PageSkip / PageTake : 0;
+
+        // Load sales whenever query parameters change
+        await LoadData();
+    }
+
+
+
+    protected async Task LoadData()
+    {
+        IsLoading = true;
+        try
+        {
+            var response = await HttpClient.GetAsync($"api/sales/all/{Branch}/{SelectedDate:yyyy-MM-dd}");
+            if (response.IsSuccessStatusCode)
+            {
+                var sales = await response.Content.ReadFromJsonAsync<List<DailySaleDto>>();
+                if (sales != null)
+                {
+                    Sales = sales;
+                    if (Sales.Count == 0)
+                    {
+                        Snackbar.Add("No Sales Found", Severity.Warning);
+                    }
+                }
+            }
+            else
+            {
+                Snackbar.Add("Failed to load sales", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error loading sales data: {ex.Message}");
+            Snackbar.Add("An error occurred while loading data", Severity.Error);
+        }
+        finally
+        {
+            await Task.Delay(1000);
+            IsLoading = false;
+        }
+    }
     protected async Task<TableData<DailySaleDto>> ServerLoadData(TableState state, CancellationToken cancellationToken)
     {
         IsLoading = true;
@@ -68,16 +141,39 @@ public partial class GetAllDailySales
             return;
 
         SelectedDate = newDate.Value;
-        await dailySaleTable!.ReloadServerData();
+        PageSkip = 0;
+        UpdateQuery();
+        await LoadData();
     }
 
+    private void OnPageChanged(int pageIndex)
+    {
+        CurrentPageIndex = pageIndex;
+        PageSkip = pageIndex * PageTake;
+        UpdateQuery();
+    }
+
+    private void OnRowsPerPageChanged(int size)
+    {
+        PageTake = size;
+        PageSkip = 0;
+        UpdateQuery();
+    }
+
+    private void UpdateQuery()
+    {
+        NavigationManager.NavigateTo(
+            $"/sales?pageskip={PageSkip}&pagetake={PageTake}&date={SelectedDate:yyyy-MM-dd}",
+            replace: true
+        );
+    }
     protected void CreateSaleAsync()
     {
-        NavigationManager.NavigateTo("/sales/create");
+        NavigationManager.NavigateTo($"/sales/create?pageskip={PageSkip}&pagetake={PageTake}&date={SelectedDate:yyyy-MM-dd}");
     }
 
     protected void ViewSaleAsync(int Id)
     {
-        NavigationManager.NavigateTo($"sales/view/{Id}");
+        NavigationManager.NavigateTo($"sales/view/{Id}?pageskip={PageSkip}&pagetake={PageTake}&date={SelectedDate:yyyy-MM-dd}");
     }
 }

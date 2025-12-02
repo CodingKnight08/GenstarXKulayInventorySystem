@@ -58,9 +58,9 @@ public class InventoryDbContext: IdentityDbContext<User>
         // PurchaseOrderItem → Product, ProductBrand
         modelBuilder.Entity<PurchaseOrderItem>(entity =>
         {
-            entity.HasOne(poi => poi.Product)
+            entity.HasOne(poi => poi.BranchProduct)
                   .WithMany()
-                  .HasForeignKey(poi => poi.ProductId)
+                  .HasForeignKey(poi => poi.BranchProductId)
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(poi => poi.ProductBrand)

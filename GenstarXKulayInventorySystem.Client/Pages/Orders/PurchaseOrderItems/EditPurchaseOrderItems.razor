@@ -24,7 +24,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd>@(context.ProductBrand?.BrandName ?? "None")</MudTd>
-        <MudTd>@(context.Product?.ProductName ?? "None")</MudTd>
+        <MudTd>@(context.BranchProduct?.MasterProduct?.ProductName ?? "None")</MudTd>
         <MudTd>
            <MudSelect 
                     T="ProductMesurementOption?"

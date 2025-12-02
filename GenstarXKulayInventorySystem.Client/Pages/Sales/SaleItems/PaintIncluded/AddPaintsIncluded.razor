@@ -19,7 +19,7 @@
                                  ResetValueOnEmptyText="false" />
             </MudItem>
             <MudItem xl="6">
-                <MudAutocomplete T="ProductDto"
+                <MudAutocomplete T="BranchProductDto"
                                  Label="Select Product"
                                  Dense="true"
                                  Clearable="true"
@@ -27,13 +27,10 @@
                                  ResetValueOnEmptyText="true"
                                  SearchFunc="SearchProducts"
                                  ValueChanged="OnProductSelect"
-                                 ToStringFunc="p => p.ProductName"
+                                 ToStringFunc="p => p?.MasterProduct?.ProductName ?? string.Empty"
                                  MaxItems="500"
                                  Placeholder="Type to search product..."
                                  ShowProgressIndicator="IsProductLoading" />
-            </MudItem>
-            <MudItem xl="4">
-                <MudNumericField T="decimal?" Label="Size" @bind-Value="AddedPaint.Size" Variant="Variant.Text" Placeholder="Enter Size eg. 1000 (ml)" />
             </MudItem>
             <MudItem xl="3">
                 <MudSelect T="ProductMesurementOption" @bind-Value="AddedPaint.UnitMeasurement" Label="Unit">
@@ -45,6 +42,16 @@
                     }
                 </MudSelect>
             </MudItem>
+            <MudItem xl="4">
+                <MudNumericField T="decimal?" Label="Size" Value="AddedPaint.Size" Variant="Variant.Text" Placeholder="Enter Size eg. 1000 (ml)" ValueChanged="OnSizeChanged" HideSpinButtons=true />
+            </MudItem>
+            <MudItem xs="12" xl="4" lg="4">
+                <MudNumericField T="decimal" Label="Quantity" Value="AddedPaint.Quantity" Variant="Variant.Text" Placeholder="Enter Quantity" ValueChanged="OnQuantityChanged" HideSpinButtons=true />
+            </MudItem>
+            <MudItem xl="4">
+                <MudNumericField T="decimal" Label="Total Cost" Value="AddedPaint.ProductCost" Variant="Variant.Text" ReadOnly="true" Format="F2" HideSpinButtons=true />
+            </MudItem>
+
         </MudGrid>
     </DialogContent>
     <DialogActions>

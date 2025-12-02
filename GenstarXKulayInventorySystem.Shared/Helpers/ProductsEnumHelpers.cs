@@ -42,7 +42,8 @@ public class ProductsEnumHelpers
         SquareMeter,
         CubicMeter,
         Pail,
-        Set
+        Set,
+        Sack
 
     }
 

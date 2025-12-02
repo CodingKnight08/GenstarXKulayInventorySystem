@@ -115,7 +115,7 @@ public class PurchaseOrderService:IPurchaseOrderService
             {
                 item.PurchaseOrder = null;
                 item.ProductBrand = null;
-                item.Product = null;
+                item.BranchProduct = null;
                 item.CreatedBy = purchaseOrder.CreatedBy;
                 item.CreatedAt = purchaseOrder.PurchaseOrderDate;
             }
