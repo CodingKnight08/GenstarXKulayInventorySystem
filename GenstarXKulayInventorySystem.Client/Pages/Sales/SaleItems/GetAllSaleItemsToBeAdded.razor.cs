@@ -40,7 +40,7 @@ public partial class GetAllSaleItemsToBeAdded
                 if (saleItem != null)
                 {
                     bool exists = SaleItemsToBeAdded.Any(x =>
-                        x.BranchProductId == saleItem.BranchProductId ||
+                        x.BranchProductId == saleItem.BranchProductId &&
                         string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
 
                     if (!exists)
