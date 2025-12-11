@@ -116,6 +116,7 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .WithMany(dsr => dsr.DailySales)
                   .HasForeignKey(ds => ds.DailySaleReportId)
                   .OnDelete(DeleteBehavior.SetNull);
+          
 
             entity.Property(ds => ds.TotalAmount).HasColumnType("decimal(18,2)");
             entity.Property(ds => ds.Commission).HasColumnType("numeric(18,2)");
@@ -137,6 +138,8 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(si => si.ItemPrice).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Size).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Quantity).HasColumnType("decimal(18,2)");
+            entity.Property(si => si.CostPrice).HasColumnType("decimal(18,2)");
+
 
             entity.Property(si => si.BranchPurchased)
                   .HasConversion<int>();
@@ -267,7 +270,29 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(rpi => rpi.PullOutRequestId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
+        modelBuilder.Entity<ReturnItem>(entity =>
+        {
+            entity.HasOne(ri => ri.DailySale)
+                  .WithMany(ds => ds.ReturnItems)
+                  .HasForeignKey(ri => ri.DailySaleId)
+                  .OnDelete(DeleteBehavior.Cascade);
 
+            entity.HasOne(ri => ri.BranchProduct)
+                  .WithMany()
+                  .HasForeignKey(ri => ri.BranchProductId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.Property(ri => ri.ItemName)
+                  .HasMaxLength(200);
+
+            entity.Property(ri => ri.Description)
+                  .HasMaxLength(500);
+
+            entity.Property(ri => ri.Size).HasColumnType("decimal(18,2)");
+            entity.Property(ri => ri.Quantity).HasColumnType("decimal(18,2)");
+            entity.Property(ri => ri.ItemPrice).HasColumnType("decimal(18,2)");
+            entity.Property(ri => ri.TotalPrice).HasColumnType("decimal(18,2)");
+        });
 
         base.OnModelCreating(modelBuilder);
     }
@@ -295,6 +320,7 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<PullOutRequest> PullOutRequests { get; set; }
     public DbSet<GlobalProduct> GlobalProducts { get; set; }
     public DbSet<BranchProduct> BranchProducts { get; set; }
+    public DbSet<ReturnItem> ReturnItems { get; set; }
 
     public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {
