@@ -23,7 +23,7 @@ public class DailySaleReportService : IDailySaleReportService
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
     }
-
+    -
     public async Task<List<DailySaleReportDto>> GetAllDailyReportAsync(BranchOption branch)
     {
         List<DailySaleReport> reports = await _context.DailySaleReports
@@ -81,7 +81,7 @@ public class DailySaleReportService : IDailySaleReportService
 
             var report = _mapper.Map<DailySaleReport>(reportDto);
 
-            report.Date = phZone;
+            report.Date = reportDto.Date?? phZone;
             report.CreatedAt = phZone;
             report.CreatedBy = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
 
