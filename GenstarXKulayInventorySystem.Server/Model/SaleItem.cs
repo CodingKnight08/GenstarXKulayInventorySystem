@@ -20,4 +20,5 @@ public class SaleItem:BaseEntity
     public PaintCategory PaintCategory { get; set; } = PaintCategory.None;
     public string DataList { get; set; } = string.Empty;
     public bool IsDeducted { get; set; } 
-}
+    public decimal CostPrice { get; set; }
+    }
