@@ -23,7 +23,7 @@ public class SaleItemDto:BaseEntityDto
     public List<InvolvePaintsDto> DataList { get; set; } = new List<InvolvePaintsDto>();
     public bool IsDeducted { get; set; } = false;
     public decimal TotalPrice { get; set; } = 0;
-    
+    public decimal CostPrice { get; set; }
     public bool HasDiscount { get; set; } = false;
 }
 
@@ -39,4 +39,5 @@ public class InvolvePaintsDto
     public decimal ProductCost { get; set; }
     public ProductMesurementOption ProductUnit { get; set; }
     public decimal Quantity { get; set; } = 1;
+    public decimal CostPrice { get; set; }
 }
