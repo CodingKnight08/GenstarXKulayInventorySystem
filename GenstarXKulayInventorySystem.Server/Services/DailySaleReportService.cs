@@ -23,7 +23,7 @@ public class DailySaleReportService : IDailySaleReportService
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
     }
-    -
+    
     public async Task<List<DailySaleReportDto>> GetAllDailyReportAsync(BranchOption branch)
     {
         List<DailySaleReport> reports = await _context.DailySaleReports
