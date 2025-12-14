@@ -41,3 +41,5 @@ public class InvolvePaintsDto
     public decimal Quantity { get; set; } = 1;
     public decimal CostPrice { get; set; }
 }
+
+
