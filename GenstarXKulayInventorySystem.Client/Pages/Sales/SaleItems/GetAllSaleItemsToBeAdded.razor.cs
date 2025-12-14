@@ -39,9 +39,11 @@ public partial class GetAllSaleItemsToBeAdded
                 var saleItem = result.Data as SaleItemDto;
                 if (saleItem != null)
                 {
-                    bool exists = SaleItemsToBeAdded.Any(x =>
-                        x.BranchProductId == saleItem.BranchProductId ||
-                        string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
+                    // Mix Category should always be allowed
+                    bool exists = saleItem.PaintCategory != PaintCategory.Mix &&
+                                  SaleItemsToBeAdded.Any(x =>
+                                      x.BranchProductId == saleItem.BranchProductId ||
+                                      string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
 
                     if (!exists)
                     {
@@ -58,6 +60,7 @@ public partial class GetAllSaleItemsToBeAdded
             }
         }
     }
+
     protected void RemoveSaleItem(SaleItemDto item)
     {
         if (item == null)
