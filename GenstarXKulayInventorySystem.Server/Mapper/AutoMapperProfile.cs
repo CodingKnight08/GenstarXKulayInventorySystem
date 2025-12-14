@@ -62,6 +62,7 @@ public class AutoMapperProfile : Profile
         _ = CreateMap<PullOutRequest, PullOutRequestDto>().ReverseMap();
         _ = CreateMap<GlobalProduct, GlobalProductDto>().ReverseMap();
         _ = CreateMap<BranchProduct, BranchProductDto>().ReverseMap();
+        _ = CreateMap<ReturnItem, ReturnItemDto>().ReverseMap();
     }
 
     private List<InvolvePaintsDto>? DeserializeInvolvePaints(string datalistJson)
