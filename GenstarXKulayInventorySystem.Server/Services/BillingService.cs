@@ -104,10 +104,10 @@ public class BillingService:IBillingService
             var phNow = PhilippineTime.Now;
             if (billing.IsPaid)
             {
-                billing.DatePaid = phNow;
+                billing.DatePaid = billingDto.DateOfBilling;
             }
             billing.CreatedBy = GetCurrentUsername();
-            billing.CreatedAt = DateTime.UtcNow;
+            billing.CreatedAt = phNow;
             _ = await _context.Billings.AddAsync(billing);
             _ =await _context.SaveChangesAsync();
             string code = billingDto.Category switch
