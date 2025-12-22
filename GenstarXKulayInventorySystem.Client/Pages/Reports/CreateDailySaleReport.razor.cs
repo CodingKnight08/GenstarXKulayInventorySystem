@@ -353,39 +353,60 @@ public partial class CreateDailySaleReport
 
     protected void ComputeTotals()
     {
-        foreach(var sale in AllDailySaleTobeAdded)
+        TotalLandedCost = 0;
+        TotalItemsSales = 0;
+        TotalNetIncome = 0;
+
+        foreach (var sale in AllDailySaleTobeAdded)
         {
-            foreach(var item in sale.SaleItems)
+            foreach (var item in sale.SaleItems)
             {
-                if(item.PaintCategory != PaintCategory.Mix)
+                decimal size = item.Size ?? 1;
+
+                if (item.PaintCategory != PaintCategory.Mix)
                 {
-                    decimal landedCost = (item.BranchProduct?.CostPrice ?? 0)
-                   * (item.Size ?? 1)
-                   * (item.Quantity);
+                    decimal landedCost =
+                        (item.BranchProduct?.CostPrice ?? 0)
+                        * size
+                        * item.Quantity;
 
-                    decimal itemPrice = (item.ItemPrice * item.Quantity) * item.Size ?? 1;
-
+                    decimal itemPrice =
+                        item.ItemPrice
+                        * item.Quantity
+                        * size;
 
                     TotalLandedCost += landedCost;
                     TotalItemsSales += itemPrice;
                 }
                 else
                 {
-                    foreach(var paints in item.DataList)
+                    foreach (var paints in item.DataList)
                     {
-                        decimal convertedActualSize = UtilitiesHelper.ConvertItems(paints.Size ?? 1,
-                            item.Quantity,
-                            paints.UnitMeasurement,
-                            paints.ProductUnit);
-                        decimal landedCost = convertedActualSize * paints.ProductCost;
+                        decimal convertedActualSize =
+                            UtilitiesHelper.ConvertItems(
+                                paints.Size ?? 1,
+                                item.Quantity,
+                                paints.UnitMeasurement,
+                                paints.ProductUnit);
+
+                        decimal landedCost =
+                            convertedActualSize * paints.ProductCost;
+
                         TotalLandedCost += landedCost;
                     }
-                   
-                    decimal mixPrice = item.ItemPrice * item.Quantity * item.Size ?? 1;
+
+                    decimal mixPrice =
+                        item.ItemPrice
+                        * item.Quantity
+                        * size;
+
                     TotalItemsSales += mixPrice;
                 }
             }
         }
-       TotalNetIncome = (TotalItemsSales - TotalLandedCost) - DailySaleReport.TotalExpenses?? 0;
+
+        decimal expenses = DailySaleReport?.TotalExpenses ?? 0;
+        TotalNetIncome = TotalItemsSales - TotalLandedCost - expenses;
     }
+
 }
