@@ -1,0 +1,99 @@
+﻿@page "/view/statement/{ClientId:int}"
+@layout MainLayout
+@using GenstarXKulayInventorySystem.Shared.DTOS
+<MudMainContent Class="mt-5 w-auto h-100">
+
+    <MudPaper Elevation="0" Class="pa-4 mb-4 mt-5">
+        <MudText Typo="Typo.h5">Client Statement</MudText>
+
+        @if (IsLoading)
+        {
+            <MudProgressLinear Indeterminate="true" Class="mt-3" />
+        }
+        else if (Client is null)
+        {
+            <MudText Color="Color.Error">Client not found.</MudText>
+        }
+        else
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudText><b>Name:</b> @Client.ClientName</MudText>
+                    <MudText><b>Address:</b> @Client.Address</MudText>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText><b>Contact:</b> @Client.ContactNumber</MudText>
+                </MudItem>
+            </MudGrid>
+        }
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="pa-4">
+        <MudGrid Spacing="5" Class="mb-5">
+            <MudItem sm="12">
+                <MudText Typo="Typo.h6" Class="mb-3">Charged Sales</MudText>
+            </MudItem>
+            <MudItem sm="12" md="6" lg="4">
+                <MudNumericField T="decimal?"
+                                 Value="Client.RemainingChargeBalance"
+                                 ValueChanged="OnRemainingChargeChanged"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 Format="N2"
+                                 HideSpinButtons="true"
+                                 ReadOnly="!IsEdit" />
+                
+            </MudItem>
+            @if (!IsEdit)
+            {
+                <MudItem sm="1">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="Color.Success"
+                                   OnClick="@(() => IsEdit = true)" />
+                </MudItem>
+            }
+            else
+            {
+                <MudItem sm="1">
+                    <MudIconButton Icon="@Icons.Material.Filled.Save"
+                                   Color="Color.Info"
+                                   OnClick="UpdateRemainingCharge" />
+                </MudItem>
+            }
+            <MudItem sm="12" md="6" lg="6" Class="d-flex flex-row align-items-center justify-content-center">
+                <MudButton StartIcon="@Icons.Material.Filled.PostAdd" Color="Color.Info" Variant="Variant.Filled" OnClick="GeneratePdf">Generate</MudButton>
+            </MudItem>
+            
+
+        </MudGrid>
+      
+
+        @if (Client?.DailySales?.Any() != true)
+        {
+            <MudText>No charged sales found.</MudText>
+        }
+        else
+        {
+
+            <MudTable Items="Client.DailySales" T="DailySaleDto">
+                <HeaderContent>
+                    <MudTh>Date</MudTh>
+                    <MudTh>Invoice Number</MudTh>
+                    <MudTh>Number of Items</MudTh>
+                    <MudTh>Total Amount</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.DateOfSales.ToString("MM/dd/yyyy")</MudTd>
+                    <MudTd>@context.RecieptReference</MudTd>
+                    <MudTd>@context.SaleItemsCount</MudTd>
+                    <MudTd>@($"₱{(context.TotalAmount ?? 0):N2}")</MudTd>
+
+                </RowTemplate>  
+            </MudTable>
+        }
+        <MudNumericField @bind-Value="TotalBalance" Adornment="Adornment.Start" AdornmentText="Total Balance" HideSpinButtons="true" FullWidth="false" Class="w-25" ReadOnly="true"/>
+    </MudPaper>
+
+</MudMainContent>
+
