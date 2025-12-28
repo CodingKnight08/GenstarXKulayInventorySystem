@@ -9,6 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
+using QuestPDF.Infrastructure;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -113,6 +115,10 @@ builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
         });
 }, ServiceLifetime.Scoped);
 
+//QuestPDF configuration
+QuestPDF.Settings.License = LicenseType.Community;
+QuestPDF.Settings.EnableDebugging = false;
+
 // ✅ Hosted + Scoped services
 // Avoid running hosted services when generating Swagger
 var isSwaggerBuild = builder.Environment.IsEnvironment("SwaggerBuild");
@@ -134,6 +140,7 @@ builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
 builder.Services.AddScoped<IOperationsProviderService, OperationsProviderService>();
 builder.Services.AddScoped<IPullOutRequestService, PullOutRequestService>();
 builder.Services.AddScoped<IRequestItemsService, RequestItemsService>();
+builder.Services.AddScoped<IStatementReportService, StatementReportService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]) });
