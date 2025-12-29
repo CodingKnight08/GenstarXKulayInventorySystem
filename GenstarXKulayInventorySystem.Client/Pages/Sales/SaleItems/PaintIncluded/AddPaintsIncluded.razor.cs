@@ -140,6 +140,8 @@ public partial class AddPaintsIncluded
             AddedPaint.ProductName = SelectedProduct.MasterProduct?.ProductName ?? string.Empty;
             AddedPaint.ProductCost = SelectedProduct.CostPrice ?? 0;
             AddedPaint.ProductUnit = SelectedProduct.ProductMesurementOption ?? ProductMesurementOption.Gallon;
+            AddedPaint.UnitMeasurement = SelectedProduct.ProductMesurementOption ?? ProductMesurementOption.Gallon;
+            AddedPaint.CostPrice = SelectedProduct.CostPrice ?? 0;
             StateHasChanged();
         }
     }

@@ -236,7 +236,7 @@ public class SalesService:ISalesService
 
     public async Task<DailySaleDto?> GetDailySaleByIdAsync(int id)
     {
-        var dailySale = await _context.DailySales.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
+        var dailySale = await _context.DailySales.AsNoTracking().Include(e => e.ReturnItems).FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         return dailySale == null ? null : _mapper.Map<DailySaleDto>(dailySale);
     }
 
@@ -366,6 +366,95 @@ public class SalesService:ISalesService
         };
     }
 
+    public async Task<bool> AddReturnSales(List<ReturnItemDto> returnItems, int dailySaleId)
+    {
+        if (returnItems == null || !returnItems.Any())
+            return false;
+
+        try
+        {
+            var now = PhilippineTime.Now;
+            var username = GetCurrentUsername();
+
+            // 1️⃣ Map return items
+            var entities = returnItems.Select(dto =>
+            {
+                var entity = _mapper.Map<ReturnItem>(dto);
+                entity.CreatedAt = now;
+                entity.CreatedBy = username;
+                entity.DailySaleId = dailySaleId;
+                return entity;
+            }).ToList();
+
+            // 2️⃣ Add all return items at once
+            await _context.ReturnItems.AddRangeAsync(entities);
+
+            // 3️⃣ Get affected BranchProducts in ONE query
+            var productIds = returnItems
+                .Select(x => x.BranchProductId!.Value)
+                .Distinct()
+                .ToList();
+
+            var branchProducts = await _context.BranchProducts
+                .Where(bp => productIds.Contains(bp.Id))
+                .ToListAsync();
+
+            // 4️⃣ Update stock using grouping (no repeated updates)
+            var quantityByProduct = returnItems
+                .GroupBy(x => x.BranchProductId!.Value)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Sum(x => x.Quantity)
+                );
+
+            foreach (var bp in branchProducts)
+            {
+                if (quantityByProduct.TryGetValue(bp.Id, out var qty))
+                {
+                    bp.ActualQuantity += qty;
+                }
+            }
+
+            // 5️⃣ Save once
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding Return Sales");
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateSalesTotal(int id, decimal returnTotal)
+    {
+        if (returnTotal <= 0)
+            return false;
+
+        try
+        {
+            var sale = await _context.DailySales
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (sale == null)
+                return false;
+
+            // Prevent negative total
+            sale.TotalAmount = Math.Max(0, (sale.TotalAmount ?? 0) - returnTotal);
+
+
+            sale.UpdatedAt = PhilippineTime.Now;
+            sale.UpdatedBy = GetCurrentUsername();
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error updating sales total for SaleId {id}");
+            return false;
+        }
+    }
 
 }
 public interface ISalesService
@@ -386,4 +475,6 @@ public interface ISalesService
     Task<bool> AddAsync(DailySaleDto saleDto);
     Task<bool> UpdateAsync(DailySaleDto saleDto);
     Task<bool> DeleteSaleAsync(int id);
+    Task<bool> AddReturnSales(List<ReturnItemDto> returnItems, int dailySaleId);
+    Task<bool> UpdateSalesTotal(int id, decimal returnTotal);
 }

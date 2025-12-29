@@ -13,10 +13,12 @@ namespace GenstarXKulayInventorySystem.Server.Controllers;
 public class SalesController : ControllerBase
 {
     private readonly ISalesService _saleService;
+    private readonly ILogger<SalesController> _logger;
 
-    public SalesController(ISalesService saleService)
+    public SalesController(ISalesService saleService, ILogger<SalesController> logger)
     {
         _saleService = saleService;
+        _logger = logger;
     }
 
     [HttpGet("all")]
@@ -195,4 +197,60 @@ public class SalesController : ControllerBase
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
+
+
+    [HttpPost("returnitems")]
+    public async Task<IActionResult> AddReturnSales([FromBody] AddReturnSalesRequest request)
+    {
+        if (request == null || request.ReturnItems == null || !request.ReturnItems.Any())
+            return BadRequest("No return items provided.");
+
+        try
+        {
+            var result = await _saleService.AddReturnSales(
+                request.ReturnItems,
+                request.DailySaleId);
+
+            if (!result)
+                return BadRequest("Failed to add return sales.");
+
+            return Ok(new
+            {
+                success = true,
+                count = request.ReturnItems.Count
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding return sales");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+    }
+
+    [HttpPut("return/{id:int}")]
+    public async Task<IActionResult> UpdateSaleTotal(
+    int id,
+    [FromQuery] decimal returnTotal)
+    {
+        if (returnTotal <= 0)
+            return BadRequest("Invalid return total.");
+
+        try
+        {
+            var success = await _saleService.UpdateSalesTotal(id, returnTotal);
+
+            if (!success)
+                return NotFound("Sale not found or update failed.");
+
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating sale total for SaleId {SaleId}", id);
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+    }
+
+
+
 }
