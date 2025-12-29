@@ -15,6 +15,7 @@ public partial class ViewChargeSales
     [Inject] private ILogger<ViewChargeSales> Logger { get; set; } = default!;
     [Inject] protected IJSRuntime JS { get; set; } = default!;
     [Inject] protected ISnackbar SnackBar { get; set; } = default!;
+    [Inject] protected NavigationManager Navigation { get; set; } = default!;
     protected ClientDto? Client { get; set; } = new ClientDto();
 
     protected bool IsLoading { get; set; } = false;
@@ -104,6 +105,10 @@ public partial class ViewChargeSales
             SnackBar.Add("Remaining charge updated successfully.", Severity.Success);
         }
 
+    }
+    private void ViewSale(int dailySaleId)
+    {
+        Navigation.NavigateTo($"/sales/view/{dailySaleId}");
     }
 
     private async Task GeneratePdf()
