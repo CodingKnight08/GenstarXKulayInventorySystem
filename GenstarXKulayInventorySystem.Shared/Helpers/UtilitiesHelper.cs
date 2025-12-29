@@ -194,5 +194,10 @@ public static class UtilitiesHelper
         Delivered,
         Cancelled
     }
+    public enum SaleSearchCategory
+    {
+        ReceiptNumber,
+        ClientName
+    }
 
 }

@@ -1,0 +1,63 @@
+﻿@page "/returnsales/{SalesId:int}"
+@using System.Globalization
+@using GenstarXKulayInventorySystem.Shared.DTOS; 
+<MudMainContent Class="w-auto h-100 d-flex flex-column gap-3 p-4">
+    <MudCard Elevation="0" Class="w-100 d-flex px-4 mt-5 pt-5">
+        <MudText Typo="Typo.h4" Align="Align.Center"> Return Sales Information </MudText>
+    </MudCard>
+
+    <MudCard Elevation="0" Class="d-flex w-100 flex-row align-items-center justify-content-end">
+        <MudButton 
+            StartIcon="@Icons.Material.Filled.Add" 
+            Variant="Variant.Filled"
+            Color="Color.Primary" 
+            Size="Size.Small" OnClick="AddReturnItem">Add Items</MudButton>
+    </MudCard>
+    @if (!IsSaving)
+    {
+
+
+        <MudCard Elevation="0" Class="w-100 px-2 gap-3">
+            <MudTable T="ReturnItemDto" Items="ReturnItems">
+            <HeaderContent>
+                <MudTh>Item Name</MudTh>
+                <MudTh>Quantity</MudTh>
+                <MudTh>Unit Price</MudTh>
+                <MudTh>Total Price</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.ItemName</MudTd>
+                <MudTd>@context.Quantity</MudTd>
+                    <MudTd>@context.ItemPrice.ToString("C", new CultureInfo("en-PH"))</MudTd>
+                    <MudTd>@context.TotalPrice.ToString("C", new CultureInfo("en-PH"))</MudTd>
+
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveReturnItem(context))" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+        
+    </MudCard>
+    <MudCard Elevation="0" Class="w-100 d-flex flex-row align-items-center justify-content-end px-2 gap-3">
+        <MudButton 
+            Variant="Variant.Filled" 
+            Color="Color.Default" 
+            StartIcon="@Icons.Material.Filled.Cancel" 
+            OnClick="Cancel">Cancel</MudButton>
+        <MudButton
+            Variant="Variant.Filled"
+            Color="Color.Success" 
+            StartIcon="@Icons.Material.Filled.Save" 
+            Disabled="@(!ReturnItems.Any())" 
+            OnClick="SaveReturnItems">Save</MudButton>
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Elevation="0" Class="w-100 d-flex flex-column align-items-center justify-content-center gap-3">
+            <MudProgressCircular Indeterminate=true Rounded=true Size="Size.Medium" Color="Color.Info" />
+            <MudText Align="Align.Center">Saving</MudText>
+        </MudCard>
+    }
+</MudMainContent>

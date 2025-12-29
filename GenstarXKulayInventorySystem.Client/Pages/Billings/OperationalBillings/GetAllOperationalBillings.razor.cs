@@ -55,7 +55,7 @@ public partial class GetAllOperationalBillings
         try
         {
             var dialog = await DialogService.ShowAsync<CreateOperationalBilling>("Create Billing",
-                new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true});
+                new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, BackdropClick=false});
             if (dialog is not null)
                 {
                 var result = await dialog.Result;

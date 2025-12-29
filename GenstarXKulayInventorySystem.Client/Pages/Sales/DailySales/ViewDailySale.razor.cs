@@ -165,4 +165,11 @@ public partial class ViewDailySale
             Logger.LogError($"Error occured: {ex.Message}");
         }
     }
+
+    protected void AddReturnSales()
+    {
+        NavigationManager.NavigateTo(
+            $"/returnsales/{Id}?pageskip={PageSkip}&pagetake={PageTake}&date={SelectedDate:yyyy-MM-dd}");
+    }
+
 }

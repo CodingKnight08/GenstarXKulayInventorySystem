@@ -220,6 +220,7 @@ public partial class CreateSaleItem
         if(SaleItemDto.PaintCategory != PaintCategory.Mix)
         {
             ComputeNotBelowWholeSale();
+            SaleItemDto.CostPrice = SelectedProductFromList?.CostPrice ?? 0m;
         }
         else
         {
@@ -323,37 +324,29 @@ public partial class CreateSaleItem
 
     protected void ComputeNotBelowWholeSale()
     {
-        if(SaleItemDto.BranchProductId != null && SelectedProductFromList != null && PriceItem > 0)
+        if (SaleItemDto.BranchProductId != null
+            && SelectedProductFromList != null
+            && PriceItem > 0
+            && SelectedProductFromList.RetailPrice > 0)
         {
-            decimal basePrice;
-            if (SelectedProductFromList.WholeSalePrice.HasValue && SelectedProductFromList.WholeSalePrice.Value > 0)
-            {
-                basePrice = SelectedProductFromList.WholeSalePrice ?? 0 * SaleItemDto.Size ?? 1 * SaleItemDto.Quantity;
-                decimal retailBasePrice = SelectedProductFromList.RetailPrice * SaleItemDto.Size ?? 1 * SaleItemDto.Quantity;
-                if (SaleItemDto.TotalPrice < basePrice)
-                {
-                    SaleItemDto.HasDiscount = true;
-                }
-                else
-                {
-                    SaleItemDto.HasDiscount = false;
-                }
-            }
+            decimal basePrice =
+                (SelectedProductFromList.CostPrice ?? 1m)
+                * (SaleItemDto.Size ?? 1m)
+                * SaleItemDto.Quantity;
 
-            else
-            {
-                basePrice = SelectedProductFromList.CostPrice * SaleItemDto.Size ?? 1 * SaleItemDto.Quantity;
-                if(SaleItemDto.TotalPrice < basePrice)
-                {
-                    SaleItemDto.HasDiscount = true;
-                }
-                else
-                {
-                    SaleItemDto.HasDiscount = false;
-                }
-            }
+            decimal productPurchasePrice =
+                SaleItemDto.ItemPrice
+                * (SaleItemDto.Size ?? 1m)
+                * SaleItemDto.Quantity;
+
+            SaleItemDto.HasDiscount = (SaleItemDto.TotalPrice < basePrice);
+        }
+        else
+        {
+            SaleItemDto.HasDiscount = false;
         }
     }
+
     protected void OnSizeChanged(decimal? newSize)
     {
         SaleItemDto.Size = newSize;
