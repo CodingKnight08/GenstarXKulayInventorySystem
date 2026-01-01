@@ -33,19 +33,38 @@ public class StatementReportController : ControllerBase
         }
         return Ok(client);
     }
-    [HttpGet("generate/{clientId}")]
-    public async Task<IActionResult> GetStatementPdf(int clientId)
+    [HttpPost("generate")]
+    public async Task<IActionResult> GenerateStatementPdf(
+    [FromBody] StatementOfAccountDataDto dto,
+    [FromQuery] int clientId,
+    [FromQuery] int month)
     {
         try
         {
-            var pdfBytes = await _statementReportService.GenerateStatementPdfAsync(clientId);
+            var pdfBytes =
+                await _statementReportService.GenerateStatementPdfAsync(dto);
 
-            return File(pdfBytes, "application/pdf", $"Statement_{clientId}.pdf");
+            return File(
+                pdfBytes,
+                "application/pdf",
+                $"Statement_{clientId}_{month}_{DateTime.Now.Year}.pdf");
         }
         catch (Exception ex)
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+
+    [HttpGet("monthly-charges/{clientId}/{month}/{year}")]
+    public async Task<IActionResult> GetMonthlyCharges(int clientId, int month, int year)
+    {
+        var data = await _statementReportService.GetChargeSalesForThatMonth(clientId, month, year);
+
+        if (data == null)
+            return NotFound();
+
+        return Ok(data);
     }
 
     [HttpPut("{clientId}/remaining-balance")]
@@ -61,4 +80,5 @@ public class StatementReportController : ControllerBase
 
         return Ok(new { message = "Remaining balance updated successfully." });
     }
+
 }
