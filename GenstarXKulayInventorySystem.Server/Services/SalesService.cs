@@ -270,7 +270,11 @@ public class SalesService:ISalesService
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
                 phNow,
                 saleDto.CustomPaymentTermsOption ?? 0);
-
+            if(sale.PaymentTermsOption == PaymentTermsOption.Today)
+            {
+                sale.IsPaid = true;
+            }
+           
             await _context.DailySales.AddAsync(sale);
             await _context.SaveChangesAsync();
 
@@ -310,8 +314,15 @@ public class SalesService:ISalesService
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
                 existingSale.DateOfSales,
                 saleDto.CustomPaymentTermsOption ?? 0);
-
-            int result = await _context.SaveChangesAsync();
+            if(existingSale.PaymentType == null && saleDto.PaymentType != null)
+            {
+                existingSale.IsPaid = true;
+            }
+            else
+            {
+                existingSale.IsPaid = false;
+            }
+                int result = await _context.SaveChangesAsync();
             return result > 0;
         }
         catch (Exception ex)
