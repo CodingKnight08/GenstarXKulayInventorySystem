@@ -23,45 +23,44 @@ public class StatementReportService:IStatementReportService
 
 
 
-    public async Task<List<ClientDto>> GetAllClientsWithChargedSales(BranchOption branch)
-    {
-        try
+        public async Task<List<ClientDto>> GetAllClientsWithChargedSales(BranchOption branch)
         {
-            var result = await _dbContext.Clients
-            .Where(c => c.Branch == branch)
-            .Where(c => c.DailySales.Any(ds => ds.IsChargedSales)) // 🔑 KEY LINE
-            .AsNoTracking()
-            .Select(c => new ClientDto
+            try
             {
-                Id = c.Id,
-                ClientName = c.ClientName,
-                Address = c.Address,
-                ContactNumber = c.ContactNumber,
-                Branch = c.Branch,
+                var result = await _dbContext.Clients
+                        .AsNoTracking()
+                        .Where(c => c.Branch == branch)
+                        .Where(c => c.DailySales.Any(ds => ds.IsChargedSales))
+                        .Select(c => new ClientDto
+                        {
+                            Id = c.Id,
+                            ClientName = c.ClientName,
+                            Address = c.Address,
+                            ContactNumber = c.ContactNumber,
+                            Branch = c.Branch,
 
-                DailySales = c.DailySales
-                    .Where(ds => ds.IsChargedSales)
-                    .Select(ds => new DailySaleDto
-                    {
-                        Id = ds.Id,
-                        DateOfSales = ds.DateOfSales,
-                        TotalAmount = ds.TotalAmount,
-                        IsChargedSales = ds.IsChargedSales
-                    })
-                    .ToList()
-            })
-            .ToListAsync();
-
+                            DailySales = c.DailySales
+                                .Where(ds => ds.IsChargedSales)
+                                .Select(ds => new DailySaleDto
+                                {
+                                    Id = ds.Id,
+                                    DateOfSales = ds.DateOfSales,
+                                    TotalAmount = ds.TotalAmount,
+                                    IsChargedSales = ds.IsChargedSales
+                                })
+                                .ToList()
+                        })
+                        .ToListAsync();
             return result;
-        }
-        catch (Exception ex)
-        {
-            // LOG THIS (do not swallow silently)
-             _logger.LogError(ex, "Failed to get clients with charged sales.");
+            }
+            catch (Exception ex)
+            {
+                // LOG THIS (do not swallow silently)
+                 _logger.LogError(ex, "Failed to get clients with charged sales.");
 
-            throw; // rethrow so you can see the real error
+                throw; // rethrow so you can see the real error
+            }
         }
-    }
 
     public async Task<ClientDto?> GetClientChargeSales(int clientId)
     {
@@ -80,7 +79,7 @@ public class StatementReportService:IStatementReportService
                     Branch = c.Branch,
 
                     DailySales = c.DailySales
-                        .Where(ds => ds.IsChargedSales)
+                        .Where(ds => ds.IsChargedSales && !ds.IsPaid)
                         .Select(ds => new DailySaleDto
                         {
                             Id = ds.Id,
@@ -89,7 +88,7 @@ public class StatementReportService:IStatementReportService
                             IsChargedSales = ds.IsChargedSales,
                             RecieptReference = ds.RecieptReference,
                             SalesNumber = ds.SalesNumber,
-                            // Only count, no details
+                            
                             SaleItemsCount = ds.SaleItems.Count()
                         })
                         .ToList()
@@ -135,56 +134,91 @@ public class StatementReportService:IStatementReportService
             return false;
         }
     }
-
-    public async Task<byte[]> GenerateStatementPdfAsync(int clientId)
+    public async Task<StatementOfAccountDataDto?> GetChargeSalesForThatMonth(
+    int clientId,
+    int month,
+    int year)
     {
-        var client = await _dbContext.Clients
-            .AsNoTracking()
-            .Where(c => c.Id == clientId)
-            .Select(c => new
-            {
-                c.ClientName,
-                c.Branch,
-                c.RemainingChargeBalance,
-                c.Address,
-                DailySales = c.DailySales
-                    .Where(ds => ds.IsChargedSales)
-                    .Select(ds => new DailySaleDto
-                    {
-                        DateOfSales = ds.DateOfSales,
-                        RecieptReference = ds.RecieptReference,
-                        SalesNumber = ds.SalesNumber,
-                        TotalAmount = ds.TotalAmount,
-                        SaleItemsCount = ds.SaleItems.Count()
-                    })
-                    .ToList()
-            })
-            .FirstOrDefaultAsync();
-
-        if (client == null)
-            throw new Exception("Client not found.");
-
-        var chargedSalesTotal =
-            client.DailySales.Sum(x => x.TotalAmount ?? 0m);
-
-        var remainingBalance =
-            client.RemainingChargeBalance ?? 0m;
-
-        var dto = new StatementReportDocumentDto
+        try
         {
-            ClientName = client.ClientName,
-            Branch = client.Branch,
-            DailySales = client.DailySales,
+            var client = await _dbContext.Clients
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == clientId);
 
-            Credit = remainingBalance,
-            Balance = chargedSalesTotal + remainingBalance,
-            Address = client.Address,
-            ReportGenerated = DateTime.Now
-        };
+            if (client is null)
+                return null;
 
-        var document = new StatementReportDocument(dto);
-        return document.GeneratePdf();
+            var monthStart = new DateTime(year, month, 1);
+            var monthEnd = monthStart.AddMonths(1);
+
+            var chargedSales = await _dbContext.DailySales
+                .AsNoTracking()
+                .Include(ds => ds.SaleItems)
+                .Where(c =>
+                    c.ClientId == clientId &&
+                    c.IsChargedSales &&
+                    !c.IsPaid)
+                .ToListAsync();
+
+            List<DailySaleDto> mappedChargeSales =
+                _mapper.Map<List<DailySaleDto>>(chargedSales);
+
+            var previousUnpaidSalesTotal =
+                mappedChargeSales
+                    .Where(s => s.DateOfSales < monthStart)
+                    .Sum(s => s.TotalAmount ?? 0m);
+
+            var currentMonthSales =
+                mappedChargeSales
+                    .Where(s =>
+                        s.DateOfSales >= monthStart &&
+                        s.DateOfSales < monthEnd)
+                    .ToList();
+
+            var beginningBalance =
+                (client.RemainingChargeBalance ?? 0m)
+                + previousUnpaidSalesTotal;
+
+            return new StatementOfAccountDataDto
+            {
+                ClientName = client.ClientName,
+                BeginningBalance = beginningBalance,
+                ChargeSales = currentMonthSales,
+                Branch = client.Branch,
+                
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return null;
+        }
     }
+
+
+    public Task<byte[]> GenerateStatementPdfAsync(StatementOfAccountDataDto soaDto)
+    {
+        if (soaDto is null)
+            throw new ArgumentNullException(nameof(soaDto));
+
+        try
+        {
+            var document = new StatementReportDocument(soaDto);
+            var pdfBytes = document.GeneratePdf();
+            return Task.FromResult(pdfBytes);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception if you have a logger
+            // _logger.LogError(ex, "Error generating PDF for client {ClientName}", soaDto.ClientName);
+
+            // Optionally, rethrow or wrap in a custom exception
+            throw new InvalidOperationException(
+                $"Failed to generate PDF for client '{soaDto.ClientName}'.", ex);
+        }
+    }
+
+
 
 }
 
@@ -196,6 +230,7 @@ public interface IStatementReportService
 {
     Task<List<ClientDto>> GetAllClientsWithChargedSales(BranchOption branch);
     Task<ClientDto?> GetClientChargeSales(int clientId);
-    Task<byte[]> GenerateStatementPdfAsync(int clientId);
+    Task<byte[]> GenerateStatementPdfAsync(StatementOfAccountDataDto soaDto);
     Task<bool> UpdateChargeSale(int clientId, ClientDto dto);
+    Task<StatementOfAccountDataDto?> GetChargeSalesForThatMonth(int clientId, int month,int year);
 }
