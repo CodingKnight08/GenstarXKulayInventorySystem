@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using static System.Net.WebRequestMethods;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.StatementReports;
@@ -11,9 +12,8 @@ public partial class ViewChargeSales
 {
     [Parameter] public int ClientId { get; set; }
     [Inject] private HttpClient HttpClient { get; set; } = default!;
-
+    [Inject] private IDialogService DialogService        { get; set; } = default!;
     [Inject] private ILogger<ViewChargeSales> Logger { get; set; } = default!;
-    [Inject] protected IJSRuntime JS { get; set; } = default!;
     [Inject] protected ISnackbar SnackBar { get; set; } = default!;
     [Inject] protected NavigationManager Navigation { get; set; } = default!;
     protected ClientDto? Client { get; set; } = new ClientDto();
@@ -76,6 +76,21 @@ public partial class ViewChargeSales
 
     }
 
+    private async Task SelectMonth()
+    {
+        var parameters = new DialogParameters
+        {
+          { "ClientId", ClientId }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<MonthSelector>("Generate SOA", parameters, options);
+        var result = await dialog.Result;
+        if (result?.Data is bool success)
+        {
+            await LoadClientData();
+        }
+    }
+
     private async Task UpdateRemainingCharge()
     {
         if(Client == null) return;
@@ -111,17 +126,7 @@ public partial class ViewChargeSales
         Navigation.NavigateTo($"/sales/view/{dailySaleId}");
     }
 
-    private async Task GeneratePdf()
-    {
-        if (Client == null) return;
-
-        var pdfBytes = await HttpClient.GetByteArrayAsync($"api/statementreport/generate/{Client.Id}");
-        await DownloadPdf(pdfBytes, $"Statement_{Client.ClientName}.pdf");
-    }
-    private async Task DownloadPdf(byte[] pdfBytes, string fileName)
-    {
-        using var streamRef = new DotNetStreamReference(stream: new MemoryStream(pdfBytes));
-        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
-    }
+    
+ 
 
 }
