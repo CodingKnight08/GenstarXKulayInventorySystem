@@ -12,7 +12,6 @@ public class ClientDto:BaseEntityDto
     public BranchOption Branch { get; set; } 
     public List<DailySaleDto> DailySales { get; set; } = new List<DailySaleDto>();
     public decimal? RemainingChargeBalance { get; set; } = 0;
-
     public string DisplayContactNumber =>
        string.IsNullOrWhiteSpace(ContactNumber)
            ? "N/A"
