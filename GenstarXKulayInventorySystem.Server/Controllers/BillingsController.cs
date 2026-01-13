@@ -2,6 +2,7 @@
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Mvc;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
@@ -16,14 +17,14 @@ public class BillingsController : ControllerBase
         _logger = logger;
     }
     //Operational Billings
-    [HttpGet("all/others")]
-    public async Task<ActionResult<List<BillingDto>>> GetAllBillings()
+    [HttpGet("all/others/{branch}")]
+    public async Task<ActionResult<List<BillingDto>>> GetAllBillings(BranchOption branch)
     {
         try
         {
 
 
-            var billings = await _billingService.GetAllBillingAsync();
+            var billings = await _billingService.GetAllBillingAsync(branch);
             return Ok(billings);
         }
         catch (Exception ex)
