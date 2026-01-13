@@ -27,23 +27,31 @@ public class BillingService:IBillingService
         return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
     }
     // Billings 
-        public async Task<List<BillingDto>> GetAllBillingAsync()
+    public async Task<List<BillingDto>> GetAllBillingAsync(BranchOption branch)
+    {
+        // Map BranchOption to BillingBranch
+        BillingBranch billingBranch = branch switch
         {
-            List<Billing> billings = await _context.Billings
-                .AsNoTracking()
-                .AsSplitQuery()
-                .Include(b => b.OperationsProvider)
-                .Where(e => !e.IsDeleted)
-                .OrderByDescending(e => e.DateOfBilling).ToListAsync();
+            BranchOption.Polomolok => BillingBranch.Kulay,
+            BranchOption.GeneralSantosCity => BillingBranch.GenStar,
+            BranchOption.Warehouse => BillingBranch.Warehouse,
+            _ => throw new ArgumentOutOfRangeException(nameof(branch), branch, null)
+        };
 
-            if (billings == null || billings.Count == 0)
-            {
-                return new List<BillingDto>();
-            }
+        var billings = await _context.Billings
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(b => b.OperationsProvider)
+            .Where(b => !b.IsDeleted && b.Branch == billingBranch)
+            .OrderByDescending(b => b.DateOfBilling)
+            .ToListAsync();
 
-            List<BillingDto> billingDtos = _mapper.Map<List<BillingDto>>(billings);
-            return billingDtos;
-        }
+        if (!billings.Any())
+            return new List<BillingDto>();
+
+        return _mapper.Map<List<BillingDto>>(billings);
+    }
+
     public async Task<List<BillingDto>> GetAllNotPurchaseOrderBillings()
     {
         var billings = await _context.Billings
@@ -95,17 +103,20 @@ public class BillingService:IBillingService
     {
         try
         {
+            var phNow = PhilippineTime.Now;
+            var billingName = $"{billingDto.BillingName} {billingDto.DateOfBilling.ToString("MM/dd/yyyy")}";
             var existingBilling = await _context.Billings
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.BillingName == billingDto.BillingName && x.Branch == billingDto.Branch && x.DateOfBilling.Date == billingDto.DateOfBilling.Date);
+                .FirstOrDefaultAsync(x => x.BillingName == billingName && x.Branch == billingDto.Branch && x.DateOfBilling.Date == billingDto.DateOfBilling.Date);
             if (existingBilling != null)
                 return false;
             var billing = _mapper.Map<Billing>(billingDto);
-            var phNow = PhilippineTime.Now;
+            
             if (billing.IsPaid)
             {
                 billing.DatePaid = billingDto.DateOfBilling;
             }
+            billing.BillingName = billingName;
             billing.CreatedBy = GetCurrentUsername();
             billing.CreatedAt = phNow;
             _ = await _context.Billings.AddAsync(billing);
@@ -313,7 +324,7 @@ public class BillingService:IBillingService
 
 public interface IBillingService
 {
-    Task<List<BillingDto>> GetAllBillingAsync();
+    Task<List<BillingDto>> GetAllBillingAsync(BranchOption branch );
     Task<List<BillingDto>> GetAllExpensesBillingPerDay(DateTime date, BillingBranch branch);
     Task<BillingDto?> GetBillingById(int id);
     Task<bool> AddBillingAsync(BillingDto billingDto);
