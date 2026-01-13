@@ -142,6 +142,7 @@ public partial class CreateSaleItem
         SaleItemDto.BranchProductId = product.Id;
         SaleItemDto.ItemName = product.MasterProduct?.ProductName ?? string.Empty;
         SaleItemDto.UnitMeasurement = product.ProductMesurementOption.GetValueOrDefault();
+        SaleItemDto.CostPrice = product.CostPrice ?? 0;
 
         await OnWholeSaleChanged(IsWholeSale);
     }
