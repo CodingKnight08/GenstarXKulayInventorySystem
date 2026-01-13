@@ -61,7 +61,7 @@ public partial class ViewChargeSales
         }
     }
 
-    private void OnRemainingChargeChanged(decimal? value)
+    private async Task OnRemainingChargeChanged(decimal? value)
     {
         if (Client == null)
             return;
@@ -73,7 +73,7 @@ public partial class ViewChargeSales
             (Client.DailySales?.Sum(x => x.TotalAmount ?? 0m) ?? 0m)
             + Client.RemainingChargeBalance.Value;
 
-
+        StateHasChanged();
     }
 
     private async Task SelectMonth()
