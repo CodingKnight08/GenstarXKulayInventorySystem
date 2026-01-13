@@ -251,24 +251,15 @@ public partial class CreateDailySaleReport
     protected void AssignFields()
     {
         TotalPurchaseOrder = PurchaseOrders.Sum(e => e.AssumeTotalAmount);
-        DailySaleReport.InvoiceCash = PaidSales
-                         .Where(ds => ds.SalesOption == PurchaseRecieptOption.BIR
-                                   && ds.PaymentType != PaymentMethod.BankCheque)
-                         .Sum(ds => ds.TotalAmount) ?? 0;
-        DailySaleReport.InvoiceChecks = PaidSales
-                         .Where(ds => ds.SalesOption == PurchaseRecieptOption.BIR
-                                   && ds.PaymentType == PaymentMethod.BankCheque)
-                         .Sum(ds => ds.TotalAmount) ?? 0;
+        DailySaleReport.InvoiceCash = ComputeTotalInvoiceCash();
 
-        DailySaleReport.NonInvoiceCash = PaidSales.Where(ds => ds.SalesOption == PurchaseRecieptOption.NonBIR
-                                   && ds.PaymentType != PaymentMethod.BankCheque)
-                         .Sum(ds => ds.TotalAmount) ?? 0;
+        DailySaleReport.InvoiceChecks = ComputeTotalInvoiceCheck();
 
-        DailySaleReport.NonInvoiceChecks = PaidSales.Where(ds => ds.SalesOption == PurchaseRecieptOption.NonBIR
-                                   && ds.PaymentType == PaymentMethod.BankCheque)
-                         .Sum(ds => ds.TotalAmount) ?? 0;
-        DailySaleReport.CollectionCash = CollectedSales.Where(ds => ds.PaymentType != PaymentMethod.BankCheque).Sum(ds => ds.TotalAmount) ?? 0;
-        DailySaleReport.CollectionChecks = CollectedSales.Where(ds => ds.PaymentType == PaymentMethod.BankCheque).Sum(ds => ds.TotalAmount) ?? 0;
+        DailySaleReport.NonInvoiceCash = ComputeTotalNonInvoiceCash();
+
+        DailySaleReport.NonInvoiceChecks = ComputeTotalNonInvoiceCheck();
+        DailySaleReport.CollectionCash = ComputeTotalCollectedCash();
+        DailySaleReport.CollectionChecks = ComputeTotalCollectedCheck();
         DailySaleReport.TotalCash = DailySaleReport.InvoiceCash + DailySaleReport.NonInvoiceCash;
         DailySaleReport.TotalChecks = DailySaleReport.InvoiceChecks + DailySaleReport.NonInvoiceChecks;
         DailySaleReport.ChargeSales = UnpaidSales.Sum(ds => ds.TotalAmount) ?? 0;
@@ -356,57 +347,177 @@ public partial class CreateDailySaleReport
         TotalLandedCost = 0;
         TotalItemsSales = 0;
         TotalNetIncome = 0;
-
+       
         foreach (var sale in AllDailySaleTobeAdded)
         {
             foreach (var item in sale.SaleItems)
             {
-                decimal size = item.Size ?? 1;
+                var quantitySold = item.Quantity;
 
+                // ===============================
+                // NON-MIX ITEMS
+                // ===============================
                 if (item.PaintCategory != PaintCategory.Mix)
                 {
-                    decimal landedCost =
-                        (item.BranchProduct?.CostPrice ?? 0)
-                        * size
-                        * item.Quantity;
+                    var unitCost = item.CostPrice > 0
+                                 ? item.CostPrice
+                                 : item.BranchProduct?.CostPrice ?? 0;
 
-                    decimal itemPrice =
-                        item.ItemPrice
-                        * item.Quantity
-                        * size;
+                    var unitPrice = item.ItemPrice;
+
+                    if (unitCost <= 0 || unitPrice <= 0)
+                        continue;
+
+                    var landedCost = unitCost * quantitySold;
+                    var salesAmount = unitPrice * quantitySold;
 
                     TotalLandedCost += landedCost;
-                    TotalItemsSales += itemPrice;
+                    TotalItemsSales += salesAmount;
                 }
+                // ===============================
+                // MIX ITEMS
+                // ===============================
                 else
                 {
-                    foreach (var paints in item.DataList)
+                    decimal mixLandedCost = 0;
+
+                    foreach (var paint in item.DataList)
                     {
-                        decimal convertedActualSize =
-                            UtilitiesHelper.ConvertItems(
-                                paints.Size ?? 1,
-                                item.Quantity,
-                                paints.UnitMeasurement,
-                                paints.ProductUnit);
+                        if (paint.ProductCost <= 0)
+                            continue;
 
-                        decimal landedCost =
-                            convertedActualSize * paints.ProductCost;
+                        // Convert consumed quantity correctly
+                        var consumedMixLandedCost = paint.Quantity * paint.ProductCost;
+                        mixLandedCost += consumedMixLandedCost;
 
-                        TotalLandedCost += landedCost;
                     }
 
-                    decimal mixPrice =
-                        item.ItemPrice
-                        * item.Quantity
-                        * size;
+                    TotalLandedCost += mixLandedCost;
 
-                    TotalItemsSales += mixPrice;
+                    var mixSales =
+                        item.ItemPrice * quantitySold;
+
+                    TotalItemsSales += mixSales;
                 }
             }
         }
 
-        decimal expenses = DailySaleReport?.TotalExpenses ?? 0;
-        TotalNetIncome = TotalItemsSales - TotalLandedCost - expenses;
+        var expenses = DailySaleReport?.TotalExpenses ?? 0;
+        TotalNetIncome = (TotalItemsSales - TotalLandedCost) - expenses;
+    }
+    protected decimal ComputeTotalInvoiceCash()
+    {
+        decimal invoiceCash = 0;
+
+        var list = PaidSales
+            .Where(ds => ds.SalesOption == PurchaseRecieptOption.BIR
+                      && ds.PaymentType != PaymentMethod.BankCheque)
+            .ToList();
+
+        foreach (var dailySale in list)
+        {
+            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+
+            decimal commission = dailySale.Commission ?? 0m;
+            invoiceCash += itemsTotal + commission;
+        }
+
+        return Math.Round(invoiceCash, 2);
     }
 
+    protected decimal ComputeTotalInvoiceCheck()
+    {
+        decimal invoiceCash = 0;
+
+        var list = PaidSales
+            .Where(ds => ds.SalesOption == PurchaseRecieptOption.BIR
+                      && ds.PaymentType == PaymentMethod.BankCheque)
+            .ToList();
+
+        foreach (var dailySale in list)
+        {
+            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+            decimal commission = dailySale.Commission ?? 0m;
+
+            invoiceCash += itemsTotal + commission;
+        }
+
+        return Math.Round(invoiceCash, 2);
+    }
+
+
+    protected decimal ComputeTotalNonInvoiceCash()
+    {
+        decimal invoiceCash = 0;
+
+        var list = PaidSales
+            .Where(ds => ds.SalesOption == PurchaseRecieptOption.NonBIR
+                      && ds.PaymentType != PaymentMethod.BankCheque)
+            .ToList();
+
+        foreach (var dailySale in list)
+        {
+            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+
+            decimal commission = dailySale.Commission ?? 0m;
+            invoiceCash += itemsTotal + commission;
+        }
+
+        return Math.Round(invoiceCash, 2);
+    }
+    protected decimal ComputeTotalNonInvoiceCheck()
+    {
+        decimal invoiceCash = 0;
+
+        var list = PaidSales
+            .Where(ds => ds.SalesOption == PurchaseRecieptOption.NonBIR
+                      && ds.PaymentType == PaymentMethod.BankCheque)
+            .ToList();
+
+        foreach (var dailySale in list)
+        {
+            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+            decimal commission = dailySale.Commission ?? 0m;
+
+            invoiceCash += itemsTotal + commission;
+        }
+
+        return Math.Round(invoiceCash, 2);
+    }
+    protected decimal ComputeTotalCollectedCash()
+    {
+        decimal invoiceCash = 0;
+
+        var list = CollectedSales
+            .Where(ds => ds.PaymentType != PaymentMethod.BankCheque)
+            .ToList();
+
+        foreach (var dailySale in list)
+        {
+            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+
+            decimal commission = dailySale.Commission ?? 0m;
+            invoiceCash += itemsTotal + commission;
+        }
+
+        return Math.Round(invoiceCash, 2);
+    }
+    protected decimal ComputeTotalCollectedCheck()
+    {
+        decimal invoiceCash = 0;
+
+        var list = CollectedSales
+            .Where(ds => ds.PaymentType == PaymentMethod.BankCheque)
+            .ToList();
+
+        foreach (var dailySale in list)
+        {
+            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+
+            decimal commission = dailySale.Commission ?? 0m;
+            invoiceCash += itemsTotal + commission;
+        }
+
+        return Math.Round(invoiceCash, 2);
+    }
 }
