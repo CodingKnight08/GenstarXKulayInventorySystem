@@ -17,7 +17,7 @@ public partial class CreateOperationalBilling
     [Inject] private IDialogService DialogService { get; set; } = default!;
     protected BillingDto Billing { get; set; } = new();
     protected string? ErrorMessage { get; set; }
-    protected DateTime MinDate { get; set; } = new DateTime(DateTime.Now.Year, 1, 1);
+    protected DateTime MinDate { get; set; } = DateTime.Now.AddYears(-1);
     protected List<OperationsProviderDto> OperationsProviders { get; set; } = new();
     protected OperationsProviderDto NewProvider { get; set; } = new OperationsProviderDto();
     protected string ProviderName { get; set; } = string.Empty;
@@ -86,33 +86,7 @@ public partial class CreateOperationalBilling
     {
         try
         {
-            //if (Billing.OperationsProviderId == null && !string.IsNullOrWhiteSpace(ProviderName))
-            //{
-            //    NewProvider.ProviderName = ProviderName;
-            //    NewProvider.Billings = new List<BillingDto>();
-            //    NewProvider.Billings.Add(Billing);
-            //    var parameters = new DialogParameters { ["Provider"] = NewProvider, ["Branch"] = UserState.Branch.GetValueOrDefault() };
-            //    var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false };
-            //    var dialog = await DialogService.ShowAsync<AddOperationalProvider>("Create Provider Info", parameters, options);
-            //    if (dialog is not null)
-            //    {
-            //        var result = await dialog.Result;
-            //        if (result is not null && !result.Canceled && result.Data is OperationsProviderDto provider)
-            //        {
-                        
-            //            Snackbar.Add("Operational provider added successfully!", Severity.Success);
-            //            MudDialog.Close(DialogResult.Ok(true));
-            //        }
-            //        else
-            //        {
-            //            ErrorMessage = "Please select a valid provider or add a new one.";
-            //            Snackbar.Add(ErrorMessage, Severity.Error);
-            //            MudDialog.Close(DialogResult.Ok(false));
-            //        }
-            //    }
-            //}
-            //else
-            //{
+                
 
                 var response = await HttpClient.PostAsJsonAsync("api/billings/operational", Billing);
                 if (response.IsSuccessStatusCode)

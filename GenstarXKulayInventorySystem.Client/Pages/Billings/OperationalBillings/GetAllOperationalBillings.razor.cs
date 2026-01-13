@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Billings.OperationalBillings;
 
@@ -12,11 +13,14 @@ public partial class GetAllOperationalBillings
     [Inject] public ILogger<GetAllOperationalBillings> Logger { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
     protected List<BillingDto> Billings { get; set; } = new();
+    private BranchOption Branch { get; set; } = BranchOption.Warehouse;
     protected bool IsLoading { get; set; } = true;
 
     protected override async Task OnInitializedAsync()
     {
+        Branch = UserState.Branch ?? BranchOption.GeneralSantosCity;
         await LoadBillings();
     }
 
@@ -25,7 +29,7 @@ public partial class GetAllOperationalBillings
         IsLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync("api/billings/all/others");
+            var response = await HttpClient.GetAsync($"api/billings/all/others/{Branch}");
             if (response.IsSuccessStatusCode)
             {
                 Billings = await response.Content.ReadFromJsonAsync<List<BillingDto>>() ?? new List<BillingDto>();
