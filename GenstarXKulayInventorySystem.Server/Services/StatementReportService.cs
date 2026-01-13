@@ -77,9 +77,9 @@ public class StatementReportService:IStatementReportService
                     Address = c.Address,
                     ContactNumber = c.ContactNumber,
                     Branch = c.Branch,
-
+                    RemainingChargeBalance = c.RemainingChargeBalance,
                     DailySales = c.DailySales
-                        .Where(ds => ds.IsChargedSales && !ds.IsPaid)
+                        .Where(ds => ds.IsChargedSales && !ds.IsPaid && !ds.IsDeleted)
                         .Select(ds => new DailySaleDto
                         {
                             Id = ds.Id,
@@ -157,7 +157,7 @@ public class StatementReportService:IStatementReportService
                 .Where(c =>
                     c.ClientId == clientId &&
                     c.IsChargedSales &&
-                    !c.IsPaid)
+                    !c.IsPaid && !c.IsDeleted)
                 .ToListAsync();
 
             List<DailySaleDto> mappedChargeSales =
