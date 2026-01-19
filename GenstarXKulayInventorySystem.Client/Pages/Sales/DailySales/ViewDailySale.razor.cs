@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Sales.DailySales;
@@ -127,11 +128,12 @@ public partial class ViewDailySale
         StateHasChanged();
     }
 
-    protected void SaveEdit(DailySaleDto updatedSale)
+    protected async Task SaveEdit(DailySaleDto updatedSale)
     {
        
         Sales = updatedSale;
         IsEdit = false;
+        await LoadSale();
         StateHasChanged();
     }
 

@@ -67,7 +67,7 @@ else
                                @bind-Value="DailySaleReport.TotalSalesToday" 
                                HideSpinButtons="true" 
                                Label="Total Sales Today"
-                               Format="F2"
+                               Format="N2"
                                Variant="Variant.Text" 
                                ReadOnly=true/>
                         </MudItem>
@@ -77,7 +77,7 @@ else
                                              ValueChanged="@(value => { DailySaleReport.BeginningBalance = value; OnTotalSalesTodayChange(); })"
                                              HideSpinButtons="true"
                                              Label="Beginning Balance"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text" 
                                              Required=true
                                              ReadOnly=true
@@ -104,7 +104,7 @@ else
                                              @bind-Value="DailySaleReport.InvoiceCash"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true 
                                              ReadOnly="true"
@@ -115,7 +115,7 @@ else
                                              @bind-Value="DailySaleReport.InvoiceChecks"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true
                                              ReadOnly=true />
@@ -134,7 +134,7 @@ else
                                 @bind-Value="DailySaleReport.Transportation"
                                 Adornment="Adornment.Start"
                                 AdornmentText="₱"
-                                Format="F2"
+                                Format="N2"
                                 HideSpinButtons=true
                                 Label="Transportation"
                                 ReadOnly=true />
@@ -153,7 +153,7 @@ else
                                              @bind-Value="DailySaleReport.NonInvoiceCash"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true
                                                  ReadOnly=true />
@@ -163,7 +163,7 @@ else
                                              @bind-Value="DailySaleReport.NonInvoiceChecks"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true 
                                              ReadOnly=true/>
@@ -176,7 +176,7 @@ else
                         T="decimal?" 
                         Adornment="Adornment.Start"
                         AdornmentText="₱"
-                        Format="F2" 
+                        Format="N2" 
                         @bind-Value="DailySaleReport.Foods" 
                         HideSpinButtons=true 
                         Label="Foods/Snacks" 
@@ -195,7 +195,7 @@ else
                                              @bind-Value="DailySaleReport.TotalCash"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true
                                              ReadOnly=true
@@ -206,7 +206,7 @@ else
                                              @bind-Value="DailySaleReport.TotalChecks"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true
                                              ReadOnly=true
@@ -222,7 +222,7 @@ else
                         T="decimal?"
                         Adornment="Adornment.Start"
                         AdornmentText="₱"
-                        Format="F2"
+                        Format="N2"
                         HideSpinButtons=true
                         Label="Salary/Advances" />
                 </MudItem>
@@ -237,7 +237,7 @@ else
                                 T="decimal?" 
                                 Adornment="Adornment.Start"
                                 AdornmentText="₱"
-                                Format="F2"
+                                Format="N2"
                                 @bind-Value="DailySaleReport.ChargeSales"
                                 HideSpinButtons=true
                                 ReadOnly=true
@@ -254,7 +254,7 @@ else
                                      HideSpinButtons=true
                                      T="decimal?"
                                      AdornmentText="₱"
-                                     Format="F2" />
+                                     Format="N2" />
                 </MudItem>
 
                 <MudItem xl="7" lg="7">
@@ -267,7 +267,7 @@ else
                                 @bind-Value="DailySaleReport.TotalSales" 
                                 Adornment="Adornment.Start"
                                 AdornmentText="₱"
-                                Format="F2"
+                                Format="N2"
                                 Variant="Variant.Text"
                                 HideSpinButtons=true
                                 ReadOnly=true
@@ -283,7 +283,7 @@ else
                                      HideSpinButtons=true 
                                      Adornment="Adornment.Start"
                                      AdornmentText="₱"
-                                     Format="F2" 
+                                     Format="N2" 
                                      ReadOnly=true
                                      />
                 </MudItem>
@@ -294,11 +294,11 @@ else
                         </MudItem>
                         <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal?" @bind-Value="DailySaleReport.CollectionCash" HideSpinButtons=true Adornment="Adornment.Start" AdornmentText="₱"
-                                             Format="F2" ReadOnly=true />
+                                             Format="N2" ReadOnly=true />
                         </MudItem>
                         <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal?" @bind-Value="DailySaleReport.CollectionChecks" HideSpinButtons=true Adornment="Adornment.Start" AdornmentText="₱"
-                                             Format="F2" ReadOnly=true />
+                                             Format="N2" ReadOnly=true />
                         </MudItem>
                     </MudGrid>
                 </MudItem>
@@ -310,7 +310,7 @@ else
                         ValueChanged="@(value => { DailySaleReport.Others = value; OnExpensesChange(); })"
                         AdornmentText="₱"
                         HideSpinButtons=true
-                        Format="F2" />
+                        Format="N2" />
                 </MudItem>
 
                 <MudItem xl="7" lg="7">
@@ -324,7 +324,7 @@ else
                                             Adornment="Adornment.Start"
                                              AdornmentText="₱"
                                              HideSpinButtons=true
-                                             Format="F2" />
+                                             Format="N2" />
                         </MudItem>
                         <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal?" 
@@ -332,7 +332,7 @@ else
                                             Adornment="Adornment.Start"
                                              AdornmentText="₱"
                                              HideSpinButtons=true
-                                             Format="F2" />
+                                             Format="N2" />
 
                         </MudItem>
                     </MudGrid>
@@ -343,7 +343,7 @@ else
                             Label="Purchase Order"
                             Adornment="Adornment.Start"
                             AdornmentText="₱"
-                            Format="F2"
+                            Format="N2"
                             Value="TotalPurchaseOrder"
                             HideSpinButtons=true
                             ReadOnly=true />
@@ -365,7 +365,7 @@ else
                                          Label="Total Expenses"
                                          AdornmentText="₱"
                                          HideSpinButtons=true
-                                         Format="F2" />
+                                         Format="N2" />
                     </MudItem>
 
                 <MudItem xl="7" lg="7">
@@ -378,21 +378,22 @@ else
                         Adornment="Adornment.Start"
                                      AdornmentText="₱"
                                      HideSpinButtons=true
-                                     Format="F2" />
+                                     Format="N2" />
 
                 </MudItem>
                 <MudItem sm="4">
-                    <MudNumericField T="decimal" @bind-Value="TotalLandedCost" Label="Landed Cost Total" Format="F2" HideSpinButtons=true />
+                    <MudNumericField T="decimal" @bind-Value="TotalLandedCost" Label="Landed Cost Total" Format="N2" HideSpinButtons=true />
 
                 </MudItem>
                   <MudItem sm="4">
-                    <MudNumericField T="decimal" @bind-Value="TotalItemsSales" Label="Sales Cost Total"  Format="F2" HideSpinButtons=true />
+                    <MudNumericField T="decimal" @bind-Value="TotalItemsSales" Label="Sales Cost Total"  Format="N2" HideSpinButtons=true />
 
                 </MudItem>
                   <MudItem sm="4">
-                    <MudNumericField T="decimal" Value="TotalNetIncome" Label="Net Income"  Format="F2" HideSpinButtons=true />
+                    <MudNumericField T="decimal" Value="TotalNetIncome" Label="Net Income"  Format="N2" HideSpinButtons=true />
 
                 </MudItem>
+                 
                 </MudGrid>
             }
             else

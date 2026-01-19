@@ -131,6 +131,7 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(ds => ds.SaleItems)
+            .Include(ri => ri.ReturnItems)
             .ThenInclude(bp => bp.BranchProduct)
             .Where(ds => !ds.IsDeleted
                       && ds.IsApproved
@@ -187,6 +188,7 @@ public class SalesService:ISalesService
         var unpaidDailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(ri => ri.ReturnItems)
             .Include(s => s.SaleItems)
                 .ThenInclude(bp => bp.BranchProduct)
             .Where(ds => !ds.IsDeleted
@@ -270,7 +272,11 @@ public class SalesService:ISalesService
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
                 phNow,
                 saleDto.CustomPaymentTermsOption ?? 0);
-
+            if(sale.PaymentTermsOption == PaymentTermsOption.Today)
+            {
+                sale.IsPaid = true;
+            }
+           
             await _context.DailySales.AddAsync(sale);
             await _context.SaveChangesAsync();
 
@@ -296,20 +302,38 @@ public class SalesService:ISalesService
 
         try
         {
+            // Map basic fields from DTO (ignoring SaleItems)
             _mapper.Map(saleDto, existingSale);
 
-            existingSale.UpdatedAt = PhilippineTime.Now;
             existingSale.UpdatedBy = GetCurrentUsername();
-            existingSale.TotalAmount = Math.Round(
-                (saleDto.SaleItems?.Sum(x =>
-                    (x.ItemPrice * x.Quantity * (x.Size ?? 1))
-                ) ?? 0)
-                + (saleDto.Commission ?? 0),
-                2);
+
+            // Recompute total strictly from DTO SaleItems
+            decimal itemsTotal = 0;
+            if (saleDto.SaleItems != null && saleDto.SaleItems.Any())
+            {
+                itemsTotal = saleDto.SaleItems.Sum(x => x.ItemPrice * x.Quantity);
+            }
+
+            // Add commission (from DTO if available, otherwise existing value)
+            decimal commission = saleDto.Commission ?? existingSale.Commission ?? 0;
+            existingSale.TotalAmount = Math.Round(itemsTotal + commission, 2);
+
+            // Recalculate expected payment date
             existingSale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
                 existingSale.DateOfSales,
                 saleDto.CustomPaymentTermsOption ?? 0);
+
+            // Update payment status only if PaymentType changed
+            if (existingSale.PaymentType == null && saleDto.PaymentType != null)
+            {
+                existingSale.IsPaid = true;
+                existingSale.UpdatedAt = PhilippineTime.Now;
+            }
+            else
+            {
+                existingSale.IsPaid = false;
+            }
 
             int result = await _context.SaveChangesAsync();
             return result > 0;
@@ -320,6 +344,7 @@ public class SalesService:ISalesService
             return false;
         }
     }
+
 
     public async Task<bool> DeleteSaleAsync(int id)
     {

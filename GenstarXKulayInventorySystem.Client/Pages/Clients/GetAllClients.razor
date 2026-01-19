@@ -1,4 +1,5 @@
 ﻿@page "/clients"
+@using GenstarXKulayInventorySystem.Shared.DTOS
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 
 <MudMainContent Class="w-auto h-100 d-flex flex-column align-items-center gap-3">
@@ -38,11 +39,17 @@
 
         <MudCard Elevation="0" Class="w-100 p-3">
             <MudTable 
-            Dense="true"
-            Hover="true"
-            Bordered="true"
-            
-            Items="Clients">
+                T="ClientDto"
+                Dense="true"
+                Hover="true"
+                Bordered="true"
+                Striped="true"
+                Square="true"
+                RowsPerPage="@PageTake"
+                CurrentPage="@CurrentPageIndex"
+                CurrentPageChanged="@OnPageChanged"
+                RowsPerPageChanged="@OnRowsPerPageChanged"
+                Items="Clients">
             <HeaderContent>
                 <MudTh>Client Name</MudTh>
                 <MudTh>Address</MudTh>
@@ -63,6 +70,9 @@
             <NoRecordsContent>
                 <MudText Align="Align.Center" Typo="Typo.subtitle1" Color="Color.Error">No Clients Available</MudText>
             </NoRecordsContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="@(new int[] {5,10,20})"/>
+            </PagerContent>
         </MudTable>
     </MudCard>
     }

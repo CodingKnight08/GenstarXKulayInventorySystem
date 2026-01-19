@@ -1,4 +1,5 @@
-﻿using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
@@ -28,4 +29,7 @@ public class DailySaleDto:BaseEntityDto
     public bool IsChargedSales { get; set; }
     public List<SaleItemDto> SaleItems { get; set; } = new List<SaleItemDto>();
     public List<ReturnItemDto> ReturnItems { get; set; } = new List<ReturnItemDto>();
+
+    [NotMapped]
+    public int SaleItemsCount { get; set; } = 0;
 }

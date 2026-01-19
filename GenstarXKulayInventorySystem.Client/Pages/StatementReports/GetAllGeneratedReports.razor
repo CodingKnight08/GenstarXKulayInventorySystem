@@ -1,0 +1,37 @@
+﻿@page "/statements"
+@layout MainLayout
+@using GenstarXKulayInventorySystem.Shared.DTOS;
+<MudMainContent Class="w-auto h-100">
+    <MudPaper Elevation="0" Class="w-100 py-5">
+        <MudGrid Spacing="5">
+            <MudItem sm="12">
+                <MudText Typo="Typo.h4" Align="Align.Center">Statement of Accounts</MudText>
+            </MudItem>
+            <MudItem sm="12" >
+                @if (!IsLoading)
+                {
+                    <MudTable T="ClientDto" Items="Clients" Bordered="true" RowsPerPage="5" Hover="true" Dense="true" Elevation="10" Class="m-3">
+                        <HeaderContent>
+                            <MudTh>Client</MudTh>
+                            <MudTh>Action</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.ClientName</MudTd>
+                            <MudTd>
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small" OnClick="() => ViewClientChargeSales(context.Id)" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudCard Elevation="10" Class="w-auto d-flex flex-column align-items-center justify-content-center">
+                        <MudProgressCircular Indeterminate="true" Size="Size.Medium" Color="Color.Info" />
+                        <MudText Align="Align.Center">Loading</MudText>
+                    </MudCard>
+                }
+
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+</MudMainContent>

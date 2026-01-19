@@ -41,6 +41,7 @@ public partial class EditDailySale
     {
         try
         {
+            Sale.SaleItems = SaleItems;
             var response = await HttpClient.PutAsJsonAsync($"api/sales/{Sale.Id}", Sale);
 
             if (response.IsSuccessStatusCode)

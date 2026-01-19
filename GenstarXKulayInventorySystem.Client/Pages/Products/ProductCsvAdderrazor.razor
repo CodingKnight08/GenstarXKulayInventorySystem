@@ -1,29 +1,38 @@
 ﻿@page "/products/csv-adder"
 @inject HttpClient Http
+@using MudBlazor
 
 <MudMainContent>
-    <h3>📦 Upload Product CSV or Excel</h3>
+    <h3>📦 Upload Products, Brands & Branch Products</h3>
 
+    <!-- ---------------- Products Upload ---------------- -->
     <div class="mb-4">
-        <h5>Import Products</h5>
+        <h5>Import Products (CSV or Excel)</h5>
         <InputFile OnChange="UploadProductFile" />
-        <p>@ProductStatusMessage</p>
+        <MudText Typo="Typo.body1">@ProductStatusMessage</MudText>
     </div>
 
+    <!-- ---------------- Brands Upload ---------------- -->
     <div class="mb-4">
-        <h5>Import Product Brands</h5>
+        <h5>Import Product Brands (CSV or Excel)</h5>
         <InputFile OnChange="UploadBrandFile" />
-        <p>@BrandStatusMessage</p>
+        <MudText Typo="Typo.body1">@BrandStatusMessage</MudText>
+    </div>
+
+    <!-- ---------------- Branch Products Upload ---------------- -->
+    <div class="mb-4">
+        <h5>Import Branch Products (CSV or Excel)</h5>
+        <InputFile OnChange="UploadBranchProductFile" />
+        <MudText Typo="Typo.body1">@BranchProductStatusMessage</MudText>
     </div>
 </MudMainContent>
 
 @code {
     private string ProductStatusMessage = "";
     private string BrandStatusMessage = "";
+    private string BranchProductStatusMessage = "";
 
-    // ----------------------------
-    // Upload Products CSV
-    // ----------------------------
+    // ---------------- Upload Products ----------------
     private async Task UploadProductFile(InputFileChangeEventArgs e)
     {
         try
@@ -38,10 +47,12 @@
             var content = new MultipartFormDataContent();
             content.Add(new StreamContent(file.OpenReadStream(50 * 1024 * 1024)), "file", file.Name);
 
-            var response = await Http.PostAsync("api/productimport/upload", content);
+            var response = await Http.PostAsync("api/productimport/upload-globalproducts", content);
             var result = await response.Content.ReadAsStringAsync();
 
-            ProductStatusMessage = response.IsSuccessStatusCode ? result : $"❌ Failed: {result}";
+            ProductStatusMessage = response.IsSuccessStatusCode
+                ? $"✅ Success: {result}"
+                : $"❌ Failed: {result}";
         }
         catch (Exception ex)
         {
@@ -49,9 +60,7 @@
         }
     }
 
-    // ----------------------------
-    // Upload Brands CSV
-    // ----------------------------
+    // ---------------- Upload Brands ----------------
     private async Task UploadBrandFile(InputFileChangeEventArgs e)
     {
         try
@@ -69,11 +78,42 @@
             var response = await Http.PostAsync("api/productimport/upload-brands", content);
             var result = await response.Content.ReadAsStringAsync();
 
-            BrandStatusMessage = response.IsSuccessStatusCode ? result : $"❌ Failed: {result}";
+            BrandStatusMessage = response.IsSuccessStatusCode
+                ? $"✅ Success: {result}"
+                : $"❌ Failed: {result}";
         }
         catch (Exception ex)
         {
             BrandStatusMessage = $"❌ Error: {ex.Message}";
+        }
+    }
+
+    // ---------------- Upload Branch Products ----------------
+    private async Task UploadBranchProductFile(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file == null)
+            {
+                BranchProductStatusMessage = "❌ No file selected.";
+                return;
+            }
+
+            var content = new MultipartFormDataContent();
+            content.Add(new StreamContent(file.OpenReadStream(50 * 1024 * 1024)), "file", file.Name);
+
+            // Call the controller endpoint for branch products
+            var response = await Http.PostAsync("api/productimport/upload-branchproducts", content);
+            var result = await response.Content.ReadAsStringAsync();
+
+            BranchProductStatusMessage = response.IsSuccessStatusCode
+                ? $"✅ Success: {result}"
+                : $"❌ Failed: {result}";
+        }
+        catch (Exception ex)
+        {
+            BranchProductStatusMessage = $"❌ Error: {ex.Message}";
         }
     }
 }
