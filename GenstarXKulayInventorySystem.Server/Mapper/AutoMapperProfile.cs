@@ -65,6 +65,21 @@ public class AutoMapperProfile : Profile
         _ = CreateMap<GlobalProduct, GlobalProductDto>().ReverseMap();
         _ = CreateMap<BranchProduct, BranchProductDto>().ReverseMap();
         _ = CreateMap<ReturnItem, ReturnItemDto>().ReverseMap();
+
+        _ = CreateMap<WayBill, WayBillDto>()
+                .ForMember(dest => dest.WayBillItems, opt => opt.MapFrom(src => src.WayBillItems))
+                .ForMember(dest => dest.Supplier, opt => opt.MapFrom(src => src.Supplier))
+                .ReverseMap()
+                .ForMember(dest => dest.WayBillItems, opt => opt.Ignore()) 
+                .ForMember(dest => dest.Supplier, opt => opt.Ignore());
+
+        _ = CreateMap<WayBillItems, WayBillItemsDto>()
+                .ForMember(dest => dest.BranchProduct, opt => opt.MapFrom(src => src.BranchProduct))
+                .ForMember(dest => dest.WayBill, opt => opt.Ignore()) 
+                .ReverseMap()
+                .ForMember(dest => dest.BranchProduct, opt => opt.Ignore())
+                .ForMember(dest => dest.WayBill, opt => opt.Ignore());
+
     }
 
     private List<InvolvePaintsDto>? DeserializeInvolvePaints(string datalistJson)
