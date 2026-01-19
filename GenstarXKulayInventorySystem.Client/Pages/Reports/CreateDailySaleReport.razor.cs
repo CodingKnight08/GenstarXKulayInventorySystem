@@ -350,6 +350,7 @@ public partial class CreateDailySaleReport
        
         foreach (var sale in AllDailySaleTobeAdded)
         {
+            decimal returnSalesAmount = ComputeReturnedAmount(sale.ReturnItems);
             foreach (var item in sale.SaleItems)
             {
                 var quantitySold = item.Quantity;
@@ -400,6 +401,7 @@ public partial class CreateDailySaleReport
                     TotalItemsSales += mixSales;
                 }
             }
+            TotalItemsSales -= returnSalesAmount;
         }
 
         var expenses = DailySaleReport?.TotalExpenses ?? 0;
@@ -407,117 +409,178 @@ public partial class CreateDailySaleReport
     }
     protected decimal ComputeTotalInvoiceCash()
     {
-        decimal invoiceCash = 0;
+        decimal totalCollected = 0m;
 
         var list = PaidSales
             .Where(ds => ds.SalesOption == PurchaseRecieptOption.BIR
-                      && ds.PaymentType != PaymentMethod.BankCheque)
-            .ToList();
+                      && ds.PaymentType != PaymentMethod.BankCheque);
 
         foreach (var dailySale in list)
         {
-            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+            var grossAmount = dailySale.SaleItems
+                ?.Sum(item =>
+                    item.ItemPrice *
+                    item.Quantity *
+                    (item.Size ?? 1)) ?? 0m;
 
-            decimal commission = dailySale.Commission ?? 0m;
-            invoiceCash += itemsTotal + commission;
+            var returnedAmount = ComputeReturnedAmount(dailySale.ReturnItems);
+            var commission = dailySale.Commission ?? 0m;
+
+            var netAmount = Math.Max(grossAmount - returnedAmount, 0);
+
+            totalCollected += netAmount + commission;
         }
 
-        return Math.Round(invoiceCash, 2);
+        return Math.Round(totalCollected, 2);
     }
+
 
     protected decimal ComputeTotalInvoiceCheck()
     {
-        decimal invoiceCash = 0;
+        decimal totalCollected = 0m;
 
         var list = PaidSales
             .Where(ds => ds.SalesOption == PurchaseRecieptOption.BIR
-                      && ds.PaymentType == PaymentMethod.BankCheque)
-            .ToList();
+                      && ds.PaymentType == PaymentMethod.BankCheque);
 
         foreach (var dailySale in list)
         {
-            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
-            decimal commission = dailySale.Commission ?? 0m;
+            var grossAmount = dailySale.SaleItems
+                ?.Sum(item =>
+                    item.ItemPrice *
+                    item.Quantity *
+                    (item.Size ?? 1)) ?? 0m;
 
-            invoiceCash += itemsTotal + commission;
+            var returnedAmount = ComputeReturnedAmount(dailySale.ReturnItems);
+            var commission = dailySale.Commission ?? 0m;
+
+            var netAmount = Math.Max(grossAmount - returnedAmount, 0);
+
+            totalCollected += netAmount + commission;
         }
 
-        return Math.Round(invoiceCash, 2);
+        return Math.Round(totalCollected, 2);
     }
+
 
 
     protected decimal ComputeTotalNonInvoiceCash()
     {
-        decimal invoiceCash = 0;
+        decimal totalCollected = 0m;
 
         var list = PaidSales
             .Where(ds => ds.SalesOption == PurchaseRecieptOption.NonBIR
-                      && ds.PaymentType != PaymentMethod.BankCheque)
-            .ToList();
+                      && ds.PaymentType != PaymentMethod.BankCheque);
 
         foreach (var dailySale in list)
         {
-            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+            var grossAmount = dailySale.SaleItems
+                ?.Sum(item =>
+                    item.ItemPrice *
+                    item.Quantity *
+                    (item.Size ?? 1)) ?? 0m;
 
-            decimal commission = dailySale.Commission ?? 0m;
-            invoiceCash += itemsTotal + commission;
+            var returnedAmount = ComputeReturnedAmount(dailySale.ReturnItems);
+            var commission = dailySale.Commission ?? 0m;
+
+            var netAmount = Math.Max(grossAmount - returnedAmount, 0);
+
+            totalCollected += netAmount + commission;
         }
 
-        return Math.Round(invoiceCash, 2);
+        return Math.Round(totalCollected, 2);
     }
+
     protected decimal ComputeTotalNonInvoiceCheck()
     {
-        decimal invoiceCash = 0;
+        decimal totalCollected = 0m;
 
         var list = PaidSales
             .Where(ds => ds.SalesOption == PurchaseRecieptOption.NonBIR
-                      && ds.PaymentType == PaymentMethod.BankCheque)
-            .ToList();
+                      && ds.PaymentType == PaymentMethod.BankCheque);
 
         foreach (var dailySale in list)
         {
-            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
-            decimal commission = dailySale.Commission ?? 0m;
+            var grossAmount = dailySale.SaleItems
+                ?.Sum(item =>
+                    item.ItemPrice *
+                    item.Quantity *
+                    (item.Size ?? 1)) ?? 0m;
 
-            invoiceCash += itemsTotal + commission;
+            var returnedAmount = ComputeReturnedAmount(dailySale.ReturnItems);
+            var commission = dailySale.Commission ?? 0m;
+
+            var netAmount = Math.Max(grossAmount - returnedAmount, 0);
+
+            totalCollected += netAmount + commission;
         }
 
-        return Math.Round(invoiceCash, 2);
+        return Math.Round(totalCollected, 2);
     }
+
     protected decimal ComputeTotalCollectedCash()
     {
-        decimal invoiceCash = 0;
+        decimal totalCollected = 0m;
 
         var list = CollectedSales
-            .Where(ds => ds.PaymentType != PaymentMethod.BankCheque)
-            .ToList();
+            .Where(ds => ds.PaymentType != PaymentMethod.BankCheque);
 
         foreach (var dailySale in list)
         {
-            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+            var grossAmount = dailySale.SaleItems
+                ?.Sum(item =>
+                    item.ItemPrice *
+                    item.Quantity *
+                    (item.Size ?? 1)) ?? 0m;
 
-            decimal commission = dailySale.Commission ?? 0m;
-            invoiceCash += itemsTotal + commission;
+            var returnedAmount = ComputeReturnedAmount(dailySale.ReturnItems);
+            var commission = dailySale.Commission ?? 0m;
+
+            var netAmount = Math.Max(grossAmount - returnedAmount, 0);
+
+            totalCollected += netAmount + commission;
         }
 
-        return Math.Round(invoiceCash, 2);
+        return Math.Round(totalCollected, 2);
     }
+
     protected decimal ComputeTotalCollectedCheck()
     {
-        decimal invoiceCash = 0;
+        decimal totalCollectedCheck = 0m;
 
         var list = CollectedSales
-            .Where(ds => ds.PaymentType == PaymentMethod.BankCheque)
-            .ToList();
+            .Where(ds => ds.PaymentType == PaymentMethod.BankCheque);
 
         foreach (var dailySale in list)
         {
-            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity * (item.Size ?? 1)) ?? 0m;
+            var grossAmount = dailySale.SaleItems
+                ?.Sum(item =>
+                    item.ItemPrice *
+                    item.Quantity *
+                    (item.Size ?? 1)) ?? 0m;
 
-            decimal commission = dailySale.Commission ?? 0m;
-            invoiceCash += itemsTotal + commission;
+            var returnedAmount = ComputeReturnedAmount(dailySale.ReturnItems);
+            var commission = dailySale.Commission ?? 0m;
+
+            var netAmount = Math.Max(grossAmount - returnedAmount, 0);
+
+            totalCollectedCheck += netAmount + commission;
         }
 
-        return Math.Round(invoiceCash, 2);
+        return Math.Round(totalCollectedCheck, 2);
     }
+
+
+    private static decimal ComputeReturnedAmount(List<ReturnItemDto> returnItems)
+    {
+        if (returnItems == null || returnItems.Count == 0)
+            return 0m;
+
+        return returnItems.Sum(r =>
+            r.ItemPrice *
+            r.Quantity *
+            (r.Size == 0 ? 1 : r.Size));
+    }
+
+
 }

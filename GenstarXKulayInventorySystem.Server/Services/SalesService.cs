@@ -131,6 +131,7 @@ public class SalesService:ISalesService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(ds => ds.SaleItems)
+            .Include(ri => ri.ReturnItems)
             .ThenInclude(bp => bp.BranchProduct)
             .Where(ds => !ds.IsDeleted
                       && ds.IsApproved
@@ -187,6 +188,7 @@ public class SalesService:ISalesService
         var unpaidDailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(ri => ri.ReturnItems)
             .Include(s => s.SaleItems)
                 .ThenInclude(bp => bp.BranchProduct)
             .Where(ds => !ds.IsDeleted
