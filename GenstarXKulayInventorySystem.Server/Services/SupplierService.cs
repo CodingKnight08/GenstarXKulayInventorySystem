@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -24,12 +25,12 @@ public class SupplierService:ISupplierService
         return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
     }
 
-    public async Task<List<SupplierDto>> GetAllAsync()
+    public async Task<List<SupplierDto>> GetAllAsync(BranchOption branch)
     {
         List<Supplier> suppliers = await _context.Suppliers
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(e => !e.IsDeleted)
+            .Where(e => !e.IsDeleted && e.Branch == branch)
             .ToListAsync();
         if (suppliers == null || suppliers.Count == 0)
         {
@@ -75,7 +76,7 @@ public class SupplierService:ISupplierService
         {
             var existingSupplier = await _context.Suppliers
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.SupplierName == supplierDto.SupplierName);
+                .FirstOrDefaultAsync(x => x.SupplierName == supplierDto.SupplierName && x.Branch == supplierDto.Branch && !x.IsDeleted);
 
             if (existingSupplier != null)
                 return null;
@@ -154,7 +155,7 @@ public class SupplierService:ISupplierService
 public interface ISupplierService
 {
     // Define methods for supplier operations
-    Task<List<SupplierDto>> GetAllAsync();
+    Task<List<SupplierDto>> GetAllAsync(BranchOption branch);
     Task<SupplierDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(SupplierDto supplierDto);
     Task<SupplierDto?> CreateAndReturnAsync(SupplierDto supplierDto);
