@@ -1,0 +1,83 @@
+﻿@using GenstarXKulayInventorySystem.Shared.DTOS
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="6">
+            @if (IsLoading)
+            {
+                <MudItem xs="12" Class="d-flex flex-column align-items-center justify-content-center gap-3">
+                    <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Medium" Rounded="true"/>
+                    <MudText Typo="Typo.body2" Align="Align.Center">Loading Products</MudText>
+                </MudItem>
+            }
+            else
+            {
+                
+            
+            <MudItem xs="12" md="6">
+               <MudAutocomplete 
+                   T="BranchProductDto"
+                   Label="Item Name"
+                   Placeholder="Select Item"
+                   Value="SelectedProduct"
+                   Clearable="true"
+                   CoerceText=true
+                   CoerceValue="false"
+                   ToStringFunc="bp => bp.MasterProduct?.ProductName ?? string.Empty"
+                   ResetValueOnEmptyText="false"
+                   MaxItems="500"
+                   SearchFunc="SearchProductsDto"
+                   ValueChanged="OnProductSelect"
+                   />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect T="ProductMesurementOption ?" Value="SelectedProduct.ProductMesurementOption" Label="Unit" ReadOnly="true">
+                    @foreach (var unit in Enum.GetValues(typeof(ProductMesurementOption)).Cast<ProductMesurementOption>())
+                    {
+                        <MudSelectItem T="ProductMesurementOption ?" Value="unit">
+                            @unit.ToString()
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudNumericField 
+                    T="decimal" 
+                    Value="WayBillItem.Quantity" 
+                    ValueChanged="OnQuantityChanged"
+                    Label="Quantity" 
+                    Variant="Variant.Text"
+                    Placeholder="Enter Quantity" 
+                    HideSpinButtons="true"/>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudNumericField 
+                    T="decimal"
+                    Adornment="Adornment.Start" 
+                    AdornmentText="₱" 
+                    Value="WayBillItem.ItemPrice"
+                    HideSpinButtons=true
+                    Format="N2"
+                    ReadOnly="true"/>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudNumericField 
+                    Adornment="Adornment.Start"
+                    AdornmentText="₱"
+                    T="decimal" 
+                    Value="WayBillItem.TotalPrice" 
+                    Label="Total Price"
+                    ReadOnly=true
+                    Format="N2"
+                    HideSpinButtons="true" />
+            </MudItem>
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" StartIcon="@Icons.Material.Filled.Cancel" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="SaveItem" Disabled="!IsValid">Save</MudButton>
+    </DialogActions>
+</MudDialog>

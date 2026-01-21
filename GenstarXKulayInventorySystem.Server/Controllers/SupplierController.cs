@@ -1,6 +1,7 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
@@ -13,10 +14,10 @@ public class SupplierController : ControllerBase
         _supplierService = supplierService;
     }
 
-    [HttpGet("all")]
-    public async Task<ActionResult<List<SupplierDto>>> GetAll()
+    [HttpGet("all/{branch}")]
+    public async Task<ActionResult<List<SupplierDto>>> GetAll(BranchOption branch)
     {
-        var suppliers = await _supplierService.GetAllAsync();
+        var suppliers = await _supplierService.GetAllAsync(branch);
         return Ok(suppliers);
     }
 

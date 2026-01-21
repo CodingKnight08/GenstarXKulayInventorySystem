@@ -1,0 +1,87 @@
+﻿@page "/create-WayBill"
+@using GenstarXKulayInventorySystem.Client.Pages.WayBills.WayBillItems
+@using GenstarXKulayInventorySystem.Shared.DTOS
+@layout MainLayout
+
+<MudMainContent Class="w-auto h-100 ">
+    <MudText Typo="Typo.h6" Class="mb-4 pa-5">
+        Create Way Bill
+    </MudText>
+    @if (IsLoading)
+    {
+        <MudCard Elevation="10" Class="pa-6 d-flex flex-column align-items-center justify-content-center gap-3">
+            <MudProgressCircular Indeterminate="true" Rounded="true" Size="Size.Medium" />
+            <MudText Typo="Typo.h6" Align="Align.Center">Loading</MudText>
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Elevation="0" Class="pa-6">
+            <MudGrid Spacing="4">
+                <MudItem xs="12" md="6">
+                    <MudAutocomplete T="string"
+                    Label="Supplier Name"
+                    @bind-Value="SupplierName"
+                    SearchFunc="SearchSupplier"
+                    Dense="true"
+                    Clearable="true"
+                    CoerceText="true"
+                    CoerceValue="true"
+                    Placeholder="Enter Supplier Name"
+                    Variant="Variant.Text"
+                    Required="true"
+                    TextChanged="OnSupplierNameType"
+                    ShowProgressIndicator="IsSupplierLoading" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="WayBill.WayBillNumber" Placeholder="Way Bill Number" Variant="Variant.Text" Label="Way Bill No." Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="WayBill.Courier" Placeholder="Courier Name" Label="Courier" Variant="Variant.Text"/>
+                </MudItem>
+              
+                <MudItem>
+                    <MudAutocomplete 
+                        T="ProductBrandDto" 
+                        Label="Product Brand"
+                        Dense="true"
+                        Placeholder="Select Brand"
+                        Value="SelectedBrand"
+                        ValueChanged="OnBrandSelect"
+                        SearchFunc="SearchBrands"
+                        ToStringFunc="b => b?.BrandName"
+                        MaxItems="70"
+                        Clearable="true"
+                        CoerceText="false"
+                        CoerceValue="false"
+                        ResetValueOnEmptyText="false"
+                        />
+                </MudItem>
+              
+                <MudItem xs="12" md="12">
+                   <GetAllWayBillItems @ref="WayBillItemsComponent"
+                       Branch="Branch"
+                       BrandId="SelectedBrand?.Id ?? 0" 
+                        OnItemsChanged="RecalculateIsValid"/>
+
+
+                </MudItem>
+                <MudItem xs="12" Class="d-flex flex-row justify-content-end align-items-center gap-3">
+                    <MudButton 
+                        StartIcon="@Icons.Material.Filled.Cancel"
+                        Variant="Variant.Filled" 
+                        OnClick="Cancel"
+                        Color="Color.Default">Cancel</MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               OnClick="SubmitWayBill"
+                               Disabled="!IsValid">
+                        Submit Way Bill
+                    </MudButton>
+
+                </MudItem>
+            </MudGrid>
+        </MudCard>
+    }
+  </MudMainContent>

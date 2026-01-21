@@ -294,6 +294,54 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(ri => ri.TotalPrice).HasColumnType("decimal(18,2)");
         });
 
+        modelBuilder.Entity<WayBill>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.WayBillNumber)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Courier)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(e => e.DateReceived)
+                .IsRequired();
+
+            entity.HasOne(e => e.Supplier)
+                .WithMany() 
+                .HasForeignKey(e => e.SupplierId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(e => e.WayBillItems)
+                .WithOne(wbi => wbi.WayBill)
+                .HasForeignKey(wbi => wbi.WayBillId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<WayBillItems>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Quantity)
+                .IsRequired();
+
+            entity.Property(e => e.ItemPrice)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.TotalPrice)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+
+            entity.HasOne(e => e.BranchProduct)
+                .WithMany() 
+                .HasForeignKey(e => e.BranchProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -321,6 +369,8 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<GlobalProduct> GlobalProducts { get; set; }
     public DbSet<BranchProduct> BranchProducts { get; set; }
     public DbSet<ReturnItem> ReturnItems { get; set; }
+    public DbSet<WayBill> WayBills { get; set; }
+    public DbSet<WayBillItems> WayBillItems { get; set; }
 
     public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {
