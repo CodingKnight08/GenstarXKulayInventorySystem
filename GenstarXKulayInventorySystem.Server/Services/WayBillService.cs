@@ -3,6 +3,8 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -37,21 +39,30 @@ public class WayBillService: IWayBillService
 
     public async Task<List<WayBillDto>> GetAllWayBills()
     {
-        List<WayBill> wayBills = await _context.WayBills
-                            .AsNoTracking()
-                            .AsSplitQuery()
-                            .Include(wb => wb.Supplier)
-                            .Include(wb => wb.WayBillItems)
-                                .ThenInclude(wbi => wbi.BranchProduct)
-                                .ToListAsync();
-        if(wayBills == null || wayBills.Count == 0)
+        var wayBills = await _context.WayBills
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(wb => wb.Supplier)
+            .Include(wb => wb.WayBillItems)
+            .ThenInclude(wi => wi.BranchProduct) // optional if you need product info
+            .ToListAsync();
+
+        if (wayBills == null || wayBills.Count == 0)
         {
             _logger.LogInformation("No waybills found in the database.");
             return new List<WayBillDto>();
         }
-        List<WayBillDto> wayBillDtos = _mapper.Map<List<WayBillDto>>(wayBills);
+
+        var wayBillDtos = _mapper.Map<List<WayBillDto>>(wayBills);
+
+        foreach (var dto in wayBillDtos)
+        {
+            dto.TotalAmount = dto.WayBillItems.Sum(i => i.TotalPrice);
+        }
+
         return wayBillDtos;
     }
+
 
     public async Task<WayBillDto?> GetWayBillById(int wayBill)
     {
@@ -59,9 +70,7 @@ public class WayBillService: IWayBillService
                             .AsNoTracking()
                             .AsSplitQuery()
                             .Include(wb => wb.Supplier)
-                            .Include(wb => wb.WayBillItems)
-                                .ThenInclude(wbi => wbi.BranchProduct)
-                                .FirstOrDefaultAsync(wb => wb.Id == wayBill);
+                            .FirstOrDefaultAsync(wb => wb.Id == wayBill);
         if (wayBillEntity == null)
         {
             _logger.LogWarning("Waybill with ID {WayBillId} not found.", wayBill);
@@ -90,6 +99,24 @@ public class WayBillService: IWayBillService
         return wayBillDtos;
     }
 
+    public async Task<List<WayBillItemsDto>> GetAllWayBillItemsByWayBillId(int waybillId)
+    {
+        List<WayBillItems> waybillItems = await _context.WayBillItems
+                                            .AsNoTracking()
+                                            .AsSplitQuery()
+                                            .Include(wb => wb.BranchProduct)
+                                            .ThenInclude(wb => wb.MasterProduct)
+                                            .Where(wb => wb.WayBillId == waybillId)
+                                            .ToListAsync();
+        if (waybillItems.Count == 0 || waybillItems is null)
+        {
+            _logger.LogInformation("No waybill items found {WaybillId}", waybillId);
+            return new List<WayBillItemsDto>();
+        }
+        List<WayBillItemsDto> wayBillItems = _mapper.Map<List<WayBillItemsDto>>(waybillItems);
+        return wayBillItems;
+    }
+
     public async Task<bool> CreateWayBill(WayBillDto wayBillDto)
     {
         try
@@ -103,8 +130,9 @@ public class WayBillService: IWayBillService
                 return false;
             }
             WayBill wayBillEntity = _mapper.Map<WayBill>(wayBillDto);
+            wayBillEntity.DateReceived = PhilippineTime.Now; 
             wayBillEntity.CreatedBy = GetCurrentUsername();
-            wayBillEntity.CreatedAt = DateTime.UtcNow;
+            wayBillEntity.CreatedAt = PhilippineTime.Now;
             await _context.WayBills.AddAsync(wayBillEntity);
             await _context.SaveChangesAsync();
             return true;
@@ -144,6 +172,7 @@ public interface IWayBillService
     Task<List<WayBillDto>> GetAllWayBills();
     Task<WayBillDto?> GetWayBillById(int wayBill);
     Task<List<WayBillDto>> GetWayBillsBySupplierId(int supplierId);
+    Task<List<WayBillItemsDto>> GetAllWayBillItemsByWayBillId(int waybillId);
     Task<bool> CreateWayBill(WayBillDto wayBillDto);
     Task<bool> DeleteWayBill(int wayBillId);
 }
