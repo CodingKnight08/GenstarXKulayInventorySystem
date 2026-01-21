@@ -1,0 +1,46 @@
+﻿
+
+<MudCard Elevation="0" Class="w-auto h-100">
+    <MudGrid Spacing="6">
+        <MudItem xs="12">
+            <MudButton StartIcon="@Icons.Material.Filled.Add"
+                       Variant="Variant.Filled"
+                       Color="Color.Info"
+                       Class="float-end"
+                       OnClick="AddWayBillItems"
+                       Size="Size.Small" Disabled="BrandId == 0">Add Items</MudButton>
+        </MudItem>
+        <MudItem xs="12">
+            <MudTable Items="WayBillItems">
+                <HeaderContent>
+                    <MudTh>Item Name</MudTh>
+                    <MudTh>Unit</MudTh>
+                    <MudTh>Quantity</MudTh>
+                    <MudTh>Item Price</MudTh>
+                    <MudTh>Total Amount</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.BranchProduct?.MasterProduct?.ProductName</MudTd>
+                    <MudTd>@context.BranchProduct?.ProductMesurementOption.ToString()</MudTd>
+                    <MudTd>@context.Quantity</MudTd>
+                    <MudTd>@context.ItemPrice.ToString("N2")</MudTd>
+                    <MudTd>@context.TotalPrice.ToString("N2")</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => RemoveItem(context))"
+                                       Edge="Edge.End"
+                                        />
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Align="Align.Center" Typo="Typo.body1">No Items</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+   
+    
+</MudCard>
