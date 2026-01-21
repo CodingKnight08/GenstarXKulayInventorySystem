@@ -7,7 +7,7 @@ public class WayBillItemsDto:BaseEntityDto
     public WayBillDto? WayBill { get; set; }
     public int BranchProductId { get; set; }
     public BranchProductDto? BranchProduct { get; set; }
-    public decimal Quantity { get; set; }
-    public decimal ItemPrice { get; set; }
+    public decimal Quantity { get; set; } = 1;
+    public decimal ItemPrice { get; set; } = 0;
     public decimal TotalPrice { get; set; }
 }

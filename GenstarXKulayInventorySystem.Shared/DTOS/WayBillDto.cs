@@ -7,5 +7,6 @@ public class WayBillDto:BaseEntityDto
     public int SupplierId { get; set; }
     public SupplierDto? Supplier { get; set; }
     public DateTime DateReceived { get; set; }
+    public decimal TotalAmount { get; set; }
     public List<WayBillItemsDto> WayBillItems { get; set; } = new List<WayBillItemsDto>();
 }
