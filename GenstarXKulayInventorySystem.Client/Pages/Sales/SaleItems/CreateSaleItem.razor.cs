@@ -70,7 +70,7 @@ public partial class CreateSaleItem
         IsProductLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/by/{SelectedBrand?.Id}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/products/by/{SelectedBrand?.Id}/{Branch}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
