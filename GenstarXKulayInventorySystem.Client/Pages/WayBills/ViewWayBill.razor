@@ -1,3 +1,94 @@
-﻿<h3>ViewWayBill</h3>
+﻿@page "/view-waybill/{WayBillId:int}"
 
+@layout MainLayout
 
+<MudMainContent Class="w-auto h-100">
+    <MudCard Elevation="0">
+        <MudBreadcrumbs Items="_items" />
+        <MudText Typo="Typo.h4" Align="Align.Center">Way Bill Details</MudText>
+    </MudCard>
+
+    @if (IsLoading)
+    {
+        <MudCard Elevation="5" Class="d-flex flex-column align-items-center justify-content-center gap-2">
+            <MudProgressCircular Indeterminate="true" Rounded="true" Size="Size.Medium" Color="Color.Info" />
+            <MudText Typo="Typo.subtitle1" Align="Align.Center">Loading</MudText>
+        </MudCard>
+    }
+    else
+    {
+
+        <MudCard Elevation="0" Class="w-auto pa-3">
+            <MudGrid Spacing="6">
+                <MudItem xs="12">
+                    <MudIconButton 
+                        Icon="@Icons.Material.Filled.Delete"
+                        Color="Color.Error"
+                        Variant="Variant.Text" 
+                        Class="float-end me-4"
+                        Size="Size.Small" />    
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Supplier" Value="WayBill.Supplier?.SupplierName " ReadOnly="true"/>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Way Bill No." Value="WayBill.WayBillNumber" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Courier" Value="WayBill.Courier" ReadOnly="true"/>
+                </MudItem>
+                <MudItem>
+                    <MudDatePicker
+                        Date="WayBill.DateReceived" 
+                        ReadOnly="true"
+                        DateFormat="MMMM dd, yyyy"
+                        Label="Date Recieved"
+                        Variant="Variant.Text"/>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTable Items="WayBillItems"
+                        Bordered="true"
+                        Dense="true"
+                        RowsPerPage="5"
+                        Striped="true"
+                    >
+                    <HeaderContent>
+                        <MudTh>Item Name</MudTh>
+                        <MudTh>Unit</MudTh>
+                        <MudTh>Quantity</MudTh>
+                        <MudTh>Item Price</MudTh>
+                        <MudTh>Total Price</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.BranchProduct?.MasterProduct?.ProductName</MudTd>
+                        <MudTd>@context.BranchProduct?.ProductMesurementOption.ToString()</MudTd>
+                        <MudTd>@context.Quantity</MudTd>
+                        <MudTd>₱@context.ItemPrice.ToString("N2")</MudTd>
+                        <MudTd>₱@context.TotalPrice.ToString("N2")</MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Typo="Typo.body2" Align="Align.Center">No records</MudText>
+                    </NoRecordsContent>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] {5,10,15}" HorizontalAlignment="HorizontalAlignment.End"/>
+                    </PagerContent>
+                </MudTable>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudNumericField 
+                        Label="Total Amount"
+                        Value="TotalAmount" 
+                        Adornment="Adornment.Start" 
+                        AdornmentText="₱"
+                        HideSpinButtons="true"
+                        ReadOnly="true" 
+                        FullWidth="false"
+                        Format="N2"
+                        Class="w-25 float-end"
+                        Variant="Variant.Text"/>
+                </MudItem>
+            </MudGrid>
+        </MudCard>
+    }
+    </MudMainContent>
