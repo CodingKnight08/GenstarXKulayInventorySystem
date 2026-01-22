@@ -1,4 +1,5 @@
-﻿using GenstarXKulayInventorySystem.Shared.DTOS;
+﻿using GenstarXKulayInventorySystem.Client.Pages.WayBills.WayBillDamageItems;
+using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
@@ -11,6 +12,7 @@ public partial class ViewWayBill
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ILogger<ViewWayBill> Logger { get; set; } = default!;
     [Inject] protected ISnackbar SnackBar { get; set; } = default!;
+    [Inject] protected DialogService DialogService { get; set; } = default!;
 
     protected WayBillDto WayBill { get; set; } = new WayBillDto();
     protected List<WayBillItemsDto> WayBillItems { get; set; } = new List<WayBillItemsDto>();
@@ -93,5 +95,23 @@ public partial class ViewWayBill
         }
     }
 
+
+    protected async Task AddDamageItems()
+    {
+        var dialogParameter = new DialogParameters
+        {
+            {"WayBillId", WayBill.Id }
+        };
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            BackdropClick = true,
+        };
+
+        var dialog = await DialogService.ShowAsync<AddWayBillDamageItems>("Add Damage Way Bill Items",dialogParameter, options);
+        var result = await dialog.Result;
+    }
 
 }

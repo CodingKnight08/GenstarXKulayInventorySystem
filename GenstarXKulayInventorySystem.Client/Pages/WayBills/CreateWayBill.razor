@@ -57,7 +57,10 @@
                         ResetValueOnEmptyText="false"
                         />
                 </MudItem>
-              
+               <MudItem xs="12" class="d-flex flex-column gap-1">
+                   <label>Notes <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Default" Size="Size.Small"/></label>
+                   <MudTextField @bind-Value="WayBill.Notes" Lines="2" MaxLines="5" Variant="Variant.Outlined"/>
+               </MudItem>
                 <MudItem xs="12" md="12">
                    <GetAllWayBillItems @ref="WayBillItemsComponent"
                        Branch="Branch"

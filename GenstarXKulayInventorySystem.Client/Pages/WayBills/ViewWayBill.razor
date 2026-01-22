@@ -20,12 +20,17 @@
 
         <MudCard Elevation="0" Class="w-auto pa-3">
             <MudGrid Spacing="6">
-                <MudItem xs="12">
+                <MudItem xs="12" Class="d-flex flex-row justify-content-end gap-3 px-4">
+                    <MudIconButton 
+                        Icon="@Icons.Material.Filled.Edit"
+                        Variant="Variant.Text"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        />
                     <MudIconButton 
                         Icon="@Icons.Material.Filled.Delete"
                         Color="Color.Error"
                         Variant="Variant.Text" 
-                        Class="float-end me-4"
                         Size="Size.Small" />    
                 </MudItem>
                 <MudItem xs="12" md="6">
@@ -45,6 +50,18 @@
                         DateFormat="MMMM dd, yyyy"
                         Label="Date Recieved"
                         Variant="Variant.Text"/>
+                </MudItem>
+                <MudItem xs="12" class="d-flex flex-column gap-1">
+                    <label>Notes <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Default" Size="Size.Small" /></label>
+                    <MudTextField Value="WayBill.Notes" Lines="2" MaxLines="5" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex flex-row justify-content-end">
+                    <MudButton 
+                        StartIcon="@Icons.Material.Filled.Add" 
+                        Color="Color.Info" 
+                        Size="Size.Small"
+                        OnClick="AddDamageItems"
+                        Variant="Variant.Filled">Add Damage Items</MudButton>
                 </MudItem>
                 <MudItem xs="12">
                     <MudTable Items="WayBillItems"
