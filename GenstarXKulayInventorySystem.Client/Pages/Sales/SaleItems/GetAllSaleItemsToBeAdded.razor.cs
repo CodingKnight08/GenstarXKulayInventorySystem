@@ -42,7 +42,7 @@ public partial class GetAllSaleItemsToBeAdded
                     // Mix Category should always be allowed
                     bool exists = saleItem.PaintCategory != PaintCategory.Mix &&
                                   SaleItemsToBeAdded.Any(x =>
-                                      x.BranchProductId == saleItem.BranchProductId ||
+                                      x.BranchProductId == saleItem.BranchProductId &&
                                       string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
 
                     if (!exists)
