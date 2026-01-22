@@ -57,4 +57,40 @@ public class WayBillController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
+
+    //Damage Items Query 
+
+    [HttpGet("all/damage/{waybillId:int}")]
+    public async Task<ActionResult<List<WayBillDamageItemDto>>> GetAllWaybillDamageItems(int waybillId)
+    {
+        try
+        {
+            var damageitems = await _waybillService.GetAllDamageItems(waybillId);
+            if (damageitems == null)
+                return NotFound();
+            return Ok(damageitems);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+
+
+    [HttpPost("damage")]
+    public async Task<IActionResult> CreateDamageWayBill(List<WayBillDamageItemDto> dtos)
+    {
+        try
+        {
+            var result = await _waybillService.AddDamageWayBillItems(dtos);
+            if (!result)
+                return BadRequest("Adding damage items failed");
+            return Ok(result);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
 }
