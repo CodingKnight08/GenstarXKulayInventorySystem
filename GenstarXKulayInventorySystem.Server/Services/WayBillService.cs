@@ -44,7 +44,8 @@ public class WayBillService: IWayBillService
             .AsSplitQuery()
             .Include(wb => wb.Supplier)
             .Include(wb => wb.WayBillItems)
-            .ThenInclude(wi => wi.BranchProduct) // optional if you need product info
+            .ThenInclude(wi => wi.BranchProduct)
+            .OrderByDescending(wb => wb.CreatedAt)
             .ToListAsync();
 
         if (wayBills == null || wayBills.Count == 0)
@@ -124,7 +125,7 @@ public class WayBillService: IWayBillService
 
             var exist = await _context.WayBills
                             .AsNoTracking()
-                            .FirstOrDefaultAsync(wb => wb.WayBillNumber == wayBillDto.WayBillNumber);
+                            .FirstOrDefaultAsync(wb => wb.WayBillNumber == wayBillDto.WayBillNumber && !wb.IsDeleted);
             if (exist != null)
             {
                 return false;
@@ -134,8 +135,8 @@ public class WayBillService: IWayBillService
             wayBillEntity.CreatedBy = GetCurrentUsername();
             wayBillEntity.CreatedAt = PhilippineTime.Now;
             await _context.WayBills.AddAsync(wayBillEntity);
-            await _context.SaveChangesAsync();
-            return true;
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
         }
         catch (Exception ex)
         {
@@ -156,7 +157,8 @@ public class WayBillService: IWayBillService
                 _logger.LogWarning("Waybill with ID {WayBillId} not found for deletion.", wayBillId);
                 return false;
             }
-            _context.WayBills.Remove(wayBillEntity);
+            wayBillEntity.IsDeleted = true;
+            _context.WayBills.Update(wayBillEntity);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -166,7 +168,139 @@ public class WayBillService: IWayBillService
             return false;
         }
     }
+
+    public async Task<List<WayBillDamageItemDto>> GetAllDamageItems(int waybillId)
+    {
+        try
+        {
+            var items = await _context.WayBillDamageItems
+                .AsSplitQuery()
+                .AsNoTracking()
+                .Include(e => e.WayBillItem)
+                    .ThenInclude(bp => bp.BranchProduct)
+                        .ThenInclude(mp => mp.MasterProduct)
+                .Where(e =>
+                e.WayBillItemId != null &&
+                e.WayBillItem!.WayBillId == waybillId)
+                .ToListAsync();
+
+            if(items == null || items.Count == 0)
+            {
+                return new List<WayBillDamageItemDto>();
+            }
+
+            var damageitems = _mapper.Map<List<WayBillDamageItemDto>>(items);
+            return damageitems;
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError("Error getting damage items");
+            return new List<WayBillDamageItemDto>();
+        }
+    }
+
+    public async Task<bool> AddDamageWayBillItems(List<WayBillDamageItemDto> dtos)
+    {
+        if (dtos == null || !dtos.Any())
+        {
+            _logger.LogWarning("No damage items provided.");
+            return false;
+        }
+
+        // ✅ Only process valid damage entries
+        var validDtos = dtos
+            .Where(d =>
+                d.WayBillItemId.HasValue &&
+                d.DamageQuantity > 0 &&
+                d.DamageAmount > 0)
+            .ToList();
+
+        if (!validDtos.Any())
+        {
+            _logger.LogWarning("No valid damage items to insert.");
+            return false;
+        }
+
+        var strategy = _context.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                /* ---------------------------------
+                 * 1️⃣ Insert VALID Damage Items only
+                 * --------------------------------- */
+                var damageEntities = validDtos.Select(d => new WayBillDamageItem
+                {
+                    WayBillItemId = d.WayBillItemId!.Value,
+                    DamageQuantity = d.DamageQuantity,
+                    DamageAmount = d.DamageAmount,
+                    TotalDamageCost = d.TotalDamageCost,
+                    CreatedAt = PhilippineTime.Now,
+                    CreatedBy = GetCurrentUsername()
+                }).ToList();
+
+                await _context.WayBillDamageItems.AddRangeAsync(damageEntities);
+
+                /* ---------------------------------
+                 * 2️⃣ Update WayBillItems (VALID only)
+                 * --------------------------------- */
+                var wayBillItemIds = validDtos
+                    .Select(d => d.WayBillItemId!.Value)
+                    .Distinct()
+                    .ToList();
+
+                var wayBillItems = await _context.WayBillItems
+                    .Where(w => wayBillItemIds.Contains(w.Id))
+                    .ToListAsync();
+
+                foreach (var item in wayBillItems)
+                {
+                    var totalDamageQty = validDtos
+                        .Where(d => d.WayBillItemId == item.Id)
+                        .Sum(d => d.DamageQuantity);
+
+                    if (totalDamageQty > item.ActualQuantity)
+                        throw new InvalidOperationException(
+                            $"Damage quantity exceeds available quantity for WayBillItemId {item.Id}");
+
+                    item.ActualQuantity -= totalDamageQty;
+
+                    // ✅ Recompute total price using remaining quantity
+                    item.TotalPrice = item.ActualQuantity * item.ItemPrice;
+
+                    item.UpdatedAt = PhilippineTime.Now;
+                    item.UpdatedBy = GetCurrentUsername();
+                }
+
+                /* ---------------------------------
+                 * 3️⃣ Save + Commit
+                 * --------------------------------- */
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation(
+                    "{DamageCount} damage items inserted and {ItemCount} waybill items updated.",
+                    damageEntities.Count,
+                    wayBillItems.Count);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to insert valid damage items and update waybill items.");
+                return false;
+            }
+        });
+    }
+
+
+
 }
+
 public interface IWayBillService
 {
     Task<List<WayBillDto>> GetAllWayBills();
@@ -175,4 +309,9 @@ public interface IWayBillService
     Task<List<WayBillItemsDto>> GetAllWayBillItemsByWayBillId(int waybillId);
     Task<bool> CreateWayBill(WayBillDto wayBillDto);
     Task<bool> DeleteWayBill(int wayBillId);
+
+    //waybill damage items
+
+    Task<List<WayBillDamageItemDto>> GetAllDamageItems(int waybillId);
+    Task<bool> AddDamageWayBillItems(List<WayBillDamageItemDto> dtos);
 }

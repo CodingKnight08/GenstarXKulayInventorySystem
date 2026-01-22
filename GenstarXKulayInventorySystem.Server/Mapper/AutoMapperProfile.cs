@@ -85,7 +85,11 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.BranchProduct, opt => opt.Ignore())
             .ForMember(dest => dest.WayBill, opt => opt.Ignore());
 
+        _ = CreateMap<WayBillDamageItem, WayBillDamageItemDto>()
+            .ForMember(dest => dest.WayBillItem, opt => opt.MapFrom(src => src.WayBillItem));
 
+        _ = CreateMap<WayBillDamageItemDto, WayBillDamageItem>()
+            .ForMember(dest => dest.WayBillItem, opt => opt.Ignore());
 
     }
 
