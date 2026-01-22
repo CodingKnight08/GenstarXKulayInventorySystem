@@ -8,7 +8,9 @@ public class WayBill:BaseEntity
     public int SupplierId { get; set; } 
     public Supplier? Supplier { get; set; }
     public DateTime DateReceived { get; set; }
+    public string Notes { get; set; } = string.Empty;
     public ICollection<WayBillItems> WayBillItems { get; set; } = new List<WayBillItems>();
+    
 }
 
 
