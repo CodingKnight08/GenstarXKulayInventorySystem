@@ -34,6 +34,14 @@ public partial class AddWayBillDamageItems
                 if (items != null)
                 {
                     WayBillItems = items;
+                    DamageItems = WayBillItems.Select(item => new WayBillDamageItemDto
+                    {
+                        WayBillItemId = item.Id,
+                        WayBillItem = item,
+                        DamageQuantity = 0,
+                        DamageAmount = 0,
+                        TotalDamageCost = 0
+                    }).ToList();
                 }
                 else
                 {
@@ -51,4 +59,49 @@ public partial class AddWayBillDamageItems
         }
     }
 
+
+    private void OnDamageQuantityChanged(WayBillDamageItemDto item, decimal quantity)
+    {
+        item.DamageQuantity = quantity;
+
+        var unitPrice = item.WayBillItem?.ItemPrice ?? 0m;
+        item.DamageAmount = unitPrice;
+        item.TotalDamageCost = unitPrice * quantity;
+        StateHasChanged();
+    }
+
+    protected async Task SubmitDamages()
+    {
+        IsLoading = true;
+
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync(
+                "api/waybill/damage",
+                DamageItems);
+
+            if (response.IsSuccessStatusCode)
+            {
+                SnackBar.Add("Damage items saved successfully.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Logger.LogError("Failed to save damage items: {Error}", error);
+                SnackBar.Add("Saving damage items failed.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error occurred while saving damage waybill items");
+            SnackBar.Add("Saving damage items failed.", Severity.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    protected void Cancel() => MudDialog.Cancel();
 }

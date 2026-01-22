@@ -22,12 +22,15 @@
                             <MudTd>@context.WayBillItem?.BranchProduct?.MasterProduct?.ProductName</MudTd>
                             <MudTd>@context.WayBillItem?.BranchProduct?.ProductMesurementOption.ToString()</MudTd>
                             <MudTd>
-                                <MudNumericField 
-                                    Variant="Variant.Text" 
-                                    Value="@context.DamageQuantity"
-                                    HideSpinButtons="true" />
+                                <MudNumericField T="decimal"
+                                                 Variant="Variant.Text"
+                                                 Value="context.DamageQuantity"
+                                                 ValueChanged="@(v => OnDamageQuantityChanged(context, v))"
+                                                 HideSpinButtons="true"
+                                                 Immediate="true" />
+
                             </MudTd>
-                            <MudTd>@context.DamageAmount</MudTd>
+                            <MudTd>@context.TotalDamageCost</MudTd>
                         </RowTemplate>
                         <PagerContent>
                             <MudTablePager HorizontalAlignment="HorizontalAlignment.End" PageSizeOptions="new int[] {5,10,15}" />
@@ -37,4 +40,8 @@
             }
         </MudGrid>
     </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Size="Size.Small">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="SubmitDamages">Save Damage Items</MudButton>
+    </DialogActions>
 </MudDialog>
