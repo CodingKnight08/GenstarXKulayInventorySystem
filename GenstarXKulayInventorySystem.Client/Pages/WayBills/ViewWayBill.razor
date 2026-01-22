@@ -58,6 +58,7 @@
                 <MudItem xs="12" Class="d-flex flex-row justify-content-end">
                     <MudButton 
                         StartIcon="@Icons.Material.Filled.Add" 
+                        Disabled="!HasItems"
                         Color="Color.Info" 
                         Size="Size.Small"
                         OnClick="AddDamageItems"
@@ -80,7 +81,7 @@
                     <RowTemplate>
                         <MudTd>@context.BranchProduct?.MasterProduct?.ProductName</MudTd>
                         <MudTd>@context.BranchProduct?.ProductMesurementOption.ToString()</MudTd>
-                        <MudTd>@context.Quantity</MudTd>
+                        <MudTd>@context.ActualQuantity</MudTd>
                         <MudTd>₱@context.ItemPrice.ToString("N2")</MudTd>
                         <MudTd>₱@context.TotalPrice.ToString("N2")</MudTd>
                     </RowTemplate>
@@ -92,6 +93,7 @@
                     </PagerContent>
                 </MudTable>
                 </MudItem>
+
                 <MudItem xs="12">
                     <MudNumericField 
                         Label="Total Amount"
@@ -105,6 +107,29 @@
                         Class="w-25 float-end"
                         Variant="Variant.Text"/>
                 </MudItem>
+
+                @if (HasDamageItems)
+                {
+                    <MudItem xs="12" Class="bg-warning py-5 bg-opacity-10">
+                        <MudTable Items="DamageItems" Dense="true" Hover="true" Striped="true" Bordered="true" >
+                            <HeaderContent>
+                                <MudTh>ItemName</MudTh>
+                                <MudTh>Quantity</MudTh>
+                                <MudTh>Damage Cost per Item</MudTh>
+                                <MudTh>Damage Amount</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.WayBillItem?.BranchProduct?.MasterProduct?.ProductName</MudTd>
+                                <MudTd>@context.DamageQuantity</MudTd>
+                                <MudTd>@context.DamageAmount.ToString("N2")</MudTd>
+                                <MudTd>@context.TotalDamageCost.ToString("N2")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudItem>
+                    <MudItem xs="12" Class="bg-warning py-5 bg-opacity-10">
+                        <MudNumericField HideSpinButtons=true Value="TotalDamageAmount" Adornment="Adornment.Start" AdornmentText="P" Label="Total Damage Amount" Class="w-25 float-end"/>
+                     </MudItem>
+                }
             </MudGrid>
         </MudCard>
     }

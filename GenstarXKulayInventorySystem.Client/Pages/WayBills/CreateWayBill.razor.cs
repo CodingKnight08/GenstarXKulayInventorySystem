@@ -174,6 +174,7 @@ public partial class CreateWayBill
                 Quantity = item.Quantity,
                 ItemPrice = item.ItemPrice,
                 TotalPrice = item.TotalPrice,
+                ActualQuantity = item.ActualQuantity,
                 BranchProduct = null
             })
             .ToList();
