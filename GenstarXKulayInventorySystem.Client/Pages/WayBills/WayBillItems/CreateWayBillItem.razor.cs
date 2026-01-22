@@ -88,7 +88,7 @@ public partial class CreateWayBillItem
 
     protected void SaveItem()
     {
-        
+        WayBillItem.ActualQuantity = WayBillItem.Quantity;
         
         MudDialog.Close(DialogResult.Ok(WayBillItem));
     }
