@@ -309,23 +309,36 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(e => e.DateReceived)
                 .IsRequired();
 
+            entity.Property(e => e.Notes)
+                .HasMaxLength(500);
+
+            // Supplier relationship (NO cascade)
             entity.HasOne(e => e.Supplier)
-                .WithMany() 
+                .WithMany()
                 .HasForeignKey(e => e.SupplierId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // WayBill → WayBillItems (cascade delete)
             entity.HasMany(e => e.WayBillItems)
                 .WithOne(wbi => wbi.WayBill)
                 .HasForeignKey(wbi => wbi.WayBillId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
+
+        
         });
+
+
 
         modelBuilder.Entity<WayBillItems>(entity =>
         {
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Quantity)
-                .IsRequired();
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(e => e.ActualQuantity)
+                .HasColumnType("decimal(18,2)");
 
             entity.Property(e => e.ItemPrice)
                 .IsRequired()
@@ -335,10 +348,45 @@ public class InventoryDbContext: IdentityDbContext<User>
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
 
+            entity.Property(e => e.IsMergeToSystem)
+                .HasDefaultValue(false);
+
+            // BranchProduct (NO cascade)
             entity.HasOne(e => e.BranchProduct)
-                .WithMany() 
+                .WithMany()
                 .HasForeignKey(e => e.BranchProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // WayBillItem → DamageItems
+            entity.HasMany<WayBillDamageItem>()
+                .WithOne(d => d.WayBillItem)
+                .HasForeignKey(d => d.WayBillItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        modelBuilder.Entity<WayBillDamageItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.DamageQuantity)
+                .HasColumnType("decimal(18,2)")
+                .HasDefaultValue(0);
+
+            entity.Property(e => e.DamageAmount)
+                .HasColumnType("decimal(18,2)")
+                .HasDefaultValue(0);
+
+            entity.Property(e => e.TotalDamageCost)
+                .HasColumnType("decimal(18,2)")
+                .HasDefaultValue(0);
+
+
+            // Optional FK to WayBillItem
+            entity.HasOne(e => e.WayBillItem)
+                .WithMany()
+                .HasForeignKey(e => e.WayBillItemId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
 
@@ -371,6 +419,7 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<ReturnItem> ReturnItems { get; set; }
     public DbSet<WayBill> WayBills { get; set; }
     public DbSet<WayBillItems> WayBillItems { get; set; }
+    public DbSet<WayBillDamageItem> WayBillDamageItems { get; set; }
 
     public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {

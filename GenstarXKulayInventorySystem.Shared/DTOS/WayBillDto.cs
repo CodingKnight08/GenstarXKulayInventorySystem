@@ -8,5 +8,6 @@ public class WayBillDto:BaseEntityDto
     public SupplierDto? Supplier { get; set; }
     public DateTime DateReceived { get; set; }
     public decimal TotalAmount { get; set; }
+    public string Notes { get; set; } = string.Empty;
     public List<WayBillItemsDto> WayBillItems { get; set; } = new List<WayBillItemsDto>();
 }

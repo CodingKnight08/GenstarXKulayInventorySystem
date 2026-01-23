@@ -20,12 +20,17 @@
 
         <MudCard Elevation="0" Class="w-auto pa-3">
             <MudGrid Spacing="6">
-                <MudItem xs="12">
+                <MudItem xs="12" Class="d-flex flex-row justify-content-end gap-3 px-4">
+                    <MudIconButton 
+                        Icon="@Icons.Material.Filled.Edit"
+                        Variant="Variant.Text"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        />
                     <MudIconButton 
                         Icon="@Icons.Material.Filled.Delete"
                         Color="Color.Error"
                         Variant="Variant.Text" 
-                        Class="float-end me-4"
                         Size="Size.Small" />    
                 </MudItem>
                 <MudItem xs="12" md="6">
@@ -46,6 +51,19 @@
                         Label="Date Recieved"
                         Variant="Variant.Text"/>
                 </MudItem>
+                <MudItem xs="12" class="d-flex flex-column gap-1">
+                    <label>Notes <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Default" Size="Size.Small" /></label>
+                    <MudTextField Value="WayBill.Notes" Lines="2" MaxLines="5" Variant="Variant.Outlined" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex flex-row justify-content-end">
+                    <MudButton 
+                        StartIcon="@Icons.Material.Filled.Add" 
+                        Disabled="!HasItems"
+                        Color="Color.Info" 
+                        Size="Size.Small"
+                        OnClick="AddDamageItems"
+                        Variant="Variant.Filled">Add Damage Items</MudButton>
+                </MudItem>
                 <MudItem xs="12">
                     <MudTable Items="WayBillItems"
                         Bordered="true"
@@ -63,7 +81,7 @@
                     <RowTemplate>
                         <MudTd>@context.BranchProduct?.MasterProduct?.ProductName</MudTd>
                         <MudTd>@context.BranchProduct?.ProductMesurementOption.ToString()</MudTd>
-                        <MudTd>@context.Quantity</MudTd>
+                        <MudTd>@context.ActualQuantity</MudTd>
                         <MudTd>₱@context.ItemPrice.ToString("N2")</MudTd>
                         <MudTd>₱@context.TotalPrice.ToString("N2")</MudTd>
                     </RowTemplate>
@@ -75,6 +93,7 @@
                     </PagerContent>
                 </MudTable>
                 </MudItem>
+
                 <MudItem xs="12">
                     <MudNumericField 
                         Label="Total Amount"
@@ -88,6 +107,29 @@
                         Class="w-25 float-end"
                         Variant="Variant.Text"/>
                 </MudItem>
+
+                @if (HasDamageItems)
+                {
+                    <MudItem xs="12" Class="bg-warning py-5 bg-opacity-10">
+                        <MudTable Items="DamageItems" Dense="true" Hover="true" Striped="true" Bordered="true" >
+                            <HeaderContent>
+                                <MudTh>ItemName</MudTh>
+                                <MudTh>Quantity</MudTh>
+                                <MudTh>Damage Cost per Item</MudTh>
+                                <MudTh>Damage Amount</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.WayBillItem?.BranchProduct?.MasterProduct?.ProductName</MudTd>
+                                <MudTd>@context.DamageQuantity</MudTd>
+                                <MudTd>@context.DamageAmount.ToString("N2")</MudTd>
+                                <MudTd>@context.TotalDamageCost.ToString("N2")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudItem>
+                    <MudItem xs="12" Class="bg-warning py-5 bg-opacity-10">
+                        <MudNumericField HideSpinButtons=true Value="TotalDamageAmount" Adornment="Adornment.Start" AdornmentText="P" Label="Total Damage Amount" Class="w-25 float-end"/>
+                     </MudItem>
+                }
             </MudGrid>
         </MudCard>
     }

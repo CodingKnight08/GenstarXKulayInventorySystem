@@ -9,5 +9,8 @@ public class WayBillItems:BaseEntity
     public BranchProduct? BranchProduct { get; set; }
     public decimal Quantity { get; set; }
     public decimal ItemPrice { get; set; }
+    public decimal ActualQuantity { get; set; }
     public decimal TotalPrice { get; set; }
+
+    public bool IsMergeToSystem { get; set; }
 }

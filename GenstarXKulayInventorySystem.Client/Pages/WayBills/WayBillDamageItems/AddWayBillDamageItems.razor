@@ -1,0 +1,47 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="6">
+            @if (IsLoading)
+            {
+                <MudItem xs="12" Class="d-flex flex-column align-items-center justify-content-center gap-2">
+                    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Medium" Rounded="true"/>
+                    <MudText Align="Align.Center" Typo="Typo.subtitle1">Loading Items</MudText>
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="12">
+                    <MudTable Items="DamageItems" Hover="true" Bordered="true" Dense="true" Striped="true">
+                        <HeaderContent>
+                            <MudTh>Item Name</MudTh>
+                            <MudTh>Unit</MudTh>
+                            <MudTh>Damage Quantity</MudTh>
+                            <MudTh>Damage Cost</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>@context.WayBillItem?.BranchProduct?.MasterProduct?.ProductName</MudTd>
+                            <MudTd>@context.WayBillItem?.BranchProduct?.ProductMesurementOption.ToString()</MudTd>
+                            <MudTd>
+                                <MudNumericField T="decimal"
+                                                 Variant="Variant.Text"
+                                                 Value="context.DamageQuantity"
+                                                 ValueChanged="@(v => OnDamageQuantityChanged(context, v))"
+                                                 HideSpinButtons="true"
+                                                 Immediate="true" />
+
+                            </MudTd>
+                            <MudTd>@context.TotalDamageCost</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager HorizontalAlignment="HorizontalAlignment.End" PageSizeOptions="new int[] {5,10,15}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudItem>                    
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="Color.Default" Size="Size.Small">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="SubmitDamages">Save Damage Items</MudButton>
+    </DialogActions>
+</MudDialog>

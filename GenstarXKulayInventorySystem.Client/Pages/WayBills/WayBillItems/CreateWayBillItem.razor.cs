@@ -88,7 +88,7 @@ public partial class CreateWayBillItem
 
     protected void SaveItem()
     {
-        
+        WayBillItem.ActualQuantity = WayBillItem.Quantity;
         
         MudDialog.Close(DialogResult.Ok(WayBillItem));
     }
@@ -97,6 +97,7 @@ public partial class CreateWayBillItem
     protected void OnQuantityChanged(decimal newQty)
     {
         WayBillItem.Quantity = newQty;
+        WayBillItem.ActualQuantity = newQty;
         RecalculateTotalPrice();
     }
 
