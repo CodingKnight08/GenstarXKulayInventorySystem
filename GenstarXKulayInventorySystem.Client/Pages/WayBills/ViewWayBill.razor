@@ -21,17 +21,44 @@
         <MudCard Elevation="0" Class="w-auto pa-3">
             <MudGrid Spacing="6">
                 <MudItem xs="12" Class="d-flex flex-row justify-content-end gap-3 px-4">
-                    <MudIconButton 
+                    @if (!IsEdit)
+                    {
+                        @if (!IsSync)
+                        {
+                            <MudButton 
+                                StartIcon="@Icons.Material.Filled.Sync" 
+                                Color="Color.Secondary" 
+                                Size="Size.Small" 
+                                Variant="Variant.Filled" OnClick="SyncWayBillItemsAsync">Sync to Inventory</MudButton>
+                        }
+                       
+                        <MudIconButton 
                         Icon="@Icons.Material.Filled.Edit"
                         Variant="Variant.Text"
                         Color="Color.Success"
                         Size="Size.Small"
+                        Onclick="() => IsEdit = true"
+
                         />
-                    <MudIconButton 
+                        <MudIconButton 
                         Icon="@Icons.Material.Filled.Delete"
                         Color="Color.Error"
                         Variant="Variant.Text" 
                         Size="Size.Small" />    
+                    }
+                    else
+                    {
+                        <MudButton 
+                            Color="Color.Default"
+                            Variant="Variant.Filled"
+                            Size="Size.Small"
+                            StartIcon="@Icons.Material.Filled.Cancel" OnClick="CancelUpdate">Cancel</MudButton>
+                        <MudButton 
+                            StartIcon="@Icons.Material.Filled.Save" 
+                            Color="Color.Success"
+                            Variant="Variant.Filled" 
+                            Size="Size.Small" OnClick="UpdateWayBillAsync">Update WayBill</MudButton>
+                    }
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <MudTextField Label="Supplier" Value="WayBill.Supplier?.SupplierName " ReadOnly="true"/>
@@ -41,7 +68,7 @@
                     <MudTextField Label="Way Bill No." Value="WayBill.WayBillNumber" ReadOnly="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField Label="Courier" Value="WayBill.Courier" ReadOnly="true"/>
+                    <MudTextField Label="Courier" @bind-Value="WayBill.Courier" ReadOnly="!IsEdit"/>
                 </MudItem>
                 <MudItem>
                     <MudDatePicker
@@ -51,9 +78,19 @@
                         Label="Date Recieved"
                         Variant="Variant.Text"/>
                 </MudItem>
+                <MudItem xs="6" md="4" lg="3" Class="d-flex align-items-center">
+                    <label class="fw-bold text-muted">Status:</label>
+                    <MudChip T="string"
+                             Color="@(IsSync ? Color.Success : Color.Warning)"
+                             Size="Size.Small">
+                        @(IsSync ? "Sync" : "UnSync")
+                    </MudChip>
+
+
+                </MudItem>
                 <MudItem xs="12" class="d-flex flex-column gap-1">
                     <label>Notes <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Default" Size="Size.Small" /></label>
-                    <MudTextField Value="WayBill.Notes" Lines="2" MaxLines="5" Variant="Variant.Outlined" ReadOnly="true" />
+                    <MudTextField @bind-Value="WayBill.Notes" Lines="2" MaxLines="5" Variant="Variant.Outlined" ReadOnly="!IsEdit" />
                 </MudItem>
                 <MudItem xs="12" Class="d-flex flex-row justify-content-end">
                     <MudButton 
