@@ -26,23 +26,6 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
-    [HttpGet("all/by/{brandId:int}/{branch}")]
-    public async Task<ActionResult<List<ProductDto>>> GetProductsByBrandAndBranch(int brandId, BranchOption branch)
-    {
-        try
-        {
-            var products = await _productService.GetAllProductByBrandAndBranch(brandId, branch);
-
-            if (products == null || !products.Any())
-                return new List<ProductDto>();
-
-            return Ok(products);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error retrieving products: {ex.Message}");
-        }
-    }
 
     [HttpGet("all/global/{brandId:int}")]
     public async Task<ActionResult<List<GlobalProductDto>>> GetAllGlobalProducts(int brandId)
@@ -119,6 +102,22 @@ public class ProductController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, $"Error in retrieving products: {ex.Message}");
+        }
+    }
+
+    [HttpGet("all/existing/products/{brandId:int}/{branch}")]
+    public async Task<ActionResult<List<BranchProductDto>>> GetProductsForWayBill(int brandId, BranchOption branch)
+    {
+        try
+        {
+            var products = await _productService.GetAllProductsForWayBill(brandId, branch);
+            if(products == null || !products.Any())
+                return Ok(new List<BranchProductDto>());
+            return Ok(products);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
         }
     }
 
