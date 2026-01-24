@@ -192,7 +192,8 @@ public static class UtilitiesHelper
         Pending,
         OnTheWay,
         Delivered,
-        Cancelled
+        Cancelled,
+        Partial
     }
     public enum SaleSearchCategory
     {
