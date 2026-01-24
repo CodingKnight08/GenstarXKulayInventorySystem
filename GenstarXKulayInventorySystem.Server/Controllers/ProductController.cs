@@ -176,4 +176,23 @@ public class ProductController : ControllerBase
 
         return NoContent();
     }
+
+
+
+    //PULL OUT REQUEST PRODUCTS 
+    [HttpGet("all/pulloutitems/products/{brandId:int}/{requesteeBranch}/{sourceBranch}")]
+    public async Task<ActionResult<List<SourceAndRequesteeProductDto>>> GetAllSourceAndRequesterProduct(int brandId, BranchOption requesteeBranch, BranchOption sourceBranch)
+    {
+        try
+        {
+            var results = await _productService.GetAllRequesteeAndSourceProduct(brandId, requesteeBranch, sourceBranch);
+            if (results == null || !results.Any())
+                return Ok(new List<SourceAndRequesteeProductDto>());
+            return Ok(results);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error in retrieving product: {ex.Message}");
+        }
+    }
 }
