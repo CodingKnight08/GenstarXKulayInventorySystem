@@ -11,4 +11,5 @@ public class WayBillItemsDto:BaseEntityDto
     public decimal ActualQuantity { get; set; }
     public decimal ItemPrice { get; set; } = 0;
     public decimal TotalPrice { get; set; }
+    public bool IsMergeToSystem { get; set; }
 }
