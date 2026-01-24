@@ -30,7 +30,7 @@ public class DailySaleReportService : IDailySaleReportService
             .AsNoTracking()
             .AsSplitQuery()
             .Where(dr => !dr.IsDeleted && dr.Branch == branch)
-            .OrderBy(dr => dr.Date)
+            .OrderByDescending(dr => dr.Date)
             .ToListAsync();
 
         if (reports == null || !reports.Any())
