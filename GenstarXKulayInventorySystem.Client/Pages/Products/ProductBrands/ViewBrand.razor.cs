@@ -126,7 +126,7 @@ public partial class ViewBrand
     {
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/products/by/{BrandId}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/existing/products/{BrandId}/{Branch}");
             response.EnsureSuccessStatusCode();
             Products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>() ?? new List<BranchProductDto>();
         }
