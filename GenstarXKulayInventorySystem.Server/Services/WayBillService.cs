@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -37,7 +38,7 @@ public class WayBillService: IWayBillService
     }
 
 
-    public async Task<List<WayBillDto>> GetAllWayBills()
+    public async Task<List<WayBillDto>> GetAllWayBills(BranchOption branch)
     {
         var wayBills = await _context.WayBills
             .AsNoTracking()
@@ -45,6 +46,7 @@ public class WayBillService: IWayBillService
             .Include(wb => wb.Supplier)
             .Include(wb => wb.WayBillItems)
             .ThenInclude(wi => wi.BranchProduct)
+            .Where(wb => wb.Branch == branch)
             .OrderByDescending(wb => wb.CreatedAt)
             .ToListAsync();
 
@@ -145,6 +147,28 @@ public class WayBillService: IWayBillService
         }
     }
 
+
+    public async Task<bool> UpdateWayBill(WayBillDto waybill)
+    {
+        var existingWayBill = await _context.WayBills.AsNoTracking().FirstOrDefaultAsync(wb => wb.Id == waybill.Id && !wb.IsDeleted);
+        if (existingWayBill == null)
+            return false;
+        try
+        {
+            var wayBill = _mapper.Map<WayBill>(waybill);
+            waybill.UpdatedBy = GetCurrentUsername();
+            waybill.UpdatedAt = PhilippineTime.Now;
+            _context.WayBills.Update(wayBill);
+            int result = await _context.SaveChangesAsync();
+            return result > 0;
+                
+         }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex.Message, "Error updating waybill with ID {Id}", waybill.Id);
+            return false;
+        }
+    }
     public async Task<bool> DeleteWayBill(int wayBillId)
     {
         try
@@ -298,20 +322,95 @@ public class WayBillService: IWayBillService
     }
 
 
+    //sync waybill to actual stocks of product
+
+    public async Task<bool> SyncWayBillItemsToBranchProduct(
+        List<WayBillItemsDto> items)
+    {
+        if (items == null || !items.Any())
+            return false;
+
+        var strategy = _context.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 1️⃣ Load BranchProducts (tracked)
+                var branchProductIds = items
+                    .Select(x => x.BranchProductId)
+                    .Distinct()
+                    .ToList();
+
+                var branchProducts = await _context.BranchProducts
+                    .Where(bp => branchProductIds.Contains(bp.Id))
+                    .ToListAsync();
+
+                // 2️⃣ Load WayBillItems (tracked)
+                var wayBillItemIds = items
+                    .Select(x => x.Id)
+                    .ToList();
+
+                var wayBillItems = await _context.WayBillItems
+                    .Where(wi => wayBillItemIds.Contains(wi.Id))
+                    .ToListAsync();
+
+                // 3️⃣ Update quantities + mark synced
+                foreach (var itemDto in items)
+                {
+                    var branchProduct = branchProducts
+                        .FirstOrDefault(bp => bp.Id == itemDto.BranchProductId);
+
+                    var wayBillItem = wayBillItems
+                        .FirstOrDefault(wi => wi.Id == itemDto.Id);
+
+                    if (branchProduct == null || wayBillItem == null)
+                        continue;
+
+                    // Prevent double sync
+                    if (wayBillItem.IsMergeToSystem)
+                        continue;
+
+                    branchProduct.ActualQuantity += itemDto.ActualQuantity;
+                    wayBillItem.IsMergeToSystem = true;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex,
+                    "Error syncing WayBill items to BranchProduct");
+
+                throw; // REQUIRED so execution strategy can retry
+            }
+        });
+    }
+
+
+
 
 }
 
 public interface IWayBillService
 {
-    Task<List<WayBillDto>> GetAllWayBills();
+    Task<List<WayBillDto>> GetAllWayBills(BranchOption branch);
     Task<WayBillDto?> GetWayBillById(int wayBill);
     Task<List<WayBillDto>> GetWayBillsBySupplierId(int supplierId);
     Task<List<WayBillItemsDto>> GetAllWayBillItemsByWayBillId(int waybillId);
     Task<bool> CreateWayBill(WayBillDto wayBillDto);
+    Task<bool> UpdateWayBill(WayBillDto waybill);
     Task<bool> DeleteWayBill(int wayBillId);
 
     //waybill damage items
 
     Task<List<WayBillDamageItemDto>> GetAllDamageItems(int waybillId);
     Task<bool> AddDamageWayBillItems(List<WayBillDamageItemDto> dtos);
+    Task<bool> SyncWayBillItemsToBranchProduct(List<WayBillItemsDto> items);
 }
