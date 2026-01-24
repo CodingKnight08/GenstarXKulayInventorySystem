@@ -37,7 +37,13 @@
     {
         
 
-        <MudTable Items="DailySaleReports" Bordered="true" Dense=true Hover=true Class="mx-2 mt-4 bg-transparent">
+        <MudTable
+            Items="DailySaleReports"
+            Bordered="true"
+            Dense=true 
+            Hover=true
+            Striped="true"
+            Class="mx-2 mt-4 bg-transparent">
         
             <HeaderContent>
             <MudTh>Date</MudTh>
@@ -61,5 +67,8 @@
         <NoRecordsContent>
             <MudText Typo="Typo.subtitle1" Class="m-2 text-danger">No records to display.</MudText>
         </NoRecordsContent>
+       <PagerContent>
+           <MudTablePager HorizontalAlignment="HorizontalAlignment.End" PageSizeOptions="new int[] {5,10,15,20}" />
+       </PagerContent>
     </MudTable>
     }
