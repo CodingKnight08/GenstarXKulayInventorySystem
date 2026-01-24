@@ -32,7 +32,7 @@ public partial class CreateWayBillItem
        IsLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/products/by/{BrandId}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/existing/products/{BrandId}/{Branch}");
             if (response.IsSuccessStatusCode)
             {
                 var branchProducts = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>();
