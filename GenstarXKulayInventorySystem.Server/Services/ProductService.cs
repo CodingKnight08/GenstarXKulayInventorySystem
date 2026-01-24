@@ -354,6 +354,42 @@ public class ProductService:IProductService
         return true;
     }
 
+
+    //PullOut request Item 
+    public async Task<List<SourceAndRequesteeProductDto>> GetAllRequesteeAndSourceProduct(
+    int brandId,
+    BranchOption requester,
+    BranchOption source)
+    {
+        var query =
+            from gp in _context.GlobalProducts
+                .AsNoTracking()
+
+            where gp.BrandId == brandId
+
+            let sourceProduct = gp.BranchProducts
+                .FirstOrDefault(bp => bp.Branch == source)
+
+            let requesterProduct = gp.BranchProducts
+                .FirstOrDefault(bp => bp.Branch == requester)
+
+            where sourceProduct != null || requesterProduct != null
+
+            select new SourceAndRequesteeProductDto
+            {
+                MasterProductId = gp.Id,
+                MasterProduct = _mapper.Map<GlobalProductDto>(gp),
+                SourceProduct = sourceProduct != null
+                    ? _mapper.Map<BranchProductDto>(sourceProduct)
+                    : null,
+                RequesterProduct = requesterProduct != null
+                    ? _mapper.Map<BranchProductDto>(requesterProduct)
+                    : null
+            };
+
+        return await query.ToListAsync();
+    }
+
 }
 public interface IProductService
 {
@@ -383,4 +419,7 @@ public interface IProductService
     Task<bool> AddCategoryAsync(ProductCategoryDto categoryDto);
     Task<bool> UpdateCategoryAsync(ProductCategoryDto categoryDto);
     Task<bool> DeleteCategoryAsync(int id);
+
+
+    Task<List<SourceAndRequesteeProductDto>> GetAllRequesteeAndSourceProduct(int brandId, BranchOption requester, BranchOption source);
 }
