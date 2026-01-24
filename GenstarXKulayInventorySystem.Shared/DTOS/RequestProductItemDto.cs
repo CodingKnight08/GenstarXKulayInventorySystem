@@ -10,7 +10,11 @@ public class RequestProductItemDto:BaseEntityDto
     public PullOutRequestDto? PullOutRequest { get; set; } = null!;
     public int? MasterProductId { get; set; }
     [JsonIgnore]
-    public GlobalProductDto? MasterProduct { get; set; } // just name
+    public GlobalProductDto? MasterProduct { get; set; }
+    public int? ProductSourceBranchId { get; set; }
+    public BranchProductDto? ProductSourceBranch { get; set; }
+    public int? ProductRequesterBranchId { get; set; }
+    public BranchProductDto? ProductRequesterBranch { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public int RequestedQuantity { get; set; }
     public int ReleasedQuantity { get; set; }
@@ -20,5 +24,8 @@ public class RequestProductItemDto:BaseEntityDto
     public DateTime DateRecieved { get; set; }
     public string ProductCode { get; set; } = string.Empty;
     public string Remarks { get; set; } = string.Empty;
+
+    public decimal ItemCost { get; set; } = 0;
+    public decimal TotalCost { get; set; } = 0;
 }
 
