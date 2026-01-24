@@ -1,4 +1,6 @@
-﻿namespace GenstarXKulayInventorySystem.Server.Model;
+﻿using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+
+namespace GenstarXKulayInventorySystem.Server.Model;
 
 public class WayBill:BaseEntity
 {
@@ -9,6 +11,7 @@ public class WayBill:BaseEntity
     public Supplier? Supplier { get; set; }
     public DateTime DateReceived { get; set; }
     public string Notes { get; set; } = string.Empty;
+    public BranchOption Branch { get; set; }
     public ICollection<WayBillItems> WayBillItems { get; set; } = new List<WayBillItems>();
     
 }
