@@ -1,6 +1,7 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 
@@ -17,10 +18,10 @@ public class WayBillController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("all")]
-    public async Task<ActionResult<List<WayBillDto>>> GetAllWayBill()
+    [HttpGet("all/{branch}")]
+    public async Task<ActionResult<List<WayBillDto>>> GetAllWayBill(BranchOption branch)
     {
-        var wayBills = await _waybillService.GetAllWayBills();
+        var wayBills = await _waybillService.GetAllWayBills(branch);
         return Ok(wayBills);
     }
 
@@ -58,6 +59,23 @@ public class WayBillController : ControllerBase
         }
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateWayBill(int id, WayBillDto dto)
+    {
+        if (id != dto.Id)
+            return BadRequest("ID mismatch");
+        try
+        {
+            var result = await _waybillService.UpdateWayBill(dto);
+            if (!result)
+                return NotFound("WayBill not found or failed to update");
+            return Ok(result);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500, $"Internal Server error: {ex.Message}");
+        }
+    }
     //Damage Items Query 
 
     [HttpGet("all/damage/{waybillId:int}")]
@@ -91,6 +109,38 @@ public class WayBillController : ControllerBase
         catch(Exception ex)
         {
             return StatusCode(500, ex.Message);
+        }
+ 
+    }
+
+
+    [HttpPut("sync-branch-products")]
+    public async Task<IActionResult> SyncWayBillItemsToBranchProduct(
+        [FromBody] List<WayBillItemsDto> items)
+    {
+        if (items == null || !items.Any())
+            return BadRequest("No waybill items provided.");
+
+        try
+        {
+            var success = await _waybillService.SyncWayBillItemsToBranchProduct(items);
+
+            if (!success)
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Failed to sync branch product quantities.");
+
+            return Ok(new
+            {
+                Message = "Branch product quantities successfully synced."
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Error syncing waybill items to branch products");
+
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                "Unexpected error occurred.");
         }
     }
 }
