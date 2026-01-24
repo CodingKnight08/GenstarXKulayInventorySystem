@@ -68,6 +68,7 @@ public partial class ViewPullOutRequest
         {
             PullOutRequest.Delivered = true;
             PullOutRequest.DateDelivered = PhilippineTime.Now;
+            await UpdatePullOutStatus(true);
         }
         // example: delivered = false?
         await UpdatePullOutStatus(false);
@@ -80,7 +81,7 @@ public partial class ViewPullOutRequest
             var response = await HttpClient.PutAsJsonAsync("api/pullout", PullOutRequest);
             if(response.IsSuccessStatusCode)
             {
-                if (!itemStatusChange)
+                if (itemStatusChange)
                 {
                     var toUpdateItems = PullOutRequest.RequestProductItems.Where(e => !e.IsReceived).ToList();
                     if(toUpdateItems.Count > 0)
@@ -115,31 +116,36 @@ public partial class ViewPullOutRequest
     {
         try
         {
-            if (PullOutRequest.Status != DeliveryStatusOption.Delivered && toBeUpdated.IsReceived)
-            {
-                PullOutRequest.Delivered = true;
-                PullOutRequest.Status = DeliveryStatusOption.Delivered;
-                PullOutRequest.DateDelivered = PhilippineTime.Now;
-                await UpdatePullOutStatus(true);
-            }
             var response = await HttpClient.PutAsJsonAsync("api/pullout/status", toBeUpdated);
-            if (response.IsSuccessStatusCode)
-            {
-                Snackbar.Add("Item status updated successfully.", Severity.Success);
-            }
-            else
+
+            if (!response.IsSuccessStatusCode)
             {
                 Snackbar.Add("Failed to update item status.", Severity.Error);
-                Logger.LogError("Error updating item status for RequestProductItem ID {ItemId}. Status Code: {StatusCode}", toBeUpdated.Id, response.StatusCode);
+                Logger.LogError("Error updating item status for RequestProductItem ID {ItemId}. Status Code: {StatusCode}",
+                    toBeUpdated.Id, response.StatusCode);
+                return;
             }
+
+            Snackbar.Add("Item status updated successfully.", Severity.Success);
+
             await LoadPullOut();
+
+            if (PullOutRequest?.RequestProductItems != null &&
+                PullOutRequest.RequestProductItems.Any() &&
+                PullOutRequest.RequestProductItems.All(x => x.IsReceived))
+            {
+                await UpdatePullOutStatus(false);
+            }
+
             StateHasChanged();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            Logger.LogError(ex.Message, "Error updating item status for RequestProductItem ID {ItemId}", toBeUpdated.Id);
+            Logger.LogError(ex, "Error updating item status for RequestProductItem ID {ItemId}", toBeUpdated.Id);
+            Snackbar.Add("Unexpected error occurred.", Severity.Error);
         }
     }
+
     private void ToggleEdit()
     {
         IsEdit = !IsEdit;

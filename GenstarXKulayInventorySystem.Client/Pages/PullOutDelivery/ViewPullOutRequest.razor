@@ -70,11 +70,15 @@
 
                             @foreach (DeliveryStatusOption status in Enum.GetValues(typeof(DeliveryStatusOption)))
                             {
-                                <MudSelectItem T="DeliveryStatusOption" Value="status">
-                                    @UtilitiesHelper.GetStatusLabel(status)
-                                </MudSelectItem>
-                            }
+                                <MudSelectItem T="DeliveryStatusOption"
+                                               Value="status"
+                                               Disabled="@(status == DeliveryStatusOption.Delivered
+                                               && PullOutRequest.Status != DeliveryStatusOption.OnTheWay)">
+                        @UtilitiesHelper.GetStatusLabel(status)
+                    </MudSelectItem>
+                                        }
                         </MudSelect>
+
 
                     }
                 </MudItem>
