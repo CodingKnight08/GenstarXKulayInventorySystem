@@ -163,6 +163,7 @@ public static class UtilitiesHelper
         DeliveryStatusOption.OnTheWay => "On The Way",
         DeliveryStatusOption.Delivered => "Delivered",
         DeliveryStatusOption.Cancelled => "Cancelled",
+        DeliveryStatusOption.Partial => "Partial Delivered",
         _ => "Unknown"
     };
 
