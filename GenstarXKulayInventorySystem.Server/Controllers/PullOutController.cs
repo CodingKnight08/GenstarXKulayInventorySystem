@@ -33,6 +33,16 @@ public class PullOutController : ControllerBase
         return Ok(requesters);
     }
 
+
+    [HttpGet("all/recieved/{branch}")]
+    public async Task<ActionResult<List<PullOutRequestDto>>> GetAllRecievedPullOuts(BranchOption branch)
+    {
+        var request = await _service.GetAllRecievedPullOut(branch);
+        if (request == null)
+            return NotFound("No received pullouts");
+        return Ok(request);
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<PullOutRequestDto>> GetRequestById(int id)
     {
