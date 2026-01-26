@@ -57,7 +57,7 @@ public partial class AddPaintsIncluded
         IsProductLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/by/{SelectedBrand.Id}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/products/by/{SelectedBrand.Id}/{Branch}");
             response.EnsureSuccessStatusCode();
             var products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>();
             Products = products ?? new List<BranchProductDto>();
