@@ -170,7 +170,7 @@ public class ProductImportController : ControllerBase
                      CreatedAt, IsDeleted, CreatedBy)
                     VALUES (@BrandId, @CostPrice, @RetailPrice, @WholeSalePrice, @Size,
                             @Quantity, @Branch, @ProductMesurementOption, @ActualQuantity, @BufferStocks,
-                            GETDATE(), 0, 'Excel Import');
+                            GETDATE(), 0, 'ITAdministrator');
                 ", conn);
 
                 cmd.Parameters.AddWithValue("@BrandId", brandId);
@@ -495,13 +495,13 @@ public class ProductImportController : ControllerBase
             INSERT INTO GlobalProducts
             (BrandId, ProductName, Description, Packaging, CreatedAt, CreatedBy, IsDeleted)
             VALUES
-            (@BrandId, @ProductName, @Description, @Packaging, GETDATE(), 'Import', 0)
+            (@BrandId, @ProductName, @Description, @Packaging, GETDATE(), 'ITAdministrator  ', 0)
         ", conn);
 
             insertCmd.Parameters.AddWithValue("@BrandId", brandId);
             insertCmd.Parameters.AddWithValue("@ProductName", productName.Trim());
             insertCmd.Parameters.AddWithValue("@Description", description ?? "");
-            insertCmd.Parameters.AddWithValue("@Packaging", ""); // default empty string
+            insertCmd.Parameters.AddWithValue("@Packaging", "");
 
             await insertCmd.ExecuteNonQueryAsync();
         }
@@ -591,9 +591,9 @@ public class ProductImportController : ControllerBase
             decimal size = ParseDecimal(d, "Size");
             decimal actualQuantity = ParseDecimal(d, "ActualQuantity");
             decimal bufferStocks = ParseDecimal(d, "BufferStocks");
-
-            string measurementStr = d.ContainsKey("ProductMesurement") ? (d["ProductMesurement"]?.ToString() ?? "") : "";
-            int productMesurementOption = MapMeasurement(measurementStr);
+            int productMesurementOption = ParseInt(d, "ProductMesurementOption");
+            //string measurementStr = d.ContainsKey("ProductMesurement") ? (d["ProductMesurement"]?.ToString() ?? "") : "";
+            //int productMesurementOption = MapMeasurement(measurementStr);
 
             // Insert
             await using var cmd = new SqlCommand(@"
@@ -685,6 +685,104 @@ public class ProductImportController : ControllerBase
             await cmd.ExecuteNonQueryAsync();
         }
     }
+
+
+    [HttpPost("update-branchproducts-actualquantity")]
+    public async Task<IActionResult> UpdateBranchProductsActualQuantity(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        var tempPath = Path.GetTempFileName();
+        await using (var fs = new FileStream(tempPath, FileMode.Create))
+            await file.CopyToAsync(fs);
+
+        try
+        {
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            await UpdateBranchProductsActualQuantityCsvAsync(tempPath, connectionString);
+
+            return Ok("✅ BranchProducts ActualQuantity updated successfully.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"❌ Update failed: {ex.Message}");
+        }
+        finally
+        {
+            System.IO.File.Delete(tempPath);
+        }
+    }
+
+    private async Task UpdateBranchProductsActualQuantityCsvAsync(
+    string filePath,
+    string connectionString)
+    {
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HeaderValidated = null,
+            MissingFieldFound = null
+        };
+
+        using var reader = new StreamReader(filePath);
+        using var csv = new CsvReader(reader, config);
+        var records = csv.GetRecords<dynamic>();
+
+        await using var conn = new SqlConnection(connectionString);
+        await conn.OpenAsync();
+
+        int rowNum = 2;
+
+        foreach (var record in records)
+        {
+            var d = (IDictionary<string, object>)record;
+
+            // 1️⃣ BranchProduct Id (REQUIRED)
+            if (!d.TryGetValue("Id", out var idRaw) ||
+                !int.TryParse(idRaw?.ToString(), out var branchProductId))
+            {
+                throw new Exception($"Row {rowNum}: Id is required and must be numeric.");
+            }
+
+            // 2️⃣ ActualQuantity (REQUIRED)
+            if (!d.TryGetValue("ActualQuantity", out var qtyRaw) ||
+                !decimal.TryParse(qtyRaw?.ToString(),
+                    NumberStyles.Any,
+                    CultureInfo.InvariantCulture,
+                    out var actualQty))
+            {
+                throw new Exception($"Row {rowNum}: ActualQuantity is required and must be numeric.");
+            }
+
+            // 3️⃣ Ensure BranchProduct exists
+            await using (var checkCmd = new SqlCommand(
+                "SELECT COUNT(*) FROM BranchProducts WHERE Id = @Id", conn))
+            {
+                checkCmd.Parameters.AddWithValue("@Id", branchProductId);
+
+                if ((int)await checkCmd.ExecuteScalarAsync() == 0)
+                    throw new Exception($"Row {rowNum}: BranchProduct Id {branchProductId} does not exist.");
+            }
+
+            // 4️⃣ UPDATE ONLY ActualQuantity
+            await using var updateCmd = new SqlCommand(@"
+            UPDATE BranchProducts
+            SET ActualQuantity = @ActualQuantity,
+                UpdatedAt = GETDATE(),
+                UpdatedBy = 'CSV-IMPORT'
+            WHERE Id = @Id
+        ", conn);
+
+            updateCmd.Parameters.AddWithValue("@Id", branchProductId);
+            updateCmd.Parameters.AddWithValue("@ActualQuantity", actualQty);
+
+            await updateCmd.ExecuteNonQueryAsync();
+
+            rowNum++;
+        }
+    }
+
+
     private int ParseInt(IDictionary<string, object> d, string key)
     {
         return d.TryGetValue(key, out var v) && int.TryParse(v?.ToString(), out var val) ? val : 0;

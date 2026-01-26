@@ -17,13 +17,14 @@ public partial class RequestProducts
     [Inject] protected ILogger<RequestProducts> Logger { get; set; } = default!;
     [Inject] protected UserState UserState { get; set; } = default!;
     // Local fields
-    protected List<BranchProductDto> Products = new();
     protected int SelectedProductId { get; set; }
     protected int Quantity { get; set; } = 1;
     protected RequestProductItemDto RequestedProduct { get; set; } = new RequestProductItemDto();
+    protected List<SourceAndRequesteeProductDto> Products { get; set; } = new List<SourceAndRequesteeProductDto>();
     protected List<ProductBrandDto> Brands { get; set; } = new List<ProductBrandDto>();
     protected ProductBrandDto? SelectedBrand { get; set; } = new ProductBrandDto();
-    protected BranchProductDto? SelectedBranchProduct { get; set; } = new BranchProductDto();
+    protected SourceAndRequesteeProductDto? SelectedBranchProduct { get; set; } = new SourceAndRequesteeProductDto();
+    protected BranchOption RequesteeBranch { get; set; }
     protected bool IsLoading { get; set; } = false;
     protected bool IsProductsLoading { get; set; } = false;
     protected bool CanSave =>
@@ -31,8 +32,8 @@ public partial class RequestProducts
             RequestedProduct.RequestedQuantity > 0;
     protected override async Task OnInitializedAsync()
     {
+        RequesteeBranch = UserState.Branch.GetValueOrDefault();
         await LoadBrands();
-        RequestedProduct.Branch = UserState.Branch.GetValueOrDefault();
     }
     protected override void OnParametersSet()
     {
@@ -99,16 +100,16 @@ public partial class RequestProducts
         IsProductsLoading = true;
         try
         {
-            var response = await Http.GetAsync($"api/product/all/by/{SelectedBrand?.Id}/{BranchSource}");
+            var response = await Http.GetAsync($"api/product/all/pulloutitems/products/{SelectedBrand?.Id}/{RequesteeBranch}/{BranchSource}");
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                Products = new List<BranchProductDto>();
+                Products = new List<SourceAndRequesteeProductDto>();
                 Snackbar.Add("Products for the selected brand is low.", Severity.Warning);
                 return;
             }
             response.EnsureSuccessStatusCode();
-            var products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>();
-            Products = products ?? new List<BranchProductDto>();
+            var products = await response.Content.ReadFromJsonAsync<List<SourceAndRequesteeProductDto>>();
+            Products = products ?? new List<SourceAndRequesteeProductDto>();
         }
         catch(Exception ex)
         {
@@ -121,38 +122,48 @@ public partial class RequestProducts
         }
     }
 
-    protected Task<IEnumerable<BranchProductDto>> SearchProductsDto(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<SourceAndRequesteeProductDto>> SearchProductsDto(
+      string value,
+      CancellationToken cancellationToken)
     {
-        if (Products is null || !Products.Any())
-            return Task.FromResult(Enumerable.Empty<BranchProductDto>());
+        if (Products == null || Products.Count == 0)
+            return Task.FromResult(Enumerable.Empty<SourceAndRequesteeProductDto>());
 
         var result = Products
-                  .Where(p => string.IsNullOrWhiteSpace(value) ||
-                              ((p.MasterProduct?.ProductName ?? string.Empty)
-                                  .Contains(value, StringComparison.OrdinalIgnoreCase)))
-                  .GroupBy(p => p.Id)
-                  .Select(g => g.First());
-
+            .Where(p =>
+                string.IsNullOrWhiteSpace(value) ||
+                (p.MasterProduct?.ProductName?.Contains(
+                    value,
+                    StringComparison.OrdinalIgnoreCase) ?? false)
+            );
 
         return Task.FromResult(result);
     }
-    protected void OnProductSelectDto(BranchProductDto product)
+
+    protected void OnProductSelectDto(SourceAndRequesteeProductDto product)
     {
         if (product is null)
         {
             SelectedBranchProduct = null;
             RequestedProduct.MasterProductId = null;
             RequestedProduct.ProductName = string.Empty;
+            RequestedProduct.ProductSourceBranchId = null;
+            RequestedProduct.ProductRequesterBranchId = null;
+            RequestedProduct.ItemCost = 0;
             return;
         }
 
         SelectedBranchProduct = product;
         RequestedProduct.MasterProductId = product.MasterProductId;
         RequestedProduct.ProductName = product.MasterProduct?.ProductName ?? string.Empty;
+        RequestedProduct.ProductRequesterBranchId = product.RequesterProduct?.Id;
+        RequestedProduct.ProductSourceBranchId = product.SourceProduct?.Id;
+        RequestedProduct.ItemCost = product.RequesterProduct?.CostPrice ?? 0;
     }
 
     protected void Save()
     {
+        RequestedProduct.Branch = RequesteeBranch;
         MudDialog.Close(DialogResult.Ok(RequestedProduct));
     }
     protected void Cancel()

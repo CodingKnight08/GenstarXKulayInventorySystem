@@ -163,6 +163,7 @@ public static class UtilitiesHelper
         DeliveryStatusOption.OnTheWay => "On The Way",
         DeliveryStatusOption.Delivered => "Delivered",
         DeliveryStatusOption.Cancelled => "Cancelled",
+        DeliveryStatusOption.Partial => "Partial Delivered",
         _ => "Unknown"
     };
 
@@ -192,7 +193,8 @@ public static class UtilitiesHelper
         Pending,
         OnTheWay,
         Delivered,
-        Cancelled
+        Cancelled,
+        Partial
     }
     public enum SaleSearchCategory
     {

@@ -59,15 +59,29 @@ public class AutoMapperProfile : Profile
         _ = CreateMap<OperationsProvider, OperationsProviderDto>()
             .ForMember(dest => dest.Billings, opt => opt.Ignore()).ReverseMap();
 
-        _ = CreateMap<RequestProductItem, RequestProductItemDto>().ReverseMap();
+        _ = CreateMap<RequestProductItem, RequestProductItemDto>()
+                .ForMember(d => d.MasterProduct,
+                    o => o.MapFrom(s => s.MasterProduct))
+                .ForMember(d => d.ProductSourceBranch,
+                    o => o.MapFrom(s => s.ProductSourceBranch))
+                .ForMember(d => d.ProductRequesterBranch,
+                    o => o.MapFrom(s => s.ProductRequesterBranch))
+                .ForMember(d => d.Branch,
+                    o => o.MapFrom(s => s.Branch))
+                .ForMember(d => d.SourceProduct,
+                    o => o.MapFrom(s => s.SourceProduct));
+        _ = CreateMap<RequestProductItemDto, RequestProductItem>()
+            .ForMember(e => e.MasterProduct, o => o.Ignore())
+            .ForMember(e => e.ProductSourceBranch, o => o.Ignore())
+            .ForMember(e => e.ProductRequesterBranch, o => o.Ignore())
+            .ForMember(e => e.PullOutRequest, o => o.Ignore());
 
         _ = CreateMap<PullOutRequest, PullOutRequestDto>().ReverseMap();
         _ = CreateMap<GlobalProduct, GlobalProductDto>().ReverseMap();
         _ = CreateMap<BranchProduct, BranchProductDto>().ReverseMap();
         _ = CreateMap<ReturnItem, ReturnItemDto>().ReverseMap();
 
-        // Parent: WayBill ↔ WayBillDto
-        // WayBill ↔ WayBillDto
+      
         _ =CreateMap<WayBill, WayBillDto>()
             .ForMember(dest => dest.WayBillItems, opt => opt.MapFrom(src => src.WayBillItems))
             .ForMember(dest => dest.Supplier, opt => opt.MapFrom(src => src.Supplier));

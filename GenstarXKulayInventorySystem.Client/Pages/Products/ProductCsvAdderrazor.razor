@@ -25,12 +25,19 @@
         <InputFile OnChange="UploadBranchProductFile" />
         <MudText Typo="Typo.body1">@BranchProductStatusMessage</MudText>
     </div>
+
+    <div class="mb-4">
+        <h5>Update Branch Product Actual Quantity (CSV)</h5>
+        <InputFile OnChange="UploadBranchProductActualQuantityFile" />
+        <MudText Typo="Typo.body1">@BranchProductActualQtyStatusMessage</MudText>
+    </div>
 </MudMainContent>
 
 @code {
     private string ProductStatusMessage = "";
     private string BrandStatusMessage = "";
     private string BranchProductStatusMessage = "";
+    private string BranchProductActualQtyStatusMessage = "";
 
     // ---------------- Upload Products ----------------
     private async Task UploadProductFile(InputFileChangeEventArgs e)
@@ -116,4 +123,40 @@
             BranchProductStatusMessage = $"❌ Error: {ex.Message}";
         }
     }
+
+    private async Task UploadBranchProductActualQuantityFile(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file == null)
+            {
+                BranchProductActualQtyStatusMessage = "❌ No file selected.";
+                return;
+            }
+
+            var content = new MultipartFormDataContent();
+            content.Add(
+                new StreamContent(file.OpenReadStream(50 * 1024 * 1024)),
+                "file",
+                file.Name
+            );
+
+            var response = await Http.PostAsync(
+                "api/productimport/update-branchproducts-actualquantity",
+                content
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            BranchProductActualQtyStatusMessage = response.IsSuccessStatusCode
+                ? $"✅ Success: {result}"
+                : $"❌ Failed: {result}";
+        }
+        catch (Exception ex)
+        {
+            BranchProductActualQtyStatusMessage = $"❌ Error: {ex.Message}";
+        }
+    }
+
 }

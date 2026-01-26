@@ -58,11 +58,28 @@ public class ProductService:IProductService
             .Where(p =>
                 p.Branch == branch &&
                 !p.IsDeleted &&
-                p.ActualQuantity > p.BufferStocks &&
                 p.MasterProduct != null &&
                 p.MasterProduct.BrandId == brandId
             )
-            .OrderBy(p => p.MasterProduct!.ProductName)  // safe because filtered above
+            .OrderBy(p => p.MasterProduct!.ProductName)  
+            .ToListAsync();
+
+        return _mapper.Map<List<BranchProductDto>>(products);
+    }
+
+    public async Task<List<BranchProductDto>> GetAllProductsForWayBill(int brandId, BranchOption branch)
+    {
+        var products = await _context.BranchProducts
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(bp => bp.MasterProduct)
+            .Where(p =>
+                p.Branch == branch &&
+                !p.IsDeleted &&
+                p.MasterProduct != null &&
+                p.MasterProduct.BrandId == brandId
+            )
+            .OrderBy(p => p.MasterProduct!.ProductName)  
             .ToListAsync();
 
         return _mapper.Map<List<BranchProductDto>>(products);
@@ -337,12 +354,49 @@ public class ProductService:IProductService
         return true;
     }
 
+
+    //PullOut request Item 
+    public async Task<List<SourceAndRequesteeProductDto>> GetAllRequesteeAndSourceProduct(
+    int brandId,
+    BranchOption requester,
+    BranchOption source)
+    {
+        var query =
+            from gp in _context.GlobalProducts
+                .AsNoTracking()
+
+            where gp.BrandId == brandId
+
+            let sourceProduct = gp.BranchProducts
+                .FirstOrDefault(bp => bp.Branch == source)
+
+            let requesterProduct = gp.BranchProducts
+                .FirstOrDefault(bp => bp.Branch == requester)
+
+            where sourceProduct != null || requesterProduct != null
+
+            select new SourceAndRequesteeProductDto
+            {
+                MasterProductId = gp.Id,
+                MasterProduct = _mapper.Map<GlobalProductDto>(gp),
+                SourceProduct = sourceProduct != null
+                    ? _mapper.Map<BranchProductDto>(sourceProduct)
+                    : null,
+                RequesterProduct = requesterProduct != null
+                    ? _mapper.Map<BranchProductDto>(requesterProduct)
+                    : null
+            };
+
+        return await query.ToListAsync();
+    }
+
 }
 public interface IProductService
 {
     Task<List<ProductDto>> GetAllAsync(int brandId);
     Task<List<GlobalProductDto>> GetAllGlobalProductsByBrand(int brandId);
     Task<List<BranchProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
+    Task<List<BranchProductDto>> GetAllProductsForWayBill(int brandId, BranchOption branch);
     Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take);
     Task<int> GetProductCountAsync(int brandId, BranchOption branch);
     Task<BranchProductDto?> GetByIdAsync(int id);
@@ -365,4 +419,7 @@ public interface IProductService
     Task<bool> AddCategoryAsync(ProductCategoryDto categoryDto);
     Task<bool> UpdateCategoryAsync(ProductCategoryDto categoryDto);
     Task<bool> DeleteCategoryAsync(int id);
+
+
+    Task<List<SourceAndRequesteeProductDto>> GetAllRequesteeAndSourceProduct(int brandId, BranchOption requester, BranchOption source);
 }

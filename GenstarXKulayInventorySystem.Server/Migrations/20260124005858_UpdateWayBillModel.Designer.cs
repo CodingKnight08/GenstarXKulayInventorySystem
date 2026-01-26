@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260124005858_UpdateWayBillModel")]
+    partial class UpdateWayBillModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1012,7 +1015,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("DateRecieved")
+                    b.Property<DateTime>("DateRecieved")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -1024,26 +1027,16 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<bool>("IsReceived")
                         .HasColumnType("bit");
 
-                    b.Property<decimal>("ItemCost")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int?>("MasterProductId")
                         .HasColumnType("int");
 
                     b.Property<string>("ProductCode")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProductName")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("ProductRequesterBranchId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ProductSourceBranchId")
-                        .HasColumnType("int");
 
                     b.Property<int>("PullOutRequestId")
                         .HasColumnType("int");
@@ -1061,9 +1054,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int>("SourceProduct")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalCost")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -1073,10 +1063,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MasterProductId");
-
-                    b.HasIndex("ProductRequesterBranchId");
-
-                    b.HasIndex("ProductSourceBranchId");
 
                     b.HasIndex("PullOutRequestId");
 
@@ -1782,16 +1768,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasForeignKey("MasterProductId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.BranchProduct", "ProductRequesterBranch")
-                        .WithMany()
-                        .HasForeignKey("ProductRequesterBranchId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.BranchProduct", "ProductSourceBranch")
-                        .WithMany()
-                        .HasForeignKey("ProductSourceBranchId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.PullOutRequest", "PullOutRequest")
                         .WithMany("RequestProductItems")
                         .HasForeignKey("PullOutRequestId")
@@ -1799,10 +1775,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .IsRequired();
 
                     b.Navigation("MasterProduct");
-
-                    b.Navigation("ProductRequesterBranch");
-
-                    b.Navigation("ProductSourceBranch");
 
                     b.Navigation("PullOutRequest");
                 });

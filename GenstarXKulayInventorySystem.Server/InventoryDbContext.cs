@@ -214,33 +214,24 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(bp => bp.MasterProductId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
-        modelBuilder.Entity<BranchProduct>(entity =>
-        {
-            entity.Property(bp => bp.Branch)
-                  .HasConversion<int>();
-
-            entity.Property(bp => bp.ProductMesurementOption)
-                  .HasConversion<int>();
-
-            entity.Property(bp => bp.CostPrice).HasColumnType("decimal(18,2)");
-            entity.Property(bp => bp.RetailPrice).HasColumnType("decimal(18,2)");
-            entity.Property(bp => bp.WholeSalePrice).HasColumnType("decimal(18,2)");
-            entity.Property(bp => bp.Size).HasColumnType("decimal(18,2)");
-            entity.Property(bp => bp.ActualQuantity).HasColumnType("decimal(18,2)");
-            entity.Property(bp => bp.BufferStocks).HasColumnType("decimal(18,2)");
-
-            entity.HasMany(bp => bp.SaleItems)
-                  .WithOne(si => si.BranchProduct)
-                  .HasForeignKey(si => si.BranchProductId)
-                  .OnDelete(DeleteBehavior.SetNull);
-        });
-
         modelBuilder.Entity<RequestProductItem>(entity =>
         {
             entity.HasOne(rpi => rpi.MasterProduct)
                   .WithMany(g => g.RequestItems)
                   .HasForeignKey(rpi => rpi.MasterProductId)
                   .OnDelete(DeleteBehavior.SetNull);
+
+            // 🔹 Source Branch Product
+            entity.HasOne(rpi => rpi.ProductSourceBranch)
+                  .WithMany()
+                  .HasForeignKey(rpi => rpi.ProductSourceBranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 Requester Branch Product
+            entity.HasOne(rpi => rpi.ProductRequesterBranch)
+                  .WithMany()
+                  .HasForeignKey(rpi => rpi.ProductRequesterBranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
 
             entity.Property(rpi => rpi.Branch)
                   .HasConversion<int>();
@@ -251,7 +242,36 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(rpi => rpi.ProductName)
                   .HasMaxLength(200)
                   .IsRequired(false);
+
+            entity.Property(rpi => rpi.ProductCode)
+                  .HasMaxLength(100);
+
+            entity.Property(rpi => rpi.DateRecieved)
+                  .IsRequired(false);
+
+            entity.Property(dsr => dsr.ItemCost).HasColumnType("decimal(18,2)");
+            entity.Property(dsr => dsr.TotalCost).HasColumnType("decimal(18,2)");
+
         });
+
+
+        modelBuilder.Entity<PullOutRequest>(entity =>
+        {
+            entity.Property(p => p.Note)
+                  .HasMaxLength(500);
+
+            entity.Property(p => p.BranchRequestee)
+                  .HasConversion<int>();
+
+            entity.Property(p => p.BranchRequestedTo)
+                  .HasConversion<int>();
+
+            entity.HasMany(p => p.RequestProductItems)
+                  .WithOne(rpi => rpi.PullOutRequest)
+                  .HasForeignKey(rpi => rpi.PullOutRequestId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
 
 
         modelBuilder.Entity<PullOutRequest>(entity =>

@@ -66,28 +66,84 @@ public class RequestItemsService:IRequestItemsService
     }
     public async Task<bool> UpdateItemStatus(RequestProductItemDto dto)
     {
-        try
+        if (dto == null || dto.Id <= 0)
+            return false;
+
+        var strategy = _context.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
         {
-            var existReq = await _context.RequestProductItems.FirstOrDefaultAsync(e => e.Id == dto.Id && !e.IsDeleted);
-            if (existReq == null)
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
             {
+                var existReq = await _context.RequestProductItems
+                    .FirstOrDefaultAsync(e => e.Id == dto.Id && !e.IsDeleted);
+
+                if (existReq == null)
+                    return false;
+
+                // 🔒 Prevent double processing
+                bool wasAlreadyReceived = existReq.IsReceived;
+
+                // ✅ Update request item
+                existReq.IsReceived = dto.IsReceived;
+                existReq.ReleasedQuantity = dto.ReleasedQuantity;
+                existReq.UpdatedAt = PhilippineTime.Now;
+                existReq.UpdatedBy = GetCurrentUsername();
+                existReq.TotalCost = existReq.ItemCost * dto.ReleasedQuantity;
+
+                if (dto.IsReceived && !wasAlreadyReceived)
+                    existReq.DateRecieved = PhilippineTime.Now;
+
+                // ✅ Update inventories ONLY once
+                if (dto.IsReceived &&
+                    !wasAlreadyReceived &&
+                    dto.ReleasedQuantity > 0)
+                {
+                    // 🔻 SOURCE BRANCH
+                    if (!dto.ProductSourceBranchId.HasValue)
+                        throw new Exception("Source branch product ID is missing");
+
+                    var sourceProduct = await _context.BranchProducts
+                        .FirstOrDefaultAsync(bp => bp.Id == dto.ProductSourceBranchId.Value);
+
+                    if (sourceProduct == null)
+                        throw new Exception("Source branch product not found");
+
+                    sourceProduct.ActualQuantity -= dto.ReleasedQuantity;
+
+                    if (sourceProduct.ActualQuantity < 0)
+                        throw new Exception("Source product stock cannot go below zero");
+
+                    // 🔺 REQUESTER BRANCH
+                    if (!dto.ProductRequesterBranchId.HasValue)
+                        throw new Exception("Requester branch product ID is missing");
+
+                    var requesterProduct = await _context.BranchProducts
+                        .FirstOrDefaultAsync(bp => bp.Id == dto.ProductRequesterBranchId.Value);
+
+                    if (requesterProduct == null)
+                        throw new Exception("Requester branch product not found");
+
+                    requesterProduct.ActualQuantity += dto.ReleasedQuantity;
+                }
+
+                var result = await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error updating request item status");
                 return false;
             }
-            existReq.IsReceived = dto.IsReceived;
-            existReq.DateRecieved = PhilippineTime.Now;
-            existReq.UpdatedAt = PhilippineTime.Now;
-            existReq.UpdatedBy = GetCurrentUsername();
-
-            int result =  await  _context.SaveChangesAsync();
-            return result > 0;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex.Message, "Error in updating request product item status");
-            return false;
-        }
+        });
     }
- 
+
+
 }
 public interface IRequestItemsService
 {

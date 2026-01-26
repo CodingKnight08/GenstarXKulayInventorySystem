@@ -155,6 +155,7 @@ public partial class CreateWayBill
 
     protected async Task SubmitWayBill()
     {
+        WayBill.Branch = Branch;
         // Get items from the child component
         var itemsFromChild = WayBillItemsComponent?.WayBillItems ?? new List<WayBillItemsDto>();
 

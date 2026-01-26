@@ -26,23 +26,6 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
-    [HttpGet("all/by/{brandId:int}/{branch}")]
-    public async Task<ActionResult<List<ProductDto>>> GetProductsByBrandAndBranch(int brandId, BranchOption branch)
-    {
-        try
-        {
-            var products = await _productService.GetAllProductByBrandAndBranch(brandId, branch);
-
-            if (products == null || !products.Any())
-                return new List<ProductDto>();
-
-            return Ok(products);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error retrieving products: {ex.Message}");
-        }
-    }
 
     [HttpGet("all/global/{brandId:int}")]
     public async Task<ActionResult<List<GlobalProductDto>>> GetAllGlobalProducts(int brandId)
@@ -122,6 +105,22 @@ public class ProductController : ControllerBase
         }
     }
 
+    [HttpGet("all/existing/products/{brandId:int}/{branch}")]
+    public async Task<ActionResult<List<BranchProductDto>>> GetProductsForWayBill(int brandId, BranchOption branch)
+    {
+        try
+        {
+            var products = await _productService.GetAllProductsForWayBill(brandId, branch);
+            if(products == null || !products.Any())
+                return Ok(new List<BranchProductDto>());
+            return Ok(products);
+        }
+        catch(Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
+        }
+    }
+
 
     // GET: api/products/5
     [HttpGet("{id}")]
@@ -176,5 +175,24 @@ public class ProductController : ControllerBase
             return NotFound();
 
         return NoContent();
+    }
+
+
+
+    //PULL OUT REQUEST PRODUCTS 
+    [HttpGet("all/pulloutitems/products/{brandId:int}/{requesteeBranch}/{sourceBranch}")]
+    public async Task<ActionResult<List<SourceAndRequesteeProductDto>>> GetAllSourceAndRequesterProduct(int brandId, BranchOption requesteeBranch, BranchOption sourceBranch)
+    {
+        try
+        {
+            var results = await _productService.GetAllRequesteeAndSourceProduct(brandId, requesteeBranch, sourceBranch);
+            if (results == null || !results.Any())
+                return Ok(new List<SourceAndRequesteeProductDto>());
+            return Ok(results);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error in retrieving product: {ex.Message}");
+        }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.WayBills;
 
@@ -15,10 +16,11 @@ public partial class GetAllWayBills
 
     protected List<WayBillDto> WayBills { get; set; } = new List<WayBillDto>();
     private bool IsLoading { get; set; } = false;
-
+    protected BranchOption Branch { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        Branch = UserState.Branch.GetValueOrDefault();
         await LoadData();
     }
 
@@ -27,7 +29,7 @@ public partial class GetAllWayBills
         IsLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync($"api/waybill/all");
+            var response = await HttpClient.GetAsync($"api/waybill/all/{Branch}");
             if (response.IsSuccessStatusCode)
             {
                 var waybills = await response.Content.ReadFromJsonAsync<List<WayBillDto>>();

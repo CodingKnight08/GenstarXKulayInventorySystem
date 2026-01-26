@@ -1,4 +1,6 @@
-﻿namespace GenstarXKulayInventorySystem.Shared.DTOS;
+﻿using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+
+namespace GenstarXKulayInventorySystem.Shared.DTOS;
 public class WayBillDto:BaseEntityDto
 {
     public int Id { get; set; }
@@ -9,5 +11,6 @@ public class WayBillDto:BaseEntityDto
     public DateTime DateReceived { get; set; }
     public decimal TotalAmount { get; set; }
     public string Notes { get; set; } = string.Empty;
+    public BranchOption Branch { get; set; }
     public List<WayBillItemsDto> WayBillItems { get; set; } = new List<WayBillItemsDto>();
 }

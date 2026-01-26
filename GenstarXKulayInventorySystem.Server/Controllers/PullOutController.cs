@@ -33,6 +33,16 @@ public class PullOutController : ControllerBase
         return Ok(requesters);
     }
 
+
+    [HttpGet("all/recieved/{branch}")]
+    public async Task<ActionResult<List<PullOutRequestDto>>> GetAllRecievedPullOuts(BranchOption branch)
+    {
+        var request = await _service.GetAllRecievedPullOut(branch);
+        if (request == null)
+            return NotFound("No received pullouts");
+        return Ok(request);
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<PullOutRequestDto>> GetRequestById(int id)
     {
@@ -74,21 +84,44 @@ public class PullOutController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
-    [HttpPut("items")]
-    public async Task<IActionResult> UpdatePullOutRequestItems(List<RequestProductItemDto> dto)
+    [HttpPut("recieved/items/{pullOutRequestId}")]
+    public async Task<IActionResult> RecievePullOutRequestItems(
+     [FromBody] List<RequestProductItemDto> dto,
+     int pullOutRequestId)
     {
+        if (dto == null || !dto.Any())
+            return BadRequest("No items provided.");
+
         try
         {
-            var result = await _service.UpdateRequestItems(dto);
+            // Ensure DTOs have the correct PullOutRequestId
+            dto.ForEach(d => d.PullOutRequestId = pullOutRequestId);
+
+            var result = await _service.RecieveRequestItems(dto, pullOutRequestId);
+
             if (!result)
-                return BadRequest("Update failed");
+                return BadRequest("Update failed.");
+
             return Ok(result);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex.Message);
+            return StatusCode(500, $"Error updating pull-out request items: {ex.Message}");
         }
     }
+
+    [HttpPut("items")]
+    public async Task<IActionResult> UpdatePullOutRequestItems(List<RequestProductItemDto> dto)
+    { try 
+        { var result = await _service.UpdateRequestItems(dto); 
+            if (!result) return BadRequest("Update failed"); return Ok(result);
+        } 
+        catch
+        (Exception ex) 
+        { return StatusCode(500, ex.Message);
+        }
+    }
+
     [HttpPut("status")]
     public async Task<IActionResult> UpdateRequestItems(RequestProductItemDto dto)
     {
@@ -104,4 +137,34 @@ public class PullOutController : ControllerBase
            return StatusCode(500, ex.Message);
         }
     }
+
+
+    [HttpPost("sync-request-items")]
+    public async Task<IActionResult> SyncRequestItems([FromBody] List<RequestProductItemDto> items)
+    {
+        if (items == null || !items.Any())
+            return BadRequest("No items provided.");
+
+        try
+        {
+            var result = await _service.SyncToInventory(items);
+
+            if (result)
+                return Ok(new { message = "Inventory synced successfully." });
+
+            return StatusCode(500, new { message = "Failed to sync inventory." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Business rule exception, e.g., negative stock
+            _logger.LogWarning(ex, "Sync failed due to business rule.");
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error syncing inventory.");
+            return StatusCode(500, new { message = "Unexpected error occurred." });
+        }
+    }
+
 }

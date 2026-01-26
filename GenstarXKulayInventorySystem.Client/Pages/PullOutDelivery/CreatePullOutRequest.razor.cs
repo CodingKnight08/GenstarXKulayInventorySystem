@@ -18,11 +18,13 @@ public partial class CreatePullOutRequest
     protected PullOutRequestDto NewPullOut { get; set; } = new();
     protected List<RequestProductItemDto> RequestedItems { get; set; } = new();
     protected bool IsSubmitting = false;
+    protected BranchOption Requester { get; set; }
     protected bool CanSubmit => RequestedItems.Count > 0 && !IsSubmitting;
     protected override void OnInitialized()
     {
         NewPullOut.DateRequest = DateTime.Now;
         NewPullOut.BranchRequestee = UserState.Branch.GetValueOrDefault();
+        Requester = UserState.Branch.GetValueOrDefault();
     }
 
     private void OnBranchChanged(BranchOption newBranch)

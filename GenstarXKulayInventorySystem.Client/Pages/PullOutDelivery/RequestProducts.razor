@@ -20,7 +20,7 @@
 
             <MudItem  lg="6" md="6" sm="12">
 
-                <MudAutocomplete T="BranchProductDto"
+                <MudAutocomplete T="SourceAndRequesteeProductDto"
                                  Label="Item Name"
                                  Dense="true"
                                  Placeholder="Select Item"
@@ -32,13 +32,16 @@
                                  CoerceText="false"
                                  CoerceValue="false"
                                  ResetValueOnEmptyText="false"
-                                 MaxItems="500" />
+                                 MaxItems="500"
+                                 MinCharacters="0"
+                                 Immediate="true" />
+
             </MudItem>
             <MudItem md="6">
                 <MudNumericField
                     T="decimal"
                     Label="Available Quantity"
-                    Value="SelectedBranchProduct?.ActualQuantity ?? 0" 
+                    Value="SelectedBranchProduct?.SourceProduct?.ActualQuantity ?? 0" 
                     ReadOnly="true"
                     HideSpinButtons="true" />
             </MudItem>

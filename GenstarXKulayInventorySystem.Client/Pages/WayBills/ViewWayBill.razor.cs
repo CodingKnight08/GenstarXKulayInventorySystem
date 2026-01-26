@@ -23,7 +23,8 @@ public partial class ViewWayBill
     private bool IsLoading { get; set; } = false;
     private bool HasItems { get; set; } = false;
     private bool HasDamageItems { get; set; } = false;
-
+    private bool IsSync { get; set; } = false;
+    private bool IsEdit { get; set; } = false;
     protected override async Task OnParametersSetAsync()
     {
         _items =
@@ -83,6 +84,8 @@ public partial class ViewWayBill
                 {
                     WayBillItems = wayBillItems;
                     HasItems = true;
+                    IsSync = WayBillItems.Any() && WayBillItems.All(e => e.IsMergeToSystem);
+
                 }
                 else
                 {
@@ -158,5 +161,96 @@ public partial class ViewWayBill
         {
             Logger.LogError(ex.Message, "Error occured upon retrieving damage items ");
         }
+    }
+
+
+    protected async Task UpdateWayBillAsync()
+    {
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync(
+                $"api/waybill/{WayBill.Id}",
+                WayBillItems);
+
+            if (response.IsSuccessStatusCode)
+            {
+                SnackBar.Add("WayBill updated successfully", Severity.Success);
+                await LoadWayBill();
+                StateHasChanged();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                SnackBar.Add($"Update failed: {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error updating WayBill");
+            SnackBar.Add("Unexpected error while updating WayBill", Severity.Error);
+        }
+        finally
+        {
+            IsEdit = false;
+        }
+    }
+
+    protected async Task SyncWayBillItemsAsync()
+    {
+        if (WayBillItems == null || !WayBillItems.Any())
+        {
+            SnackBar.Add("No waybill items to sync.", Severity.Warning);
+            return;
+        }
+
+        // Optional: prevent double sync
+        if (IsSync)
+        {
+            SnackBar.Add("WayBill items are already synced.", Severity.Info);
+            return;
+        }
+
+        IsLoading = true;
+
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync(
+                "api/waybill/sync-branch-products",
+                WayBillItems);
+
+            if (response.IsSuccessStatusCode)
+            {
+                SnackBar.Add("WayBill items synced successfully.", Severity.Success);
+
+                // Reload items so IsMergeToSystem updates
+                await LoadWayBillItems();
+
+                IsSync = WayBillItems.Any() &&
+                         WayBillItems.All(x => x.IsMergeToSystem);
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                SnackBar.Add($"Sync failed: {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error syncing WayBill items");
+            SnackBar.Add("Unexpected error during sync.", Severity.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+
+    protected async Task CancelUpdate()
+    {
+        IsEdit = false;
+        await LoadWayBill();
+        StateHasChanged();
     }
 }
