@@ -8,7 +8,6 @@ namespace GenstarXKulayInventorySystem.Client.Pages.WayBills.WayBillItems;
 public partial class GetAllWayBillItems
 {
     [Parameter] public BranchOption Branch { get; set; }
-    [Parameter] public int BrandId { get; set; }
     [Parameter] public EventCallback OnItemsChanged { get; set; }
 
     [Inject] private IDialogService DialogService { get; set; } = default!;
@@ -19,16 +18,7 @@ public partial class GetAllWayBillItems
     protected bool HasBrand { get; set; } = false;
     protected int InitialBrandId { get; set; }
     private int _previousBrandId;
-    protected override void OnParametersSet()
-    {
-        HasBrand = BrandId > 0;
-        if (_previousBrandId != 0 && BrandId != _previousBrandId)
-        {
-            ClearWayBillItems();
-        }
-
-        _previousBrandId = BrandId;
-    }
+   
     private void ClearWayBillItems()
     {
         WayBillItems.Clear();
@@ -41,7 +31,6 @@ public partial class GetAllWayBillItems
         var dialogParameters = new DialogParameters
         {
             { "Branch", Branch },
-            { "BrandId", BrandId }
         };
         var options = new DialogOptions 
         { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, BackdropClick = false };

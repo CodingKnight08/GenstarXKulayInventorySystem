@@ -159,6 +159,7 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(c => c.ClientName).HasMaxLength(200).IsRequired();
             entity.Property(c => c.Address).HasMaxLength(500);
             entity.Property(c => c.ContactNumber).HasMaxLength(50);
+            entity.Property(c => c.CreditBalance).HasColumnType("decimal(18,2)");
         });
 
         modelBuilder.Entity<DailySaleReport>(entity =>

@@ -12,7 +12,22 @@
             }
             else
             {
-                
+                <MudItem>
+                    <MudAutocomplete T="ProductBrandDto"
+                                     Label="Product Brand"
+                                     Dense="true"
+                                     Placeholder="Select Brand"
+                                     Value="SelectedBrand"
+                                     ValueChanged="OnBrandSelect"
+                                     SearchFunc="SearchBrands"
+                                     ToStringFunc="b => b?.BrandName"
+                                     MaxItems="70"
+                                     Clearable="true"
+                                     CoerceText="false"
+                                     CoerceValue="false"
+                                     ResetValueOnEmptyText="false" />
+                </MudItem>
+
             
             <MudItem xs="12" md="6">
                <MudAutocomplete 

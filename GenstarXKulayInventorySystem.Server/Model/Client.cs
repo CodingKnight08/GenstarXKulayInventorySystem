@@ -10,5 +10,6 @@ public class Client:BaseEntity
     public string ContactNumber = string.Empty;
     public BranchOption Branch { get; set; }
     public decimal? RemainingChargeBalance { get; set; }
+    public decimal? CreditBalance { get; set; }
     public ICollection<DailySale> DailySales { get; set; } = new List<DailySale>();
 }

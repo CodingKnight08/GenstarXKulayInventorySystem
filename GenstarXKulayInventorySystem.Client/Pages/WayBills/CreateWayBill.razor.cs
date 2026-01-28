@@ -18,15 +18,10 @@ public partial class CreateWayBill
 
     protected WayBillDto WayBill { get; set; } = new WayBillDto();
     protected List<SupplierDto> Suppliers { get; set; } = new List<SupplierDto>();
-    protected List<ProductBrandDto> ProductBrands { get; set; } = new List<ProductBrandDto>();
-    protected ProductBrandDto? SelectedBrand { get; set; } = new ProductBrandDto();
     protected string SupplierName { get; set; } = string.Empty;
     protected bool IsLoading { get; set; } = false;
     protected bool IsSupplierLoading { get; set; } = false;
-    protected bool HasBrand => SelectedBrand != null && SelectedBrand.Id > 0;
-    protected bool IsValid =>
-        HasBrand &&
-        (WayBillItemsComponent?.WayBillItems?.Any() ?? false);
+    protected bool IsValid => WayBillItemsComponent?.WayBillItems?.Any() ?? false;
 
 
 
@@ -38,7 +33,6 @@ public partial class CreateWayBill
         IsLoading = true;
         Branch = UserState.Branch.GetValueOrDefault();
         await LoadSupplier();
-        await LoadBrands();
         IsLoading = false;
     }
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -98,56 +92,8 @@ public partial class CreateWayBill
             WayBill.SupplierId = matchSupplier.Id;
         }
     }
-    protected async Task LoadBrands()
-    {
-        try
-        {
-            var response = await HttpClient.GetAsync("api/productbrand/all/brandnames");
-            if (response.IsSuccessStatusCode)
-            {
-                var brands = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>();
-                if (brands != null)
-                {
-                    ProductBrands = brands;
-                }
-            }
-            else
-            {
-               SnackBar.Add("Failed to load product brands.", Severity.Warning);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex.Message, "Error occur loading brands!");
-        }
-    }
-    protected Task<IEnumerable<ProductBrandDto>> SearchBrands(string value, CancellationToken cancellationToken)
-    {
-        if (ProductBrands == null || ProductBrands.Count == 0)
-            return Task.FromResult(Enumerable.Empty<ProductBrandDto>());
-
-        var query = value?.Trim() ?? string.Empty;
-
-        var result = ProductBrands
-            .Where(b => string.IsNullOrWhiteSpace(value) ||
-            b.BrandName.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .GroupBy(b => b.Id)
-            .Select(g => g.First());
-
-
-        return Task.FromResult(result);
-    }
-
-    protected async Task OnBrandSelect(ProductBrandDto brand)
-    {
-        if(brand is null)
-        {
-            SelectedBrand = null;
-            return;
-        }
-        SelectedBrand = brand;
-        StateHasChanged();
-    }
+    
+   
     protected void Cancel()
     {
         NavigationManager.NavigateTo("/waybills");
