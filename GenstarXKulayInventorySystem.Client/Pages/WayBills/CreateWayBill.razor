@@ -40,23 +40,7 @@
                     <MudTextField @bind-Value="WayBill.Courier" Placeholder="Courier Name" Label="Courier" Variant="Variant.Text"/>
                 </MudItem>
               
-                <MudItem>
-                    <MudAutocomplete 
-                        T="ProductBrandDto" 
-                        Label="Product Brand"
-                        Dense="true"
-                        Placeholder="Select Brand"
-                        Value="SelectedBrand"
-                        ValueChanged="OnBrandSelect"
-                        SearchFunc="SearchBrands"
-                        ToStringFunc="b => b?.BrandName"
-                        MaxItems="70"
-                        Clearable="true"
-                        CoerceText="false"
-                        CoerceValue="false"
-                        ResetValueOnEmptyText="false"
-                        />
-                </MudItem>
+              
                <MudItem xs="12" class="d-flex flex-column gap-1">
                    <label>Notes <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Default" Size="Size.Small"/></label>
                    <MudTextField @bind-Value="WayBill.Notes" Lines="2" MaxLines="5" Variant="Variant.Outlined"/>
@@ -64,8 +48,7 @@
                 <MudItem xs="12" md="12">
                    <GetAllWayBillItems @ref="WayBillItemsComponent"
                        Branch="Branch"
-                       BrandId="SelectedBrand?.Id ?? 0" 
-                        OnItemsChanged="RecalculateIsValid"/>
+                       OnItemsChanged="RecalculateIsValid"/>
 
 
                 </MudItem>
