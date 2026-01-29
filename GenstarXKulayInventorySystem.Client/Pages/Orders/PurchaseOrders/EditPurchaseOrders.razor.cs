@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MudBlazor;
 using System.Net.Http.Json;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrders;
 
@@ -15,16 +16,18 @@ public partial class EditPurchaseOrders
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected ILogger<EditPurchaseOrders> Logger { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
     protected List<SupplierDto> Suppliers { get; set; } = new List<SupplierDto>();
     protected SupplierDto NewSupplier { get; set; } = new SupplierDto();
     protected string SupplierName { get; set; } = string.Empty;
 
-
+    protected BranchOption Branch { get; set; }
     protected bool IsLoading { get; set; } = true;
     protected bool IsNewSupplier { get; set; } = false;
 
     protected override async Task OnParametersSetAsync()
     {
+        Branch = UserState.Branch.GetValueOrDefault();
         if (PurchaseOrder is null)
         {
             Snackbar.Add("Purchase Order is null", Severity.Error);
@@ -189,7 +192,7 @@ public partial class EditPurchaseOrders
     {
         try
         {
-            var response = await HttpClient.GetAsync("api/supplier/all");
+            var response = await HttpClient.GetAsync($"api/supplier/all/{Branch}");
             response.EnsureSuccessStatusCode();
             var suppliers = await response.Content.ReadFromJsonAsync<List<SupplierDto>>();
             Suppliers = suppliers ?? new List<SupplierDto>();
