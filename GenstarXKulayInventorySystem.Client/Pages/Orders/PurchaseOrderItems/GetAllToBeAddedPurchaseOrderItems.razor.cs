@@ -31,7 +31,13 @@ public partial class GetAllToBeAddedPurchaseOrderItems
     {
         try
         {
-           
+            var dialogOption = new DialogOptions()
+            {
+                BackdropClick = false,
+                CloseButton = true,
+                FullWidth = true,
+                MaxWidth = MaxWidth.Medium
+            };
 
             var dialog = await DialogService.ShowAsync<CreatePurchaseOrderItem>("", new DialogParameters
             {

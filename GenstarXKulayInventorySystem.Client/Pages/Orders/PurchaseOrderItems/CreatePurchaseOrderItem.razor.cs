@@ -38,7 +38,7 @@ public partial class CreatePurchaseOrderItem
         try
         {
             IsLoading = true;
-            var response = await HttpClient.GetAsync($"api/productbrand/all/brands/{Branch}");
+            var response = await HttpClient.GetAsync($"api/productbrand/all/brandnames");
             response.EnsureSuccessStatusCode();
             ProductBrands = await response.Content.ReadFromJsonAsync<List<ProductBrandDto>>() ?? new();
         }
@@ -58,7 +58,7 @@ public partial class CreatePurchaseOrderItem
 
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/by/{brandId}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/products/by/{brandId}/{Branch}");
             if (!response.IsSuccessStatusCode)
             {
                 Products.Clear();
