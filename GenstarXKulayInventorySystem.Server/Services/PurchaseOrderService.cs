@@ -102,12 +102,11 @@ public class PurchaseOrderService:IPurchaseOrderService
         {
             var existingPurchaseOrder = await _context.PurchaseOrders
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PurchaseOrderNumber == purchaseOrderDto.PurchaseOrderNumber);
+                .FirstOrDefaultAsync(x => x.Id == purchaseOrderDto.Id);
             if (existingPurchaseOrder != null)
                 return false;
             var purchaseOrder = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
-            purchaseOrder.PurchaseOrderDate = PhilippineTime.ToPH(purchaseOrderDto.PurchaseOrderDate);
-            purchaseOrder.ExpectedDeliveryDate = PhilippineTime.ToPH(purchaseOrderDto.ExpectedDeliveryDate.Value);
+            purchaseOrder.ExpectedDeliveryDate = purchaseOrderDto.ExpectedDeliveryDate ?? PhilippineTime.Now;
             purchaseOrder.CreatedBy = GetCurrentUsername();
             purchaseOrder.CreatedAt = PhilippineTime.Now;
             purchaseOrder.AssumeTotalAmount = purchaseOrderDto.PurchaseOrderItems.Sum(item => (item.ItemAmount ?? 0) * item.ItemQuantity);
@@ -147,8 +146,7 @@ public class PurchaseOrderService:IPurchaseOrderService
         {
             // Update purchase order basic fields
             existingPurchaseOrder.UpdatedBy = GetCurrentUsername();
-            existingPurchaseOrder.UpdatedAt = DateTime.UtcNow;
-            existingPurchaseOrder.PurchaseOrderNumber = purchaseOrderDto.PurchaseOrderNumber;
+            existingPurchaseOrder.UpdatedAt = PhilippineTime.Now;
             existingPurchaseOrder.PurchaseOrderDate = purchaseOrderDto.PurchaseOrderDate;
             existingPurchaseOrder.ExpectedDeliveryDate = purchaseOrderDto.ExpectedDeliveryDate;
             existingPurchaseOrder.AssumeTotalAmount = purchaseOrderDto.AssumeTotalAmount;
