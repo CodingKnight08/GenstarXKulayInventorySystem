@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrders;
 
@@ -20,6 +21,7 @@ public partial class ViewPurchaseOrder
 
     protected MudForm _form = default!;
     protected PurchaseOrderDto PurchaseOrder { get; set; } = new();
+    protected PurchaseOrderDto EditablePurchaseOrder { get; set; } = new PurchaseOrderDto();
 
     protected List<BreadcrumbItem> _items =
     [
@@ -49,6 +51,7 @@ public partial class ViewPurchaseOrder
             if (purchaseOrder is not null)
             {
                 PurchaseOrder = purchaseOrder;
+                EditablePurchaseOrder = PurchaseOrder;
             }
             else
             {
@@ -68,6 +71,10 @@ public partial class ViewPurchaseOrder
     {
         PurchaseOrder = updatedDto;
         IsEdit = false;
+        if (updatedDto.PurchaseRecieveOption == PurchaseRecieveOption.RecieveAll)
+        {
+            NavigationManager.NavigateTo($"/receive-order/view/{updatedDto.Id}");
+        }
         
          StateHasChanged();
     }
