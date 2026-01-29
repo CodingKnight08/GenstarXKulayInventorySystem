@@ -59,7 +59,7 @@ public partial class AddReturnSales
         IsProductLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/by/{SelectedBrand?.Id}/{UserState.Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/products/by/{SelectedBrand?.Id}/{UserState.Branch}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
