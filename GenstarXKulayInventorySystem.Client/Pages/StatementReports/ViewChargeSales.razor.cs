@@ -21,14 +21,18 @@ public partial class ViewChargeSales
     protected bool IsLoading { get; set; } = false;
     protected bool IsEdit { get; set; } = false;
     protected decimal TotalBalance { get; set; }
-
+    private List<BreadcrumbItem> _items =
+     [
+        new("Statements", href: "/statements"),
+        new("View Statement", href: null, disabled: true)
+     ];
     protected override async Task OnInitializedAsync()
     {
         await LoadClientData();
     }
 
     protected async Task LoadClientData()
-    {
+    { 
         IsLoading = true;
         try
         {
@@ -126,7 +130,33 @@ public partial class ViewChargeSales
         Navigation.NavigateTo($"/sales/view/{dailySaleId}");
     }
 
-    
+    private async Task SetAsPaid(int dailySaleId)
+    {
+       var dialog = await DialogService.ShowMessageBox(
+            "Confirm Payment",
+            "Are you sure you want to mark this sale as paid?",
+            yesText: "Yes", noText: "No");
+        if (dialog == true)
+        {
+            try
+            {
+                var response = await HttpClient.PutAsync($"api/sales/setpaid/{dailySaleId}", null);
+                if (response.IsSuccessStatusCode)
+                {
+                    await LoadClientData();
+                    SnackBar.Add("Sale marked as paid successfully.", Severity.Success);
+                }
+                else
+                {
+                    Logger.LogError("Failed to mark sale as paid. Status Code: {StatusCode}", response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error marking sale as paid");
+            }
+        }
+    }
  
 
 }
