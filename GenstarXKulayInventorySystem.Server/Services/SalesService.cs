@@ -481,6 +481,28 @@ public class SalesService:ISalesService
         }
     }
 
+    public async Task<bool> SetPaid(int dailySaleId)
+    {
+        var sale = await _context.DailySales
+            .FirstOrDefaultAsync(x => x.Id == dailySaleId && !x.IsDeleted);
+        if (sale == null)
+            return false;
+        try
+        {
+            sale.IsPaid = true;
+            sale.PaymentType = PaymentMethod.Cash;
+            sale.UpdatedAt = PhilippineTime.Now;
+            sale.UpdatedBy = GetCurrentUsername();
+            int result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set sale as paid");
+            return false;
+        }
+    }
+
 }
 public interface ISalesService
 {
@@ -502,4 +524,5 @@ public interface ISalesService
     Task<bool> DeleteSaleAsync(int id);
     Task<bool> AddReturnSales(List<ReturnItemDto> returnItems, int dailySaleId);
     Task<bool> UpdateSalesTotal(int id, decimal returnTotal);
+    Task<bool> SetPaid(int dailySaleId);
 }
