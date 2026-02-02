@@ -54,7 +54,7 @@ public class SupplierService:ISupplierService
         {
             var existingSupplier = await _context.Suppliers
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.SupplierName == supplierDto.SupplierName);
+                .FirstOrDefaultAsync(x => x.SupplierName == supplierDto.SupplierName && !x.IsDeleted && x.Branch == supplierDto.Branch);
             if (existingSupplier != null)
                 return false;
             var supplier = _mapper.Map<Supplier>(supplierDto);
