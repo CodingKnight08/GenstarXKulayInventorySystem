@@ -43,7 +43,7 @@ public class PullOutRequestService:IPullOutRequestService
         List<PullOutRequest> pullOuts = await _context.PullOutRequests
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(p => !p.IsDeleted && p.BranchRequestee == branch)
+            .Where(p => !p.IsDeleted && p.BranchRequestee == branch && !p.Delivered)
             .OrderByDescending (p => p.Id)
             .ToListAsync();
 

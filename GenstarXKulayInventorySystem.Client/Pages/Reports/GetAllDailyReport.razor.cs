@@ -16,9 +16,10 @@ public partial class GetAllDailyReport
     protected List<DailySaleReportDto> DailySaleReports { get; set; } = new();
     protected bool IsLoading { get; set; } = true;
 
-    protected BranchOption SelectedBranch { get; set; } = BranchOption.GeneralSantosCity;
+    protected BranchOption SelectedBranch { get; set; }
     protected override async Task OnInitializedAsync()
     {
+        SelectedBranch = UserState.Branch.GetValueOrDefault();
         await LoadDailySaleReports();
     }
 

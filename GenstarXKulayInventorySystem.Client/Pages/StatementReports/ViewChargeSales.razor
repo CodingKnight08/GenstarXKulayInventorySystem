@@ -1,8 +1,9 @@
 ﻿@page "/view/statement/{ClientId:int}"
 @layout MainLayout
 @using GenstarXKulayInventorySystem.Shared.DTOS
+@using Microsoft.AspNetCore.Components.Authorization
 <MudMainContent Class="mt-5 w-auto h-100">
-
+    <MudBreadcrumbs Items="_items"/>
     <MudPaper Elevation="0" Class="pa-4 mb-4 mt-5">
         <MudText Typo="Typo.h5">Client Statement</MudText>
 
@@ -84,17 +85,35 @@
                     <MudTh>Total Amount</MudTh>
                     <MudTh>Action</MudTh>
                 </HeaderContent>
-                <RowTemplate>
-                    <MudTd>@context.DateOfSales.ToString("MM/dd/yyyy")</MudTd>
-                    <MudTd>@context.RecieptReference</MudTd>
-                    <MudTd>@context.SaleItemsCount</MudTd>
-                    <MudTd>@($"₱{(context.TotalAmount ?? 0):N2}")</MudTd>
-                    <MudTd>
-                        <MudButton StartIcon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Variant="Variant.Filled" OnClick="() => ViewSale(context.Id)"/>
-                       </MudTd>
 
-                </RowTemplate>  
+                <RowTemplate Context="sale">
+                    <MudTd>@sale.DateOfSales.ToString("MM/dd/yyyy")</MudTd>
+                    <MudTd>@sale.RecieptReference</MudTd>
+                    <MudTd>@sale.SaleItemsCount</MudTd>
+                    <MudTd>@($"₱{(sale.TotalAmount ?? 0):N2}")</MudTd>
+                    <MudTd>
+                        <MudButton StartIcon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   OnClick="() => ViewSale(sale.Id)" />
+
+                        <AuthorizeView Roles="Admin">
+                            <MudButton StartIcon="@Icons.Material.Filled.Paid"
+                                       Color="Color.Success"
+                                       OnClick="() => SetAsPaid(sale.Id)"
+                                       Variant="Variant.Filled">
+                                Set As Paid
+                            </MudButton>
+                        </AuthorizeView>
+                    </MudTd>
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager HorizontalAlignment="HorizontalAlignment.End"
+                                   PageSizeOptions="new int[]{5,10,15}" />
+                </PagerContent>
             </MudTable>
+
         }
         <MudNumericField @bind-Value="TotalBalance" Adornment="Adornment.Start" AdornmentText="Total Balance" HideSpinButtons="true" FullWidth="false" Class="w-25" ReadOnly="true"/>
     </MudPaper>

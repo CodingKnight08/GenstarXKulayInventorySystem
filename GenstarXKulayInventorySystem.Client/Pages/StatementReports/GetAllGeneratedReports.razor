@@ -21,6 +21,9 @@
                                 <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small" OnClick="() => ViewClientChargeSales(context.Id)" />
                             </MudTd>
                         </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager HorizontalAlignment="HorizontalAlignment.End" PageSizeOptions="new int[]{5,10,15}" />
+                        </PagerContent>
                     </MudTable>
                 }
                 else
