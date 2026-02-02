@@ -30,7 +30,8 @@ public class StatementReportService:IStatementReportService
                 var result = await _dbContext.Clients
                         .AsNoTracking()
                         .Where(c => c.Branch == branch)
-                        .Where(c => c.DailySales.Any(ds => ds.IsChargedSales))
+                        .Where(c => c.DailySales.Any(ds => ds.IsChargedSales && !ds.IsPaid))
+                        .OrderBy(c => c.ClientName)
                         .Select(c => new ClientDto
                         {
                             Id = c.Id,
@@ -40,7 +41,7 @@ public class StatementReportService:IStatementReportService
                             Branch = c.Branch,
 
                             DailySales = c.DailySales
-                                .Where(ds => ds.IsChargedSales)
+                                .Where(ds => ds.IsChargedSales && !ds.IsPaid)
                                 .Select(ds => new DailySaleDto
                                 {
                                     Id = ds.Id,
@@ -79,7 +80,7 @@ public class StatementReportService:IStatementReportService
                     Branch = c.Branch,
                     RemainingChargeBalance = c.RemainingChargeBalance,
                     DailySales = c.DailySales
-                        .Where(ds => ds.IsChargedSales && !ds.IsPaid && !ds.IsDeleted)
+                        .Where(ds => ds.IsChargedSales && ds.PaymentType == null && !ds.IsDeleted)
                         .Select(ds => new DailySaleDto
                         {
                             Id = ds.Id,
