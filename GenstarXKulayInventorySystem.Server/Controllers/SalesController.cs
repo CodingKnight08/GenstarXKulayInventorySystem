@@ -181,6 +181,25 @@ public class SalesController : ControllerBase
         }
 
     }
+    [HttpPut("setpaid/{id}")]
+    public async Task<IActionResult> SetPaid(int id)
+    {
+        if(id == 0)
+        {
+            return BadRequest("Id invalid");
+        }
+        try
+        {
+            var result = await _saleService.SetPaid(id);
+            if (!result)
+                return NotFound("Sale setting paid failed");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteSale(int id)
