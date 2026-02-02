@@ -47,14 +47,14 @@ public class StatementReportDocument : IDocument
 
         string branchName = _model.Branch switch
         {
-            BranchOption.GeneralSantosCity => "GENSTAR TRADE PAINT CENTER",
+            BranchOption.GeneralSantosCity => "GENSTAR PAINT TRADE CENTER",
             BranchOption.Polomolok => "KULAY PAINT SUPPLY",
             _ => _model.Branch.ToString().ToUpper()
         };
 
         string streetAddress = _model.Branch switch
         {
-            BranchOption.GeneralSantosCity => "Door , Napala Building Magsaysay Ave (Cor. Quirino)",
+            BranchOption.GeneralSantosCity => "Door 3, Napala Building Magsaysay Ave (Cor. Quirino)",
             BranchOption.Polomolok => "Pioneer Street, Poblacion",
             _ => string.Empty
         };
@@ -68,7 +68,7 @@ public class StatementReportDocument : IDocument
 
         string contactNumber = _model.Branch switch
         {
-            BranchOption.GeneralSantosCity => "(083) 301-21-96 or (083) 553-20-26",
+            BranchOption.GeneralSantosCity => "Contact No: (083) 553-20-26 or 0917-322-0503",
             BranchOption.Polomolok => "Contact No: 0967-942-0064",
             _ => string.Empty
         };
@@ -152,10 +152,11 @@ public class StatementReportDocument : IDocument
             column.Item().PaddingTop(10).Row(row =>
             {
                 // LEFT: To: ClientName
-                row.RelativeItem().Text($"To: {_model.ClientName}")
-                    .FontSize(12)
-                    .Bold()
-                    .AlignLeft();
+                row.RelativeItem().Text($"To: {_model.ClientName?.ToUpperInvariant()}")
+                  .FontSize(12)
+                  .Bold()
+                  .AlignLeft();
+
 
                 // RIGHT: Date of statement
                 row.RelativeItem().Text($"Date: {philTime:MM/dd/yyyy}")
