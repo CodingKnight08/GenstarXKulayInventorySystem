@@ -115,7 +115,8 @@ public partial class ViewDailySale
                 ExpectedPaymentDate = Sales.ExpectedPaymentDate,
                 SaleItems = Sales.SaleItems,
                 IsApproved = Sales.IsApproved,
-                Commission = Sales.Commission
+                Commission = Sales.Commission,
+                ClientId = Sales.ClientId
 
             };
         }
