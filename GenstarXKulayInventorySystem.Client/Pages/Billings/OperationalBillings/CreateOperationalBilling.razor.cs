@@ -25,7 +25,7 @@ public partial class CreateOperationalBilling
 
     protected override async Task OnInitializedAsync()
     {
-        Billing.Category = BillingCategory.Logistics;
+        Billing.Category = BillingCategory.Transportation;
         Billing.DateOfBilling = DateTime.UtcNow;
         Billing.Branch = UtilitiesHelper.GetBillingBranch(UserState.Branch.GetValueOrDefault());
         await LoadProviders();
