@@ -4,6 +4,7 @@ using GenstarXKulayInventorySystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenstarXKulayInventorySystem.Server.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260206074148_AddWayBillTermsOption")]
+    partial class AddWayBillTermsOption
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -255,9 +258,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<DateTime>("DateOfSales")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DateToBePaid")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
@@ -285,9 +285,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
                     b.Property<string>("NameOfClient")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PONumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("PaymentTermsOption")
@@ -1215,7 +1212,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,4)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Size")
                         .HasColumnType("decimal(18,2)");
@@ -1403,9 +1400,6 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ExpectedPaymentDate")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeleted")
