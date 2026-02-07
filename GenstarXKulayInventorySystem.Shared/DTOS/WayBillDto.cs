@@ -1,4 +1,5 @@
 ﻿using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.WalBillHelper;
 
 namespace GenstarXKulayInventorySystem.Shared.DTOS;
 public class WayBillDto:BaseEntityDto
@@ -13,4 +14,7 @@ public class WayBillDto:BaseEntityDto
     public string Notes { get; set; } = string.Empty;
     public BranchOption Branch { get; set; }
     public List<WayBillItemsDto> WayBillItems { get; set; } = new List<WayBillItemsDto>();
+    public WayBillTermsOption WayBillTerms { get; set; }
+    public bool IsPaid { get; set; }
+    public DateTime? ExpectedPaymentDate { get; set; }
 }
