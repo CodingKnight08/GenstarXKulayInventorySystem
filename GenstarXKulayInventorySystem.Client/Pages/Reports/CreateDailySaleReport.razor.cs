@@ -264,12 +264,14 @@ public partial class CreateDailySaleReport
         DailySaleReport.TotalChecks = DailySaleReport.InvoiceChecks + DailySaleReport.NonInvoiceChecks;
         DailySaleReport.ChargeSales = UnpaidSales.Sum(ds => ds.TotalAmount) ?? 0;
         DailySaleReport.TotalSales = DailySaleReport.TotalCash + DailySaleReport.TotalChecks + (DailySaleReport.ChargeSales ?? 0);
-        DailySaleReport.Transportation = Expenses.Where(e => e.Category == BillingCategory.Logistics).Sum(e => e.Amount);
-        DailySaleReport.Supplies = Expenses.Where(e => e.Category == BillingCategory.SchoolSupplies).Sum(e => e.Amount);
+        DailySaleReport.Transportation = Expenses.Where(e => e.Category == BillingCategory.Transportation).Sum(e => e.Amount);
+        DailySaleReport.Supplies = Expenses.Where(e => e.Category == BillingCategory.OfficeSupplies).Sum(e => e.Amount);
         DailySaleReport.Foods = Expenses.Where(e => e.Category == BillingCategory.Foods).Sum(e => e.Amount);
         DailySaleReport.BeginningBalance = DailySaleReport.TotalCash;
+        DailySaleReport.Commissions = Expenses.Where(e => e.Category == BillingCategory.Commissions).Sum(e => e.Amount);
+        DailySaleReport.SalaryAndAdvances = Expenses.Where(e => e.Category == BillingCategory.SalaryAndAdvances).Sum(e => e.Amount);
         DailySaleReport.Others = Expenses
-            .Where(e => e.Category == BillingCategory.Electric || e.Category == BillingCategory.Internet || e.Category == BillingCategory.Telephone || e.Category == BillingCategory.Water || e.Category == BillingCategory.Other).Sum(e => e.Amount);
+            .Where(e => e.Category == BillingCategory.Electric || e.Category == BillingCategory.Internet || e.Category == BillingCategory.Telephone || e.Category == BillingCategory.Water || e.Category == BillingCategory.Other || e.Category == BillingCategory.ProfessionalFees || e.Category == BillingCategory.RepairsAndMaintenance).Sum(e => e.Amount);
         TotalNetIncome = (TotalItemsSales - TotalLandedCost) - (DailySaleReport.TotalExpenses ?? 0) - TotalPurchaseOrder;
     }
 
