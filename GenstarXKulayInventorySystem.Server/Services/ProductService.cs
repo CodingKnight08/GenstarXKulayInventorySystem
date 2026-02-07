@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.Operations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+using System.Linq;
 using System.Security.Claims;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
@@ -178,6 +179,44 @@ public class ProductService:IProductService
             return false;
         }
     }
+    public async Task<bool> UpdateStocksAsync(
+    List<UpdateBranchProductDto> stocks)
+    {
+        try
+        {
+            if (stocks == null || !stocks.Any())
+                return false;
+
+            var ids = stocks.Select(x => x.BranchProductId).ToList();
+
+            var products = await _context.BranchProducts
+                .Where(p => ids.Contains(p.Id))
+                .ToListAsync();
+
+            foreach (var product in products)
+            {
+                var update = stocks.First(x => x.BranchProductId == product.Id);
+
+                product.BufferStocks = update.BufferStock;
+                product.ActualQuantity = update.ActualQuantity;
+                product.UpdatedAt = PhilippineTime.Now;
+                product.UpdatedBy = GetCurrentUsername();
+            }
+
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Error updating stocks. UpdatedBy: {UpdatedBy}, ProductCount: {Count}",
+                GetCurrentUsername(),
+                stocks?.Count ?? 0);
+
+            return false;
+        }
+    }
+
 
 
     public async Task<bool> DeleteAsync(int id)
@@ -402,6 +441,8 @@ public interface IProductService
     Task<BranchProductDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(ProductDto productDto);
     Task<bool> UpdateAsync(BranchProductDto productDto);
+    Task<bool> UpdateStocksAsync(
+    List<UpdateBranchProductDto> stocks);
     Task<bool> DeleteAsync(int id);
 
     Task<int> GetAllBrandCount();

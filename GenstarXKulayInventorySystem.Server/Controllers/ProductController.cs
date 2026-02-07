@@ -166,6 +166,24 @@ public class ProductController : ControllerBase
         return Ok();
     }
 
+    [HttpPut("update-stocks")]
+    public async Task<IActionResult> UpdateStocks(
+    [FromBody] List<UpdateBranchProductDto> stocks)
+    {
+        if (stocks == null || !stocks.Any())
+            return BadRequest("No stocks provided");
+
+        var result = await _productService.UpdateStocksAsync(
+            stocks);
+            
+
+        if (!result)
+            return StatusCode(500, "Failed to update stocks");
+
+        return Ok(true);
+    }
+
+
     // DELETE: api/products/5
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
