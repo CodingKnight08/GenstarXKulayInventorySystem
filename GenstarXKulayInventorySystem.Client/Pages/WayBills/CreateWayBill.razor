@@ -1,6 +1,8 @@
 ﻿@page "/create-WayBill"
 @using GenstarXKulayInventorySystem.Client.Pages.WayBills.WayBillItems
 @using GenstarXKulayInventorySystem.Shared.DTOS
+@using GenstarXKulayInventorySystem.Shared.Helpers
+@using static GenstarXKulayInventorySystem.Shared.Helpers.WalBillHelper
 @layout MainLayout
 
 <MudMainContent Class="w-auto h-100 ">
@@ -39,7 +41,24 @@
                 <MudItem xs="12" md="6">
                     <MudTextField @bind-Value="WayBill.Courier" Placeholder="Courier Name" Label="Courier" Variant="Variant.Text"/>
                 </MudItem>
-              
+                <MudItem xs="12" md="3">
+                    <MudSelect T="WayBillTermsOption"
+                               Label="Way Bill Terms"
+                              Value="WayBill.WayBillTerms"
+                              ValueChanged="OnTermsChange">
+
+                        @foreach (WayBillTermsOption option in Enum.GetValues(typeof(WayBillTermsOption)))
+                        {
+                            <MudSelectItem Value="option">
+                                @WalBillHelper.GetWayBillTermsText(option)
+                                                        </MudSelectItem>
+                        }
+
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudDatePicker Date="WayBill.DateReceived" Label="Date Receive" DateFormat="MMMM dd, yyyy" Elevation="5" MaxDate="WayBill.DateReceived.AddDays(1)" DateChanged="OnDateReceiveChange" />
+                </MudItem>
               
                <MudItem xs="12" class="d-flex flex-column gap-1">
                    <label>Notes <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Default" Size="Size.Small"/></label>

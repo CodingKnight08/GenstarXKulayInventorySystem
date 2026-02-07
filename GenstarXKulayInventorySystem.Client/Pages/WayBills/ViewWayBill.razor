@@ -1,4 +1,6 @@
 ﻿@page "/view-waybill/{WayBillId:int}"
+@using GenstarXKulayInventorySystem.Shared.Helpers
+@using static GenstarXKulayInventorySystem.Shared.Helpers.WalBillHelper
 
 @layout MainLayout
 
@@ -73,7 +75,8 @@
                 <MudItem>
                     <MudDatePicker
                         Date="WayBill.DateReceived" 
-                        ReadOnly="true"
+                        ReadOnly="!IsEdit"
+                        DateChanged="OnDateReceiveChange"
                         DateFormat="MMMM dd, yyyy"
                         Label="Date Recieved"
                         Variant="Variant.Text"/>
@@ -87,6 +90,22 @@
                     </MudChip>
 
 
+                </MudItem>
+                <MudItem xs="6" md="4">
+                    <MudSelect T="WayBillTermsOption"
+                               Label="Way Bill Terms"
+                               Value="WayBill.WayBillTerms"
+                               ValueChanged="OnTermsChange"
+                               ReadOnly="!IsEdit">
+
+                        @foreach (WayBillTermsOption option in Enum.GetValues(typeof(WayBillTermsOption)))
+                        {
+                            <MudSelectItem Value="option">
+                                @WalBillHelper.GetWayBillTermsText(option)
+                            </MudSelectItem>
+                        }
+
+                    </MudSelect>
                 </MudItem>
                 <MudItem xs="12" class="d-flex flex-column gap-1">
                     <label>Notes <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Default" Size="Size.Small" /></label>
