@@ -116,8 +116,8 @@ public partial class ViewDailySale
                 SaleItems = Sales.SaleItems,
                 IsApproved = Sales.IsApproved,
                 Commission = Sales.Commission,
-                ClientId = Sales.ClientId
-
+                ClientId = Sales.ClientId,
+                PONumber = Sales.PONumber
             };
         }
         IsEdit = !IsEdit;
