@@ -58,7 +58,7 @@ public partial class CreatePurchaseOrderItem
 
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/by/{brandId}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/products/by/{brandId}/{Branch}");
             if (!response.IsSuccessStatusCode)
             {
                 Products.Clear();
