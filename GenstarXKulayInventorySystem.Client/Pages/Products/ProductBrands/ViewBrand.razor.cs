@@ -14,6 +14,7 @@ public partial class ViewBrand
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected UserState UserState { get; set; } = default!;
     [Inject] protected ILogger<ViewBrand> Logger { get; set; } = default!;
+    [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     protected ProductBrandDto Brand { get; set; } = new ProductBrandDto();
     protected List<BranchProductDto> Products { get; set; } = new List<BranchProductDto>();
     protected List<ProductCategoryDto> Categories { get; set; } = new List<ProductCategoryDto>();
@@ -230,6 +231,11 @@ public partial class ViewBrand
                 StateHasChanged();
             }
         }
+    }
+
+    protected void UpdateStocks()
+    {
+        NavigationManager.NavigateTo($"/productbrands/update-stocks/{BrandId}");
 
     }
 }

@@ -1,0 +1,69 @@
+﻿@page "/productbrands/update-stocks/{BrandId:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+<PageTitle>Update Stocks</PageTitle>
+<MudMainContent>
+   <MudBreadcrumbs Items="_items"/>
+
+    @if (IsLoading)
+        {
+        <div class="d-flex flex-column justify-content-center align-items-center gap-2" style="height: 300px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+            <MudText Align="Align.Center" Color="Color.Primary">Loading</MudText>
+        </div>
+        }
+    else
+    {
+        <MudCard Class="mb-4" Elevation="0">
+            <MudCardHeader>
+                <MudText Typo="Typo.h6">Update Stocks</MudText>
+            </MudCardHeader>
+
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" sm="6" md="6">
+                        <MudText Typo="Typo.h6">BrandName: @Brand.BrandName</MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="12" Class="d-flex flex-row align-items-center justify-content-end gap-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="UpdateStocksAsync">Update Stocks</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                        @if(!IsSaving){
+                        <MudTable Items="BranchProducts" >
+                            <HeaderContent>
+                                <MudTh>Product Name</MudTh>
+                                <MudTh>Buffer Stocks</MudTh>
+                                <MudTh>Stocks</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.MasterProduct?.ProductName</MudTd>
+                                <MudTd>
+                                    <MudNumericField T="decimal" Value="@context.BufferStocks" ValueChanged="@(e => context.BufferStocks = e)" Immediate="true" Min="0" HideSpinButtons="true" />
+                                </MudTd>
+                                <MudTd>
+                                    <MudNumericField T="decimal" Value="@context.ActualQuantity" ValueChanged="@(e => context.ActualQuantity = e)" Immediate="true" Min="0" HideSpinButtons="true"/>
+                                </MudTd>
+                            </RowTemplate>
+                            <NoRecordsContent>
+                                <MudText Align="Align.Center" Color="Color.Secondary">No products found for this brand.</MudText>
+                            </NoRecordsContent>
+                            <PagerContent>
+                                <MudTablePager HorizontalAlignment="HorizontalAlignment.Right" PageSizeOptions="new int[] {5,10,15,20}" />
+                            </PagerContent>
+                        </MudTable>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column justify-content-center align-items-center gap-2" style="height: 300px;">
+                                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+                                <MudText Align="Align.Center" Color="Color.Success">Saving</MudText>
+                            </div>
+                        }
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>   
+    }
+
+    </MudMainContent>
