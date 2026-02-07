@@ -1,4 +1,5 @@
 ﻿using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.WalBillHelper;
 
 namespace GenstarXKulayInventorySystem.Shared.DTOS;
@@ -9,7 +10,7 @@ public class WayBillDto:BaseEntityDto
     public string Courier { get; set; } = string.Empty;
     public int SupplierId { get; set; }
     public SupplierDto? Supplier { get; set; }
-    public DateTime DateReceived { get; set; }
+    public DateTime DateReceived { get; set; } = PhilippineTime.Now;
     public decimal TotalAmount { get; set; }
     public string Notes { get; set; } = string.Empty;
     public BranchOption Branch { get; set; }
