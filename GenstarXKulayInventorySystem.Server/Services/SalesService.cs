@@ -316,6 +316,7 @@ public class SalesService:ISalesService
 
             // Add commission (from DTO if available, otherwise existing value)
             decimal commission = saleDto.Commission ?? existingSale.Commission ?? 0;
+            existingSale.PONumber = saleDto.PONumber;
             existingSale.TotalAmount = Math.Round(itemsTotal + commission, 2);
 
             // Recalculate expected payment date
