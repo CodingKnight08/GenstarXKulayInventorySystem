@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.WalBillHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.WayBills;
 
@@ -150,9 +152,31 @@ public partial class CreateWayBill
             SnackBar.Add("An error occurred while submitting the way bill.", Severity.Error);
         }
     }
+    private async Task OnDateReceiveChange(DateTime? date)
+    {
+        WayBill.DateReceived = date ?? PhilippineTime.Now;
+    }
+
+    private void OnTermsChange(WayBillTermsOption terms)
+    {
+        WayBill.WayBillTerms = terms;
+
+
+        WayBill.ExpectedPaymentDate = terms switch
+        {
+            WayBillTermsOption.Day7 => WayBill.DateReceived.AddDays(7),
+            WayBillTermsOption.Day15 => WayBill.DateReceived.AddDays(15),
+            WayBillTermsOption.Day30 => WayBill.DateReceived.AddDays(30),
+            WayBillTermsOption.Day60 => WayBill.DateReceived.AddDays(60),
+            WayBillTermsOption.Day90 => WayBill.DateReceived.AddDays(90),
+            WayBillTermsOption.Day120 => WayBill.DateReceived.AddDays(120),
+            _ => WayBill.ExpectedPaymentDate
+        };
+    }
 
     private void RecalculateIsValid()
     {
         StateHasChanged(); 
     }
+    
 }

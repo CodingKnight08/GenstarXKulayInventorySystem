@@ -55,15 +55,21 @@
                      </AuthorizeView>
                   </MudItem>
                 <AuthorizeView Roles="Secretary,Admin">
-                    <MudItem lg="8" Class="d-flex flex-row justify-content-end mb-3 me-3">
+                    <MudItem lg="8" Class="d-flex flex-row justify-content-end mb-3 me-3 gap-4">
+                        <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Secondary" OnClick="UpdateStocks">
+                            Update Stocks
+                        </MudButton>
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
                                    StartIcon="@Icons.Material.Filled.Add"
                                    OnClick="AddProduct">
                             Add Product
                         </MudButton>
+                        
                     </MudItem>
+                    
                 </AuthorizeView>
+                
                 
             </MudGrid>
         </MudCard>

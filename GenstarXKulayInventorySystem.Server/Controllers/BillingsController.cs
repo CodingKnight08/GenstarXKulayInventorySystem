@@ -17,14 +17,14 @@ public class BillingsController : ControllerBase
         _logger = logger;
     }
     //Operational Billings
-    [HttpGet("all/others/{branch}")]
-    public async Task<ActionResult<List<BillingDto>>> GetAllBillings(BranchOption branch)
+    [HttpGet("all/others/{branch}/{date:datetime}")]
+    public async Task<ActionResult<List<BillingDto>>> GetAllBillings(BranchOption branch,DateTime date)
     {
         try
         {
 
 
-            var billings = await _billingService.GetAllBillingAsync(branch);
+            var billings = await _billingService.GetAllBillingAsync(branch,date);
             return Ok(billings);
         }
         catch (Exception ex)

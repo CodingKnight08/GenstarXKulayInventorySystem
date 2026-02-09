@@ -40,7 +40,7 @@
                 <MudItem xl="2">
                     <MudTextField T="string" Placeholder="Auto Generated" Label="Sale Number" @bind-Value="Sale.SalesNumber" ReadOnly=true/>
                 </MudItem>
-                <MudItem xl="2">
+               @*  <MudItem xl="2">
                     <MudSelect T="BranchOption"
                                @bind-Value="Sale.Branch"
                                ReadOnly=true
@@ -53,7 +53,7 @@
                         }
 
                     </MudSelect>
-                </MudItem>
+                </MudItem> *@
                 <MudItem xl="3">
                     <MudTextField @bind-Value="Sale.RecieptReference"
                                   T="string"
@@ -70,6 +70,9 @@
                                  AdornmentText="₱"
                                  Label="Commission" />
 
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Placeholder="PO Number" @bind-Value="Sale.PONumber" Adornment="Adornment.Start" AdornmentText="PO-" Label="PO. Number" Variant="Variant.Text" />
                 </MudItem>
                 <MudItem xl="2" lg="3" >
                     <MudCheckBox T="bool" @bind-Value="Sale.IsApproved" Label="Approved" ReadOnly="UserState.Role != UserRole.Admin"/>

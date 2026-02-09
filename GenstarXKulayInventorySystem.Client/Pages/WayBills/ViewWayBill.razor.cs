@@ -3,6 +3,8 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.WalBillHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.WayBills;
 
@@ -170,7 +172,7 @@ public partial class ViewWayBill
         {
             var response = await HttpClient.PutAsJsonAsync(
                 $"api/waybill/{WayBill.Id}",
-                WayBillItems);
+                WayBill);
 
             if (response.IsSuccessStatusCode)
             {
@@ -244,6 +246,29 @@ public partial class ViewWayBill
             IsLoading = false;
             StateHasChanged();
         }
+    }
+
+    private async Task OnDateReceiveChange(DateTime? date)
+    {
+        WayBill.DateReceived = date ?? PhilippineTime.Now;
+        OnTermsChange(WayBill.WayBillTerms);
+         await Task.CompletedTask;
+    }
+    private void OnTermsChange(WayBillTermsOption terms)
+    {
+        WayBill.WayBillTerms = terms;
+
+
+        WayBill.ExpectedPaymentDate = terms switch
+        {
+            WayBillTermsOption.Day7 => WayBill.DateReceived.AddDays(7),
+            WayBillTermsOption.Day15 => WayBill.DateReceived.AddDays(15),
+            WayBillTermsOption.Day30 => WayBill.DateReceived.AddDays(30),
+            WayBillTermsOption.Day60 => WayBill.DateReceived.AddDays(60),
+            WayBillTermsOption.Day90 => WayBill.DateReceived.AddDays(90),
+            WayBillTermsOption.Day120 => WayBill.DateReceived.AddDays(120),
+            _ => WayBill.ExpectedPaymentDate
+        };
     }
 
 

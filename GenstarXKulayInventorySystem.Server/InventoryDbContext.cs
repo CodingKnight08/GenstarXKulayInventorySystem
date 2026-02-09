@@ -137,7 +137,7 @@ public class InventoryDbContext: IdentityDbContext<User>
             // Decimal fields
             entity.Property(si => si.ItemPrice).HasColumnType("decimal(18,2)");
             entity.Property(si => si.Size).HasColumnType("decimal(18,2)");
-            entity.Property(si => si.Quantity).HasColumnType("decimal(18,2)");
+            entity.Property(si => si.Quantity).HasColumnType("decimal(18,4)");
             entity.Property(si => si.CostPrice).HasColumnType("decimal(18,2)");
 
 

@@ -7,8 +7,8 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrderItems;
 
 public partial class EditPurchaseOrderItems
 {
-    [Parameter] public int PurchaseOrderId { get; set; } 
-    
+    [Parameter] public int PurchaseOrderId { get; set; }
+    [Parameter] public int SupplierId { get; set; } 
     [Parameter] public EventCallback<List<PurchaseOrderItemDto>> OnUpdatePurchaseOrderItems { get; set; }
     [Inject] protected ILogger<EditPurchaseOrderItems> Logger { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
@@ -19,7 +19,7 @@ public partial class EditPurchaseOrderItems
 
     protected override async Task OnInitializedAsync()
     {
-        IsLoading = true;
+       
         await LoadPurchaseOrderItems();
         
     }  

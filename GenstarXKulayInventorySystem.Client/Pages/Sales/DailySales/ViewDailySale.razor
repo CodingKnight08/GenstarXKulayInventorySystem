@@ -87,6 +87,9 @@
                                  AdornmentColor="Color.Default" />
 
                 </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Placeholder="PO Number" @bind-Value="Sales.PONumber" Adornment="Adornment.Start" AdornmentText="PO-" ReadOnly="true" Label="PO No." Variant="Variant.Text" />
+                </MudItem>
                 <MudItem xl="2" md="4" sm="6">
                     @if (Sales.IsApproved)
                     {

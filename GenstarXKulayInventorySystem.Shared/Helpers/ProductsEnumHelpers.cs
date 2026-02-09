@@ -43,7 +43,8 @@ public class ProductsEnumHelpers
         CubicMeter,
         Pail,
         Set,
-        Sack
+        Sack,
+        Inch
 
     }
 
