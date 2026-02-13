@@ -9,7 +9,7 @@ public class RequestProductItemDto:BaseEntityDto
     [JsonIgnore]
     public PullOutRequestDto? PullOutRequest { get; set; } = null!;
     public int? MasterProductId { get; set; }
-    [JsonIgnore]
+   
     public GlobalProductDto? MasterProduct { get; set; }
     public int? ProductSourceBranchId { get; set; }
     public BranchProductDto? ProductSourceBranch { get; set; }

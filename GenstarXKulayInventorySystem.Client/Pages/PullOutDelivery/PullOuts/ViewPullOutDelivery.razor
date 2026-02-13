@@ -90,15 +90,16 @@
                     Elevation="5" 
                     Bordered=true>
                     <HeaderContent>
+                        <MudTh>Brand</MudTh>
                         <MudTh>Product Name</MudTh>
                         <MudTh>Requested Qty</MudTh>
                         <MudTh>Released Qty</MudTh>
                         <MudTh>Status</MudTh>
-                        <MudTh>Branch</MudTh>
                         <MudTh>Remarks</MudTh>
                     </HeaderContent>
 
                     <RowTemplate>
+                        <MudTd>@context.MasterProduct?.ProductBrand?.BrandName</MudTd>
                         <MudTd>@context.ProductName</MudTd>
                         <MudTd>@context.RequestedQuantity</MudTd>
                         <MudTd>
@@ -111,11 +112,13 @@
                                 @(context.IsReceived ? "Received" : "Pending")
                             </MudChip>
                         </MudTd>
-                        <MudTd>@context.Branch</MudTd>
                         <MudTd>
                             <MudTextField @bind-Value="context.Remarks" Variant="Variant.Text" ReadOnly="!IsEdit"  />
                         </MudTd>
                     </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager HorizontalAlignment="HorizontalAlignment.End" PageSizeOptions="new int[]{5,10,15}"/>
+                    </PagerContent>
                 </MudTable>
 
                 <MudDivider Class="my-4" />
