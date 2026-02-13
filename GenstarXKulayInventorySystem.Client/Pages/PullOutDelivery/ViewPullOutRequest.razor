@@ -93,15 +93,16 @@
 
             <MudTable Items="PullOutRequest.RequestProductItems" Dense="true" Hover="true" Class="mt-3 px-2" Elevation="5" Bordered=true>
                 <HeaderContent>
+                    <MudTh>Brand</MudTh>
                     <MudTh>Product Name</MudTh>
                     <MudTh>Requested Qty</MudTh>
                     <MudTh>Released Qty</MudTh>
                     <MudTh>Status</MudTh>
-                    <MudTh>Branch</MudTh>
                     <MudTh>Remarks</MudTh>
                 </HeaderContent>
 
                 <RowTemplate>
+                    <MudTd>@context.MasterProduct?.ProductBrand?.BrandName</MudTd>
                     <MudTd>@context.ProductName</MudTd>
                     <MudTd>@context.RequestedQuantity</MudTd>
                     <MudTd>@context.ReleasedQuantity</MudTd>
@@ -131,7 +132,6 @@
                         </MudSelect>
                         }
                     </MudTd>
-                    <MudTd>@context.Branch</MudTd>
                     <MudTd>@context.Remarks</MudTd>
                 </RowTemplate>
                 <NoRecordsContent>

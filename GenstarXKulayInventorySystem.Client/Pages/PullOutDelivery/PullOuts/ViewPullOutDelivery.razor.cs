@@ -66,6 +66,7 @@ public partial class ViewPullOutDelivery
                                         ProductSourceBranchId = p.ProductSourceBranchId,
                                         ProductRequesterBranchId = p.ProductRequesterBranchId,
                                         MasterProductId = p.MasterProductId,
+                                        MasterProduct = p.MasterProduct,
                                         IsReceived = p.IsReceived,
                                         Branch = p.Branch,
                                         Remarks = p.Remarks,

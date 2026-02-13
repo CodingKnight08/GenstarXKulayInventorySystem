@@ -75,6 +75,8 @@ public class PullOutRequestService:IPullOutRequestService
             .AsNoTracking()
             .AsSplitQuery()
             .Include(p => p.RequestProductItems)
+            .ThenInclude(rp => rp.MasterProduct)
+            .ThenInclude(mp => mp.ProductBrand)
             .Where(p => !p.IsDeleted && p.Id == id)
             .FirstOrDefaultAsync();
         if (pullOut == null)
