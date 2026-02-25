@@ -25,7 +25,22 @@ public class ProductController : ControllerBase
         var products = await _productService.GetAllAsync(brandId);
         return Ok(products);
     }
+    [HttpGet("all/global/notexisting/{brandId:int}/{branch}")]
+    public async Task<ActionResult<List<GlobalProductDto>>> GetNotAddedGlobalProductsInBranch(int brandId, BranchOption branch)
+    {
+        try
+        {
 
+            var products = await _productService.GetAllProductNotInTheBranch(brandId, branch);
+            if (products == null || !products.Any())
+                return Ok(new List<GlobalProductDto>());
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
+        }
+    }
 
     [HttpGet("all/global/{brandId:int}")]
     public async Task<ActionResult<List<GlobalProductDto>>> GetAllGlobalProducts(int brandId)
@@ -135,7 +150,7 @@ public class ProductController : ControllerBase
 
     // POST: api/products
     [HttpPost]
-    public async Task<IActionResult> Create(ProductDto dto)
+    public async Task<IActionResult> Create(GlobalProductDto dto)
     {
         try
         {
@@ -151,7 +166,21 @@ public class ProductController : ControllerBase
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
-
+    [HttpPost("branch")]
+    public async Task<IActionResult> CreateBranchProduct(BranchProductDto dto)
+    {
+        try
+        {
+            var result = await _productService.AddBranchProduct(dto);
+            if (!result)
+                return BadRequest("Branch Product already exist");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
     // PUT: api/products/5
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, BranchProductDto dto)
