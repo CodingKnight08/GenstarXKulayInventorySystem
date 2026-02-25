@@ -78,7 +78,16 @@ public class AutoMapperProfile : Profile
 
         _ = CreateMap<PullOutRequest, PullOutRequestDto>().ReverseMap();
         _ = CreateMap<GlobalProduct, GlobalProductDto>().ReverseMap();
-        _ = CreateMap<BranchProduct, BranchProductDto>().ReverseMap();
+        _ = CreateMap<BranchProduct, BranchProductDto>()
+             .ForMember(d => d.MasterProduct, o => o.Ignore())
+             .ForMember(d => d.TiedUpProduct, o => o.Ignore())
+             .ForMember(d => d.BasisProduct, o => o.Ignore());
+
+        _ =  CreateMap<BranchProductDto, BranchProduct>()
+                .ForMember(d => d.MasterProduct, o => o.Ignore())
+                .ForMember(d => d.TiedUpProduct, o => o.Ignore())
+                .ForMember(d => d.BasisProduct, o => o.Ignore())
+                .ForMember(d => d.SaleItems, o => o.Ignore());
         _ = CreateMap<ReturnItem, ReturnItemDto>().ReverseMap();
 
       
