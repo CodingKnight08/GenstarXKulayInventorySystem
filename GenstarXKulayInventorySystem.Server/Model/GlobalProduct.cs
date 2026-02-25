@@ -11,6 +11,7 @@ public class GlobalProduct:BaseEntity
     public string ProductName { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string Packaging { get; set; } = string.Empty;
+    public bool IsUrethane { get; set; } = false;
     public ICollection<BranchProduct> BranchProducts { get; set; }  = new HashSet<BranchProduct>();
     public ICollection<RequestProductItem> RequestItems { get; set; } = new HashSet<RequestProductItem>();
 }

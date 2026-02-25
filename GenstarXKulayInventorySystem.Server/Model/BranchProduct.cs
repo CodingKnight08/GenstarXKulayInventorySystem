@@ -14,6 +14,12 @@ public class BranchProduct:BaseEntity
     public decimal? Size { get; set; } = 0;
     public decimal ActualQuantity { get; set; } = 0;
     public decimal BufferStocks { get; set; } = 0;
+    public decimal WholeSaleCostPrice { get; set; } = 0;
+    public int? TiedUpProductId { get; set; } 
+    public BranchProduct? TiedUpProduct { get; set; } // ex catalyst
+
+    public int? BasisProductId { get; set; }
+    public BranchProduct? BasisProduct { get; set; } //for future purpose
     public ProductMesurementOption? ProductMesurementOption { get; set; }
     public ICollection<SaleItem> SaleItems { get; set; } = new HashSet<SaleItem>();
 }
