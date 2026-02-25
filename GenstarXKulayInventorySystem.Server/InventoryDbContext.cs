@@ -254,6 +254,16 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.Property(dsr => dsr.TotalCost).HasColumnType("decimal(18,2)");
 
         });
+        modelBuilder.Entity<BranchProduct>(entity =>
+        {
+            entity.HasOne(bp => bp.TiedUpProduct)
+                  .WithMany()
+                  .HasForeignKey(bp => bp.TiedUpProductId);
+
+            entity.HasOne(bp => bp.BasisProduct)
+                  .WithMany()
+                  .HasForeignKey(bp => bp.BasisProductId);
+        });
 
 
         modelBuilder.Entity<PullOutRequest>(entity =>
