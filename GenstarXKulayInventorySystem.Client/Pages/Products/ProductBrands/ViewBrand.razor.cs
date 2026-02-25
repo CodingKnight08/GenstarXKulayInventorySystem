@@ -1,4 +1,5 @@
-﻿using GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands.Product;
+﻿using GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands.BranchProduct;
+using GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands.Product;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -182,13 +183,13 @@ public partial class ViewBrand
             CloseButton = true,
             MaxWidth = MaxWidth.Medium,
             FullWidth = true,
-            BackdropClick = false
+            BackdropClick = false,
+           
         };
         var dialogRef = await DialogService.ShowAsync<CreateProduct>(
             "Add Product",
             new DialogParameters {
                 ["BrandId"] = BrandId ,
-                ["Branch"] = Branch
             }, dialogOptions);
 
         if (dialogRef is not null)
@@ -237,5 +238,35 @@ public partial class ViewBrand
     {
         NavigationManager.NavigateTo($"/productbrands/update-stocks/{BrandId}");
 
+    }
+
+    protected async Task CreateBranchProduct()
+    {
+        var dialogParameters = new DialogParameters
+        {
+            ["BrandId"] = BrandId,
+            ["Branch"] = Branch,
+        };
+
+        var dialogOptions = new DialogOptions
+        {
+            FullWidth = true,
+            MaxWidth = MaxWidth.Medium,
+            BackdropClick = false,
+        };
+
+        var dialog = await DialogService.ShowAsync<CreateBranchProduct>(
+            "Create Branch Product",
+            dialogParameters,
+            dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            await LoadBranchProducts();            // refresh existing list (important for your logic)
+            await productTable!.ReloadServerData(); // reload MudTable server data
+            StateHasChanged();
+        }
     }
 }

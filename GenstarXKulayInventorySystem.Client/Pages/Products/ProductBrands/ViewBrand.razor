@@ -54,23 +54,28 @@
                         </MudSelect>
                      </AuthorizeView>
                   </MudItem>
-                <AuthorizeView Roles="Secretary,Admin">
-                    <MudItem lg="8" Class="d-flex flex-row justify-content-end mb-3 me-3 gap-4">
-                        <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Secondary" OnClick="UpdateStocks">
-                            Update Stocks
-                        </MudButton>
+                  <MudItem lg="8" Class="d-flex flex-row justify-content-end mb-3 me-3 gap-4">
+                    <AuthorizeView Roles="Secretary,Admin">
+                            <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Secondary" OnClick="UpdateStocks">
+                                Update Stocks
+                            </MudButton>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Admin">
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
                                    StartIcon="@Icons.Material.Filled.Add"
                                    OnClick="AddProduct">
                             Add Product
                         </MudButton>
-                        
-                    </MudItem>
-                    
-                </AuthorizeView>
-                
-                
+                        <MudButton Variant="Variant.Filled"
+                            Color="Color.Tertiary"
+                            StartIcon="@Icons.Material.Filled.Add"
+                            OnClick="CreateBranchProduct"
+                        >
+                            Add Branch Product
+                        </MudButton>
+                    </AuthorizeView>
+                </MudItem>
             </MudGrid>
         </MudCard>
        
