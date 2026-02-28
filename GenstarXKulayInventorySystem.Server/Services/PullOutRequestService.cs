@@ -89,21 +89,41 @@ public class PullOutRequestService:IPullOutRequestService
     {
         try
         {
-            var exist = await _context.PullOutRequests.AsNoTracking().AsSplitQuery().Include(p => p.RequestProductItems)
-                .Where(e=> !e.IsDeleted && e.Id == pullOutRequest.Id)
+            var exist = await _context.PullOutRequests
+                .AsNoTracking()
+                .AsSplitQuery()
+                .Include(p => p.RequestProductItems)
+                .Where(e => !e.IsDeleted && e.Id == pullOutRequest.Id)
                 .FirstOrDefaultAsync();
 
-            if(exist !=null)
+            if (exist != null)
                 return false;
 
             var newPullOut = _mapper.Map<PullOutRequest>(pullOutRequest);
-            newPullOut.CreatedAt = PhilippineTime.Now;
+
+            var now = PhilippineTime.Now;
+
+            // Combine selected DATE with current TIME
+            if (pullOutRequest.DateRequest.HasValue)
+            {
+                var selectedDate = pullOutRequest.DateRequest.Value.Date;
+
+                newPullOut.DateRequest = selectedDate
+                    .AddHours(now.Hour)
+                    .AddMinutes(now.Minute)
+                    .AddSeconds(now.Second);
+            }
+
+            newPullOut.CreatedAt = now;
+
             await _context.PullOutRequests.AddAsync(newPullOut);
             int result = await _context.SaveChangesAsync();
+
             return result > 0;
         }
-        catch (Exception ex) {
-            _logger.LogError(ex.Message);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating pull out request");
             return false;
         }
     }
@@ -120,8 +140,6 @@ public class PullOutRequestService:IPullOutRequestService
 
             _mapper.Map(model, exist);
             exist.UpdatedAt = PhilippineTime.Now;
-
-
             await _context.SaveChangesAsync();
             return true;
         }
