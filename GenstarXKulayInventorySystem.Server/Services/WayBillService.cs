@@ -133,7 +133,6 @@ public class WayBillService: IWayBillService
                 return false;
             }
             WayBill wayBillEntity = _mapper.Map<WayBill>(wayBillDto);
-            wayBillEntity.DateReceived = PhilippineTime.Now; 
             wayBillEntity.CreatedBy = GetCurrentUsername();
             wayBillEntity.CreatedAt = PhilippineTime.Now;
             await _context.WayBills.AddAsync(wayBillEntity);
