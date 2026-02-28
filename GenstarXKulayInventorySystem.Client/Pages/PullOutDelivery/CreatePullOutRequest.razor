@@ -1,13 +1,14 @@
-﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 <MudDialog>
     <DialogContent>
         <MudGrid Spacing="4" Class="mb-5">
 
             <!-- DATE -->
             <MudItem xs="12" md="4">
-                <MudDatePicker Date="NewPullOut.DateRequest"
+                <MudDatePicker @bind-Date="NewPullOut.DateRequest"
                                Label="Request Date"
-                               ReadOnly="true" />
+                               MaxDate="PhilippineTime.Now" />
             </MudItem>
 
             <!-- BRANCH -->
@@ -28,7 +29,16 @@
                     }
                 </MudSelect>
             </MudItem>
-
+            <MudItem xs="12" md="12">
+                <MudTextField 
+                    @bind-Value="NewPullOut.Note" 
+                    AutoGrow="true"
+                    Adornment="Adornment.Start"
+                    AdornmentIcon="@Icons.Material.Filled.StickyNote2"
+                    MaxLines="5" 
+                    Label="Notes:"
+                    Variant="Variant.Text"/>
+            </MudItem>
             <MudItem xs="12" Class="d-flex flex-row align-items-center justify-content-end">
                 <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="AddItem">Add Items</MudButton>
             </MudItem>
