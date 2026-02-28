@@ -102,18 +102,6 @@ public class PullOutRequestService:IPullOutRequestService
             var newPullOut = _mapper.Map<PullOutRequest>(pullOutRequest);
 
             var now = PhilippineTime.Now;
-
-            // Combine selected DATE with current TIME
-            if (pullOutRequest.DateRequest.HasValue)
-            {
-                var selectedDate = pullOutRequest.DateRequest.Value.Date;
-
-                newPullOut.DateRequest = selectedDate
-                    .AddHours(now.Hour)
-                    .AddMinutes(now.Minute)
-                    .AddSeconds(now.Second);
-            }
-
             newPullOut.CreatedAt = now;
 
             await _context.PullOutRequests.AddAsync(newPullOut);
@@ -138,7 +126,6 @@ public class PullOutRequestService:IPullOutRequestService
             if (exist == null)
                 return false;
 
-            _mapper.Map(model, exist);
             exist.UpdatedAt = PhilippineTime.Now;
             await _context.SaveChangesAsync();
             return true;
