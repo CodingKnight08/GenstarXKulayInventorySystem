@@ -38,9 +38,9 @@
                 </HeaderContent>
 
                 <RowTemplate>
-                    <MudTd>@context.DateRequest?.ToString("MMMM dd, yyyy hh:mm tt")</MudTd>
+                    <MudTd>@context.DateRequest?.ToString("MMMM dd, yyyy")</MudTd>
                     <MudTd>@context.BranchRequestedTo.ToString()</MudTd>
-                    <MudTd>@(context.DateDelivered?.ToString("MMMM dd, yyyy hh:mm tt") ?? "Not Delivered Yet")</MudTd>
+                    <MudTd>@(context.DateDelivered?.ToString("MMMM dd, yyyy") ?? "Not Delivered Yet")</MudTd>
                     <MudTd Class="text-truncate">@context.Note</MudTd>
                     <MudTd>
                         <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Variant="Variant.Text" Size="Size.Small" OnClick="() => ViewPullOutDetails(context.Id)" />
