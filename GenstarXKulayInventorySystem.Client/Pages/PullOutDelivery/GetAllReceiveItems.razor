@@ -24,7 +24,7 @@
 
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd>@context.DateRequest.ToString("MMMM dd, yyyy")</MudTd>
+                    <MudTd>@context.DateRequest?.ToString("MMMM dd, yyyy")</MudTd>
                     <MudTd>@context.BranchRequestedTo.ToString()</MudTd>
                     <MudTd>
                         @(context.DateDelivered?.ToString("MMMM dd, yyyy hh:mm tt ") ?? "-")
