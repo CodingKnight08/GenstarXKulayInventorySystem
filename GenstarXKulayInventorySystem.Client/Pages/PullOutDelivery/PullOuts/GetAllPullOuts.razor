@@ -23,7 +23,7 @@
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Pull Out ID">@context.Id.ToString("D10")</MudTd>
-                        <MudTd DataLabel="Delivery Date">@context.DateRequest.ToString("MMMM dd,yyyy")</MudTd>
+                        <MudTd DataLabel="Delivery Date">@context.DateRequest?.ToString("MMMM dd,yyyy")</MudTd>
                         <MudTd DataLabel="Customer Name">@context.BranchRequestee.ToString()</MudTd>
                         <MudTd>@context.Status.ToString()</MudTd>
                         <MudTd>
