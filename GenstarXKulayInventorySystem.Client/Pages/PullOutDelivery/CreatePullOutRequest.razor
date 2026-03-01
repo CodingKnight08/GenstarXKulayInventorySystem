@@ -58,7 +58,7 @@
                        <MudTd>@context.ItemCost.ToString("N2")</MudTd>
                        <MudTd>@context.Remarks</MudTd>
                        <MudTd>
-                           <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Text" Color="Color.Error" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Text" Color="Color.Error" OnClick="@(() => DeleteItem(context))" />
                        </MudTd>
                    </RowTemplate>
                    <NoRecordsContent>
