@@ -103,7 +103,7 @@ public class PullOutRequestService:IPullOutRequestService
 
             var now = PhilippineTime.Now;
             newPullOut.CreatedAt = now;
-
+            newPullOut.DateRequest = pullOutRequest.DateRequest?.AddDays(1);
             await _context.PullOutRequests.AddAsync(newPullOut);
             int result = await _context.SaveChangesAsync();
 
