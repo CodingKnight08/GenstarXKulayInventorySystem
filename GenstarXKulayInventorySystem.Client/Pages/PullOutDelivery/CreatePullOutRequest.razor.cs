@@ -125,5 +125,20 @@ public partial class CreatePullOutRequest
         }
         StateHasChanged();
     }
+    private async Task DeleteItem(RequestProductItemDto item)
+    {
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Confirm Delete",
+            $"Are you sure you want to remove '{item.ProductName}'?",
+            yesText: "Yes, remove",
+            cancelText: "Cancel"
+        );
 
+        if (confirm == true)
+        {
+            RequestedItems.Remove(item);
+            Snackbar.Add("Item removed.", Severity.Info);
+            StateHasChanged();
+        }
+    }
 }

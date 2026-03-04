@@ -5,7 +5,7 @@ namespace GenstarXKulayInventorySystem.Shared.DTOS;
 public class PullOutRequestDto:BaseEntityDto
 {
     public int Id { get; set; }
-    public DateTime DateRequest { get; set; } = PhilippineTime.Now;
+    public DateTime? DateRequest { get; set; } = PhilippineTime.Now;
     public BranchOption BranchRequestee { get; set; }
     public BranchOption BranchRequestedTo { get; set; } = BranchOption.Warehouse;
     public bool Delivered { get; set; }

@@ -15,7 +15,7 @@ public partial class ViewWayBill
     [Inject] protected ILogger<ViewWayBill> Logger { get; set; } = default!;
     [Inject] protected ISnackbar SnackBar { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
-
+    [Inject] protected NavigationManager Navigation { get; set; } = default!;
     protected WayBillDto WayBill { get; set; } = new WayBillDto();
     protected List<WayBillItemsDto> WayBillItems { get; set; } = new List<WayBillItemsDto>();
     protected List<WayBillDamageItemDto> DamageItems { get; set; } = new List<WayBillDamageItemDto>();
@@ -277,5 +277,54 @@ public partial class ViewWayBill
         IsEdit = false;
         await LoadWayBill();
         StateHasChanged();
+    }
+
+    protected async Task DeleteWayBill()
+    {
+        bool? confirm = await DialogService.ShowMessageBox(
+            title: "Confirm Delete",
+            message: "Are you sure you want to delete this Way Bill? This action cannot be undone.",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (confirm != true)
+            return;
+
+        try
+        {
+            IsLoading = true;
+            StateHasChanged();
+
+            var response = await HttpClient.DeleteAsync($"api/waybill/{WayBillId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                SnackBar.Add("Way Bill deleted successfully.", Severity.Success);
+
+                // small delay for UX smoothness (optional)
+                await Task.Delay(300);
+
+                Navigation.NavigateTo("/waybills");
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                SnackBar.Add("Way Bill not found.", Severity.Warning);
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                SnackBar.Add($"Delete failed: {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting WayBill");
+            SnackBar.Add("Unexpected error while deleting WayBill.", Severity.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
     }
 }
