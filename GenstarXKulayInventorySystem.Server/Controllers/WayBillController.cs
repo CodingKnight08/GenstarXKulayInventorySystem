@@ -76,6 +76,20 @@ public class WayBillController : ControllerBase
             return StatusCode(500, $"Internal Server error: {ex.Message}");
         }
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteWaybill(int id)
+    {
+        if (id <= 0)
+            return BadRequest("Invalid waybill id.");
+
+        var result = await _waybillService.DeleteWayBill(id);
+
+        if (!result)
+            return NotFound($"Waybill with id {id} not found.");
+
+        return Ok(result); // 204 – successful delete
+    }
     //Damage Items Query 
 
     [HttpGet("all/damage/{waybillId:int}")]
