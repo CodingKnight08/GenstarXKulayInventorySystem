@@ -46,7 +46,7 @@ public class WayBillService: IWayBillService
             .Include(wb => wb.Supplier)
             .Include(wb => wb.WayBillItems)
             .ThenInclude(wi => wi.BranchProduct)
-            .Where(wb => wb.Branch == branch)
+            .Where(wb => wb.Branch == branch && !wb.IsDeleted)
             .OrderByDescending(wb => wb.CreatedAt)
             .ToListAsync();
 
