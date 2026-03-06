@@ -125,8 +125,13 @@ public class PullOutRequestService:IPullOutRequestService
 
             if (exist == null)
                 return false;
-
+            exist.Status = model.Status;
             exist.UpdatedAt = PhilippineTime.Now;
+            if(model.Status == DeliveryStatusOption.Delivered)
+            {
+                exist.DateDelivered = exist.DateRequest;
+                exist.Delivered = true;
+            }
             await _context.SaveChangesAsync();
             return true;
         }
