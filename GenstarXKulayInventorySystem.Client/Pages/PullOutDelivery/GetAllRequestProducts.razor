@@ -44,7 +44,7 @@
                     <MudTd Class="text-truncate">@context.Note</MudTd>
                     <MudTd>
                         <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Variant="Variant.Text" Size="Size.Small" OnClick="() => ViewPullOutDetails(context.Id)" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Text" Size="Size.Small" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Text" Size="Size.Small" OnClick="() => DeletePullOut(context.Id)" />
                     </MudTd>
                 </RowTemplate>
 

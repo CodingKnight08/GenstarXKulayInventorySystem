@@ -129,4 +129,35 @@ public partial class GetAllRequestProducts
             replace: true
         );
     }
+
+    private async Task DeletePullOut(int pullOutId)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm Delete",
+            "Are you sure you want to delete this pull-out request?",
+            yesText: "Delete",
+            cancelText: "Cancel"
+        );
+        if (result == true)
+        {
+            try
+            {
+                var response = await HttpClient.DeleteAsync($"api/pullout/{pullOutId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    SnackBar.Add("Pull-out request deleted successfully!", Severity.Success);
+                    await LoadData();
+                }
+                else
+                {
+                    SnackBar.Add("Failed to delete pull-out request.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error deleting pull-out request");
+                SnackBar.Add("An error occurred while deleting the pull-out request.", Severity.Error);
+            }
+        }
+    }
 }
