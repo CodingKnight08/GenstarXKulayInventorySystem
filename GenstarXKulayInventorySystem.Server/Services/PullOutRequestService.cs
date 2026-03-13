@@ -125,8 +125,13 @@ public class PullOutRequestService:IPullOutRequestService
 
             if (exist == null)
                 return false;
-
+            exist.Status = model.Status;
             exist.UpdatedAt = PhilippineTime.Now;
+            if(model.Status == DeliveryStatusOption.Delivered)
+            {
+                exist.DateDelivered = exist.DateRequest;
+                exist.Delivered = true;
+            }
             await _context.SaveChangesAsync();
             return true;
         }
@@ -380,7 +385,25 @@ public class PullOutRequestService:IPullOutRequestService
     }
 
 
-
+    public async Task<bool> DeletePullOutRequest(int id)
+    {
+        try
+        {
+            var exist = await _context.PullOutRequests
+                .FirstOrDefaultAsync(e => !e.IsDeleted && e.Id == id);
+            if (exist == null)
+                return false;
+            exist.IsDeleted = true;
+            exist.UpdatedAt = PhilippineTime.Now;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting PullOutRequest");
+            return false;
+        }
+    }
 
 
 }
@@ -395,4 +418,5 @@ public interface IPullOutRequestService
     Task<bool> UpdateRequestItems(List<RequestProductItemDto> items);
     Task<bool> RecieveRequestItems(List<RequestProductItemDto> items, int pullOutRequestId);
     Task<bool> SyncToInventory(List<RequestProductItemDto> items);
+    Task<bool> DeletePullOutRequest(int id);
 }

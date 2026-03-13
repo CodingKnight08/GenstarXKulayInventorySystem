@@ -167,4 +167,19 @@ public class PullOutController : ControllerBase
         }
     }
 
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeletePullOutRequest(int id)
+    {
+        try
+        {
+            var result = await _service.DeletePullOutRequest(id);
+            if (!result)
+                return NotFound("Request not found");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
 }
