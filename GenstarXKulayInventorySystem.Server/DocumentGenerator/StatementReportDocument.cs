@@ -171,7 +171,7 @@ public class StatementReportDocument : IDocument
 
             // ===== INTRO TEXT =====
             column.Item().PaddingTop(5).Text(
-                    "We have summarized all \"Unpaid\" invoices and/or purchases that you had with us. Please refer to the list below."
+                    "We have summarized all \"Unpaid\" invoices and/or purchases that you had with us. Attached herewith are ALL ORIGINAL INVOICES. Please refer to the list below."
                 )
                 .FontSize(12)
                 .AlignLeft();
@@ -236,7 +236,7 @@ public class StatementReportDocument : IDocument
 
 
                 footer.Item().PaddingTop(10).Text(
-                        "\"THIS DOCUMENT IS NOT VALID FOR CLAIMING INPUT TAXES. THIS STATEMENT OF ACCOUNT IS ONLY VALID FOR FIVE (5) YEARS FROM THE DATE OF ATP.\""
+                        "\"THIS DOCUMENT IS NOT VALID FOR CLAIMING INPUT TAXES.\""
                     )
 
                .FontSize(10)
