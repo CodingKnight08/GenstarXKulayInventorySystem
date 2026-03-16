@@ -10,6 +10,10 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands;
 public partial class ViewBrand
 {
     [Parameter] public int BrandId { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "pageskip")]
+    public int PageSkip { get; set; } = 0;
+    [Parameter, SupplyParameterFromQuery(Name = "pagetake")]
+    public int PageTake { get; set; } = 10;
     [Inject] public HttpClient HttpClient { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected UserState UserState { get; set; } = default!;
@@ -23,10 +27,11 @@ public partial class ViewBrand
     protected bool IsLoading = false;
     protected string? ErrorMessage { get; set; }
     protected List<BreadcrumbItem> items = new();
-    protected int PageSkip { get; set; } = 0;
-    protected int PageTake { get; set; } = 10;
+    protected string SearchTerm { get; set; } = string.Empty;
     protected int CurrentPage { get; set; }
     protected int Count { get; set; }
+    protected int Skip { get; set; }
+    protected int Take { get; set; }
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
@@ -37,7 +42,7 @@ public partial class ViewBrand
         await LoadBranchProducts();
         items =
         [
-            new("Brands", href: $"/productbrands"),
+            new("Brands", href: $"/productbrands?pageskip={PageSkip}&pagetake={PageTake}"),
             new("Brand Detail", href: "#", disabled: true),
         ];
         
@@ -45,8 +50,16 @@ public partial class ViewBrand
 
         IsLoading = false;
     }
-    
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && productTable != null)
+        {
+            CurrentPage = PageSkip / PageTake;
+
+            productTable.NavigateTo(CurrentPage);
+        }
+    }
 
     protected async Task LoadBrandAsync()
     {
@@ -83,10 +96,10 @@ public partial class ViewBrand
     {
         try
         {
-            var skip = state.Page * state.PageSize;
-            var take = state.PageSize;
+            int skip = state.Page * state.PageSize;
+            int take = state.PageSize;
 
-            var url = $"api/product/paged/by/{BrandId}/{Branch}?skip={skip}&take={take}";
+            var url = $"api/product/by/{BrandId}/{Branch}?skip={skip}&take={take}&search={SearchTerm}";
 
             Logger.LogInformation($"Loading products → {url}");
 
@@ -94,9 +107,6 @@ public partial class ViewBrand
 
             if (!response.IsSuccessStatusCode)
             {
-                var serverMsg = await response.Content.ReadAsStringAsync(cancellationToken);
-                Logger.LogError($"Server returned {response.StatusCode}: {serverMsg}");
-
                 return new TableData<BranchProductDto>
                 {
                     Items = new List<BranchProductDto>(),
@@ -104,8 +114,7 @@ public partial class ViewBrand
                 };
             }
 
-            var result = await response.Content
-                .ReadFromJsonAsync<BranchProductPageResultDto<BranchProductDto>>(cancellationToken);
+            var result = await response.Content.ReadFromJsonAsync<BranchProductPageResultDto<BranchProductDto>>(cancellationToken);
 
             return new TableData<BranchProductDto>
             {
@@ -140,25 +149,18 @@ public partial class ViewBrand
     private async Task OnBranchChanged(BranchOption newBranch)
     {
         Branch = newBranch;
-        if (productTable is not null)
-        {
-            await productTable.ReloadServerData();
-        }
-    }
 
+        if (productTable != null)
+            await productTable.ReloadServerData();
+    }
     protected void OnPageChanged(int page)
     {
         CurrentPage = page;
-        PageSkip = CurrentPage * PageTake;
+        Skip = CurrentPage * Take;
         StateHasChanged();
     }
 
-    protected void OnRowsPerPageChanged(int newPageSize)
-    {
-        PageTake = newPageSize;
-        CurrentPage = 0;
-        PageSkip = 0;
-    }
+  
     protected async Task LoadCategoriesAsync()
     {
         try
@@ -202,7 +204,13 @@ public partial class ViewBrand
             }
         }
     }
+    private async Task OnSearchChanged(string text)
+    {
+        SearchTerm = text;
 
+        if (productTable is not null)
+            await productTable.ReloadServerData();
+    }
 
     protected async Task UpdateProduct(int productId)
     {
