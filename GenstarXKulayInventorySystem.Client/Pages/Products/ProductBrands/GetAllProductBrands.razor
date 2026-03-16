@@ -38,18 +38,16 @@
         
         @if (!IsLoading)
         {
-        
-            <MudTable Items="FilteredProductBrands"
-                         T="ProductBrandDto"
-                         Dense="true"
-                         Hover="true"
-                         CurrentPage="@CurrentPage"
-                         RowsPerPage="@PageTake"
-                         CurrentPageChanged="OnPageChanged"
-                         RowsPerPageChanged="OnRowsPerPageChanged"
-                         Bordered="true"
-                         TotalItems="Count"
-                         >
+                  <MudTable Items="FilteredProductBrands"
+                              T="ProductBrandDto"
+                              Dense="true"
+                              Hover="true"
+                              CurrentPage="@CurrentPage"
+                              RowsPerPage="@PageTake"
+                              CurrentPageChanged="OnPageChanged"
+                              RowsPerPageChanged="OnRowsPerPageChanged"
+                              Bordered="true"
+                              @ref="brandsTable" >
                 <HeaderContent>
                     <MudTh>Brand Name</MudTh>
                     <MudTh>Description</MudTh>

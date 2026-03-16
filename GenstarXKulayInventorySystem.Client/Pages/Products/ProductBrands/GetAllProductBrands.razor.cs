@@ -18,7 +18,7 @@ public partial class GetAllProductBrands
     protected List<ProductBrandDto> FilteredProductBrands { get; set; } = new List<ProductBrandDto>();
     protected string SearchTerm { get; set; } = string.Empty;   
     protected bool IsLoading { get; set; } = true;
-    private MudDataGrid<ProductBrandDto>? brandsGrid;
+    private MudTable<ProductBrandDto>? brandsTable;
     private int Count { get; set; }
 
     protected string? ErrorMessage { get; set; }
@@ -37,8 +37,18 @@ public partial class GetAllProductBrands
         }
        
     }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && brandsTable != null)
+        {
+            CurrentPage = PageSkip / PageTake;
 
-    protected override Task OnParametersSetAsync()
+            brandsTable.NavigateTo(CurrentPage);
+        }
+
+        return Task.CompletedTask;
+    }
+    protected override async Task OnParametersSetAsync()
     {
         if (PageTake <= 0) PageTake = 10; 
 
@@ -46,7 +56,7 @@ public partial class GetAllProductBrands
 
         ApplyPaging();
 
-        return Task.CompletedTask;
+        
     }
     protected void OnPageChanged(int page)
     {
@@ -54,6 +64,9 @@ public partial class GetAllProductBrands
         PageSkip = CurrentPage * (PageTake > 0 ? PageTake : 10);
 
         ApplyPaging();
+        NavigationManager.NavigateTo(
+            $"/productbrands?pageskip={PageSkip}&pagetake={PageTake}",
+            forceLoad: false);
     }
     protected void OnRowsPerPageChanged(int newPageSize)
     {
@@ -151,6 +164,7 @@ public partial class GetAllProductBrands
     protected void ViewBrands(int brandId)
     {
         NavigationManager.NavigateTo($"/productbrand/{brandId}");
+        //NavigationManager.NavigateTo($"/productbrand/{brandId}?pageskip={PageSkip}&pagetake={PageTake}");
     }
 
 
@@ -171,7 +185,7 @@ public partial class GetAllProductBrands
     {
         if (string.IsNullOrWhiteSpace(SearchTerm))
         {
-            FilteredProductBrands = ProductBrands.ToList();
+            FilteredProductBrands = ProductBrands;
         }
         else
         {
