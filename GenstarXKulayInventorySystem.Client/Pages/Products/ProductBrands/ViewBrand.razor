@@ -80,7 +80,15 @@
             
         
         <MudCard Elevation="0">
-
+               <MudCard Class="w-50 p-3" Elevation="0">
+                <MudTextField T="string"
+                              Placeholder="Search products..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              ValueChanged="OnSearchChanged"
+                              Class="mb-3" />
+               </MudCard>
                 <MudCardContent>
                     <MudTable T="BranchProductDto"
                               @ref="productTable"

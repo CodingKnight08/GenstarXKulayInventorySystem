@@ -105,6 +105,26 @@ public class ProductController : ControllerBase
         }
     }
 
+    [HttpGet("by/{brandId:int}/{branch}")]
+    public async Task<ActionResult<BranchProductPageResultDto<BranchProductDto>>> GetPagedProductsByBrandAndBranch(
+    int brandId,
+    BranchOption branch,
+    [FromQuery] int skip = 0,
+    [FromQuery] int take = 10,
+    [FromQuery] string? search = null)
+    {
+        try
+        {
+            var result = await _productService.GetPagedProductsByBrandAndBranchAsync(
+                brandId, branch, skip, take, search);
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error in retrieving products: {ex.Message}");
+        }
+    }
     [HttpGet("all/existing/products/{brandId:int}/{branch}")]
     public async Task<ActionResult<List<BranchProductDto>>> GetProductsForWayBill(int brandId, BranchOption branch)
     {
