@@ -67,7 +67,44 @@ public class ProductService:IProductService
 
         return _mapper.Map<List<BranchProductDto>>(products);
     }
+    public async Task<BranchProductPageResultDto<BranchProductDto>> GetPagedProductsByBrandAndBranchAsync(
+        int brandId,
+        BranchOption branch,
+        int skip,
+        int take,
+        string? search = null)
+    {
+        var query = _context.BranchProducts
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(bp => bp.MasterProduct)
+            .Where(p => !p.IsDeleted &&
+                        p.Branch == branch &&
+                        p.MasterProduct != null &&
+                        p.MasterProduct.BrandId == brandId);
 
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(p => p.MasterProduct!.ProductName.Contains(search));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var products = await query
+            .OrderBy(p => p.MasterProduct!.ProductName)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync();
+
+        var result = _mapper.Map<List<BranchProductDto>>(products);
+
+        return new BranchProductPageResultDto<BranchProductDto>
+        {
+            Products = result,
+            TotalCount = totalCount
+        };
+    }
     public async Task<List<BranchProductDto>> GetAllProductsForWayBill(int brandId, BranchOption branch)
     {
         var products = await _context.BranchProducts
@@ -435,6 +472,12 @@ public interface IProductService
     Task<List<ProductDto>> GetAllAsync(int brandId);
     Task<List<GlobalProductDto>> GetAllGlobalProductsByBrand(int brandId);
     Task<List<BranchProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
+    Task<BranchProductPageResultDto<BranchProductDto>> GetPagedProductsByBrandAndBranchAsync(
+        int brandId,
+        BranchOption branch,
+        int skip,
+        int take,
+        string? search = null);
     Task<List<BranchProductDto>> GetAllProductsForWayBill(int brandId, BranchOption branch);
     Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take);
     Task<int> GetProductCountAsync(int brandId, BranchOption branch);
