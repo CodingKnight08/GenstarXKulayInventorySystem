@@ -18,7 +18,12 @@ public partial class CreateBranchProduct
     private GlobalProductDto? SelectedMasterProduct { get; set; } = new GlobalProductDto();
     private BranchProductDto? NewBranchProduct { get;set; } = new BranchProductDto();
     private bool IsLoading { get; set; } = false;
-
+    private bool IsSubmitDisabled =>
+    SelectedMasterProduct == null ||
+    NewBranchProduct == null ||
+    NewBranchProduct.MasterProductId == 0 ||
+    NewBranchProduct.CostPrice == null || NewBranchProduct.CostPrice <= 0 ||
+    NewBranchProduct.BufferStocks <= 0;
     protected override async Task OnParametersSetAsync()
     {
         IsLoading = true;
@@ -99,11 +104,17 @@ public partial class CreateBranchProduct
 
             if (response.IsSuccessStatusCode)
             {
-                var created = await response.Content.ReadFromJsonAsync<BranchProductDto>();
+                var result = await response.Content.ReadFromJsonAsync<bool>();
 
-                SnackBar.Add("Product added to branch successfully.", Severity.Success);
-
-                Dialog.Close(DialogResult.Ok(created ?? NewBranchProduct));
+                if (result)
+                {
+                    SnackBar.Add("Product added to branch successfully.", Severity.Success);
+                    Dialog.Close(DialogResult.Ok(NewBranchProduct));
+                }
+                else
+                {
+                    SnackBar.Add("Failed to add product.", Severity.Error);
+                }
             }
             else
             {

@@ -70,6 +70,7 @@
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <MudNumericField
+                        T="decimal?"
                         @bind-Value="NewBranchProduct.WholeSaleCostPrice"
                          Label="Wholesale Landed"
                          Variant="Variant.Text"
@@ -116,6 +117,7 @@
             Color="Color.Success" 
             Size="Size.Small"
             OnClick="Submit"
+            Disabled="@IsSubmitDisabled"
             StartIcon="@Icons.Material.Filled.Save">Save</MudButton>
     </DialogActions>
 </MudDialog>
