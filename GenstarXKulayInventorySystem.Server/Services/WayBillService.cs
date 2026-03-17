@@ -46,7 +46,7 @@ public class WayBillService: IWayBillService
             .Include(wb => wb.Supplier)
             .Include(wb => wb.WayBillItems)
             .ThenInclude(wi => wi.BranchProduct)
-            .Where(wb => wb.Branch == branch)
+            .Where(wb => wb.Branch == branch && !wb.IsDeleted)
             .OrderByDescending(wb => wb.CreatedAt)
             .ToListAsync();
 
@@ -133,7 +133,6 @@ public class WayBillService: IWayBillService
                 return false;
             }
             WayBill wayBillEntity = _mapper.Map<WayBill>(wayBillDto);
-            wayBillEntity.DateReceived = PhilippineTime.Now; 
             wayBillEntity.CreatedBy = GetCurrentUsername();
             wayBillEntity.CreatedAt = PhilippineTime.Now;
             await _context.WayBills.AddAsync(wayBillEntity);
