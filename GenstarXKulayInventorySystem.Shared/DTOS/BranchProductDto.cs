@@ -14,7 +14,7 @@ public class BranchProductDto:BaseEntityDto
     public decimal? Size { get; set; } = 0;
     public decimal ActualQuantity { get; set; } = 0;
     public decimal BufferStocks { get; set; } = 0;
-    public decimal WholeSaleCostPrice { get; set; } = 0;
+    public decimal? WholeSaleCostPrice { get; set; } = 0;
     public int? TiedUpProductId { get; set; }
     public BranchProductDto? TiedUpProduct { get; set; } // ex catalyst
 
