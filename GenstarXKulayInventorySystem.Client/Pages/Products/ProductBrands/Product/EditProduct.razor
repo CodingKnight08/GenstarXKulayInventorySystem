@@ -128,7 +128,18 @@ else
                                      Margin="Margin.Dense"
                                      FullWidth="true" />
                 </MudItem>
-
+                <MudItem xs="12" sm="6" lg="6">
+                    <MudNumericField T="decimal?"
+                                     @bind-Value="@UpdatedProduct.WholeSaleCostPrice"
+                                     Label="Landed Cost 2"
+                                     Adornment="Adornment.Start"
+                                     AdornmentText="₱"
+                                     HideSpinButtons="true"
+                                     Format="N2"
+                                     Culture="@_en"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+                </MudItem>
                 <MudItem xs="12" lg="6">
                     <MudTextField @bind-Value="UpdatedProduct.MasterProduct.Packaging" Label="Packaging" Margin=Margin.Dense Lines="1" Placeholder="e.g (1x12)" />
                 </MudItem>
