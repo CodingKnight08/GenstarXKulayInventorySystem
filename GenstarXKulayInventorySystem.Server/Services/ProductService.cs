@@ -228,6 +228,7 @@ public class ProductService:IProductService
             branchProduct.CreatedAt = PhilippineTime.Now;
             branchProduct.CreatedBy = GetCurrentUsername();
             var product = _mapper.Map<BranchProduct>(branchProduct);
+            _context.BranchProducts.Add(product);
             int result = await _context.SaveChangesAsync();
             return result > 0;
         }
