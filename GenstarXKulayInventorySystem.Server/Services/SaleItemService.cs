@@ -49,6 +49,9 @@ public class SaleItemService:ISaleItemService
         var query = _context.SaleItems
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(si => si.BranchProduct)
+            .ThenInclude(bp => bp.MasterProduct)
+            .ThenInclude(mp => mp.ProductBrand)
             .Where(e => e.DailySaleId == dailySaleId && !e.IsDeleted);
 
         int totalCount = await query.CountAsync();
