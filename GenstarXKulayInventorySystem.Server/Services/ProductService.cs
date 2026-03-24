@@ -55,7 +55,8 @@ public class ProductService:IProductService
         var products = await _context.BranchProducts
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(bp => bp.MasterProduct)
+            .Include(p => p.MasterProduct!)
+                 .ThenInclude(mp => mp.ProductBrand!)
             .Where(p =>
                 p.Branch == branch &&
                 !p.IsDeleted &&
