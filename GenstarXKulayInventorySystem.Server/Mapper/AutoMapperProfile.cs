@@ -47,9 +47,10 @@ public class AutoMapperProfile : Profile
               .ReverseMap();
 
         _ = CreateMap<SaleItem, SaleItemDto>()
-               .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => DeserializeInvolvePaints(src.DataList)))
-               .ReverseMap()
-               .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => SerializeInvolvePaints(src.DataList)));
+            .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => DeserializeInvolvePaints(src.DataList)))
+            .ReverseMap()
+            .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => SerializeInvolvePaints(src.DataList)))
+            .ForMember(dest => dest.BranchProduct, opt => opt.Ignore());
         _ = CreateMap<Model.Client, ClientDto>()
                  .ForMember(dest => dest.DailySales, opt => opt.MapFrom(src => src.DailySales))
                  .ReverseMap();
