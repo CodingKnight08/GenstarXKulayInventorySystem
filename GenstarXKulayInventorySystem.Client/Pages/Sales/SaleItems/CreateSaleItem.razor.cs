@@ -142,8 +142,7 @@ public partial class CreateSaleItem
         SaleItemDto.BranchProductId = product.Id;
         SaleItemDto.ItemName = product.MasterProduct?.ProductName ?? string.Empty;
         SaleItemDto.UnitMeasurement = product.ProductMesurementOption.GetValueOrDefault();
-        SaleItemDto.CostPrice = product.CostPrice ?? 0;
-
+        SaleItemDto.BranchProduct = product;
         await OnWholeSaleChanged(IsWholeSale);
     }
 
@@ -218,10 +217,24 @@ public partial class CreateSaleItem
 
     protected void SaveItem()
     {
-        if(SaleItemDto.PaintCategory != PaintCategory.Mix)
+        if (SaleItemDto.PaintCategory != PaintCategory.Mix)
         {
             ComputeNotBelowWholeSale();
-            SaleItemDto.CostPrice = SelectedProductFromList?.CostPrice ?? 0m;
+
+            if (SelectedProductFromList != null)
+            {
+                if (IsWholeSale && SelectedProductFromList.WholeSaleCostPrice.HasValue
+                                  && SelectedProductFromList.WholeSaleCostPrice.Value > 0)
+                {
+                    // ✅ Use wholesale cost
+                    SaleItemDto.CostPrice = SelectedProductFromList.WholeSaleCostPrice.Value;
+                }
+                else
+                {
+                    // ✅ fallback to regular cost
+                    SaleItemDto.CostPrice = SelectedProductFromList.CostPrice ?? 0m;
+                }
+            }
         }
         else
         {
