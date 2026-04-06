@@ -14,7 +14,7 @@ public class SaleItemDto:BaseEntityDto
     public string ItemName { get; set; } = string.Empty;
     public decimal? Size { get; set; } = 1;
     public string Description { get; set; } = string.Empty;
-    public BranchOption BranchPurchased { get; set; } = BranchOption.GeneralSantosCity;
+    public BranchOption BranchPurchased { get; set; } 
     public ProductMesurementOption UnitMeasurement { get; set; } = ProductMesurementOption.Gallon;
     public decimal Quantity { get; set; } = 1;
     public decimal ItemPrice { get; set; }
