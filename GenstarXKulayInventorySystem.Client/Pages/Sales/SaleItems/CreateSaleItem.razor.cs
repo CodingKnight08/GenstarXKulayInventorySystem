@@ -80,7 +80,7 @@ public partial class CreateSaleItem
             }
             response.EnsureSuccessStatusCode();
             var products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>();
-            Products = products ?? new List<BranchProductDto>();
+            Products = products.Where(e => e.ActualQuantity != 0).ToList() ?? new List<BranchProductDto>();
 
         }
         catch (Exception ex) { 
