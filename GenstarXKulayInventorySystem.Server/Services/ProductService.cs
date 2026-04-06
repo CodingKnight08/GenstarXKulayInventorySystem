@@ -265,6 +265,28 @@ public class ProductService:IProductService
             return false;
         }
     }
+
+    public async Task<bool> UpdateSaleItemProduct(int? branchProductId, decimal toBeDeducted)
+    {
+        try
+        {
+            var existingProduct = await _context.BranchProducts
+                .FirstOrDefaultAsync(p => p.Id == branchProductId.Value);
+            if (existingProduct == null)
+                return false;
+            existingProduct.UpdatedAt = PhilippineTime.Now;
+            existingProduct.ActualQuantity = existingProduct.ActualQuantity - toBeDeducted;
+           
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // log the error properly (ILogger or your logging service)
+            _logger.LogError(ex, "Error updating product with Id {ProductId}", branchProductId);
+            return false;
+        }
+    }
     public async Task<bool> UpdateStocksAsync(
     List<UpdateBranchProductDto> stocks)
     {
@@ -557,4 +579,5 @@ public interface IProductService
 
 
     Task<List<SourceAndRequesteeProductDto>> GetAllRequesteeAndSourceProduct(int brandId, BranchOption requester, BranchOption source);
+    Task<bool> UpdateSaleItemProduct(int? branchProductId, decimal toBeDeducted);
 }
