@@ -283,6 +283,13 @@ public class SalesService:ISalesService
             sale.SalesNumber = $"DS-{sale.Id:D10}-{phNow.Year}";
             int result = await _context.SaveChangesAsync();
 
+            if(result > 0)
+            {
+
+            }
+            {
+                _logger.LogInformation("Added new sale with ID {SaleId} and Sales Number {SalesNumber}", sale.Id, sale.SalesNumber);
+            }
             return result > 0;
         }
         catch (Exception ex)
