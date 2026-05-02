@@ -23,7 +23,7 @@ public class SalesHostedService : IHostedService, IDisposable
         _logger.LogInformation("SalesHostedService started.");
 
         // Run every 1 minute (delay: 0 sec, period: 60 sec)
-        _timer = new Timer(ProcessInventory, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+        _timer = new Timer(ProcessInventory, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
 
         return Task.CompletedTask;
     }
