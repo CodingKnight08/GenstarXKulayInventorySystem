@@ -55,7 +55,11 @@ public static class UtilitiesHelper
     {
         // Combine the base volume first
         decimal totalBaseValue = size * quantity;
-
+        if (productUnit == ProductMesurementOption.Piece &&
+        saleItemUnit == ProductMesurementOption.Piece)
+        {
+            return quantity;
+        }
         // Volume conversions
         if (IsVolume(productUnit) && IsVolume(saleItemUnit))
         {
