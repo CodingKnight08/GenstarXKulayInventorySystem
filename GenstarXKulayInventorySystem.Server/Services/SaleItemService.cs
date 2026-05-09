@@ -74,14 +74,20 @@ public class SaleItemService:ISaleItemService
 
     public async Task<List<SaleItemDto>> GetAllUndeductedItemsAsync(BranchOption branch)
     {
-        List<SaleItem> salesItems = await _context.SaleItems
+        List<SaleItem> salesItems = await _context.DailySales
             .AsSplitQuery()
-            .Where(si => !si.IsDeleted && !si.IsDeducted && si.BranchPurchased == branch).ToListAsync();
-        if(salesItems == null || salesItems.Count == 0)
+            .Where(ds => !ds.IsDeleted && ds.Branch == branch)
+            .SelectMany(ds => ds.SaleItems)
+            .Where(si => !si.IsDeleted && !si.IsDeducted)
+            .ToListAsync();
+
+        if (salesItems == null || salesItems.Count == 0)
         {
             return new List<SaleItemDto>();
         }
+
         List<SaleItemDto> saleItemsDto = _mapper.Map<List<SaleItemDto>>(salesItems);
+
         return saleItemsDto;
     }
 
