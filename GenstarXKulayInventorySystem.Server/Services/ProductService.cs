@@ -61,7 +61,8 @@ public class ProductService:IProductService
                 p.Branch == branch &&
                 !p.IsDeleted &&
                 p.MasterProduct != null &&
-                p.MasterProduct.BrandId == brandId
+                p.MasterProduct.BrandId == brandId &&
+                p.ActualQuantity > 0 
             )
             .OrderBy(p => p.MasterProduct!.ProductName)  
             .ToListAsync();
@@ -270,19 +271,27 @@ public class ProductService:IProductService
     {
         try
         {
+            if (!branchProductId.HasValue)
+                return false;
+
             var existingProduct = await _context.BranchProducts
                 .FirstOrDefaultAsync(p => p.Id == branchProductId.Value);
+
             if (existingProduct == null)
                 return false;
+
+            // CHECK: prevent negative result
+            if (existingProduct.ActualQuantity < toBeDeducted)
+                return false;
+
             existingProduct.UpdatedAt = PhilippineTime.Now;
-            existingProduct.ActualQuantity = existingProduct.ActualQuantity - toBeDeducted;
-           
+            existingProduct.ActualQuantity -= toBeDeducted;
+
             await _context.SaveChangesAsync();
             return true;
         }
         catch (Exception ex)
         {
-            // log the error properly (ILogger or your logging service)
             _logger.LogError(ex, "Error updating product with Id {ProductId}", branchProductId);
             return false;
         }
