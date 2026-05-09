@@ -62,7 +62,7 @@ public class SalesHostedService : IHostedService, IDisposable
                 // =========================
                 // NORMAL PRODUCT
                 // =========================
-                if (item.BranchProductId != null)
+                if (item.PaintCategory != PaintCategory.Mix)
                 {
                     var result = await productService.UpdateSaleItemProduct(item.BranchProductId, baseQuantity);
 
@@ -79,11 +79,11 @@ public class SalesHostedService : IHostedService, IDisposable
                 // =========================
                 // MIXTURE PRODUCTS
                 // =========================
-                else if (item.DataList != null && item.DataList.Count > 0)
+                else
                 {
                     foreach (var mixture in item.DataList)
                     {
-                        decimal mixtureQty = (mixture.Size ?? 1) * 1; // always 1 qty per mixture item
+                        decimal mixtureQty = (mixture.Size ?? 1) * 1 * mixture.Quantity; // always 1 qty per mixture item
 
                         var result = await productService.UpdateSaleItemProduct(mixture.ProductId, mixtureQty);
 
