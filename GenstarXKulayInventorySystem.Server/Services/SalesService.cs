@@ -5,6 +5,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Extensions;
 using System.Security.Claims;
+using System.Text.Json;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
@@ -356,28 +357,94 @@ public class SalesService:ISalesService
 
     public async Task<bool> DeleteSaleAsync(int id)
     {
-        var existingSale = await _context.DailySales
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        if (existingSale == null)
-            return false;
-
-        try
+        return await strategy.ExecuteAsync(async () =>
         {
-            existingSale.IsDeleted = true;
-            existingSale.DeletedAt = PhilippineTime.Now;
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
-            _context.DailySales.Update(existingSale);
+            try
+            {
+                var existingSale = await _context.DailySales
+                    .Include(x => x.SaleItems)
+                    .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
 
-            int result = await _context.SaveChangesAsync();
-            return result > 0;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to delete sale");
-            return false;
-        }
+                if (existingSale == null)
+                    return false;
+
+                foreach (var saleItem in existingSale.SaleItems)
+                {
+                    // skip if already restored
+                    if (!saleItem.IsDeducted)
+                        continue;
+
+                    // MIX PRODUCTS
+                    if (saleItem.PaintCategory == PaintCategory.Mix)
+                    {
+                        if (!string.IsNullOrWhiteSpace(saleItem.DataList))
+                        {
+                            var involvePaints = JsonSerializer.Deserialize<List<InvolvePaintsDto>>(
+                                saleItem.DataList,
+                                new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+
+                            if (involvePaints != null)
+                            {
+                                foreach (var paint in involvePaints)
+                                {
+                                    var branchProduct = await _context.BranchProducts
+                                        .FirstOrDefaultAsync(x =>
+                                            x.Id == paint.ProductId &&
+                                            !x.IsDeleted);
+
+                                    if (branchProduct != null)
+                                    {
+                                        branchProduct.ActualQuantity += paint.Quantity;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // NORMAL PRODUCTS
+                    else
+                    {
+                        if (saleItem.BranchProductId.HasValue)
+                        {
+                            var branchProduct = await _context.BranchProducts
+                                .FirstOrDefaultAsync(x =>
+                                    x.Id == saleItem.BranchProductId &&
+                                    !x.IsDeleted);
+
+                            if (branchProduct != null)
+                            {
+                                branchProduct.ActualQuantity += saleItem.Quantity;
+                            }
+                        }
+                    }
+
+                    // prevent double restore
+                    saleItem.IsDeducted = false;
+                }
+
+                existingSale.IsDeleted = true;
+                existingSale.DeletedAt = PhilippineTime.Now;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                _logger.LogError(ex, "Failed to delete sale");
+
+                return false;
+            }
+        });
     }
 
     private DateTime CalculateExpectedPaymentDate(
