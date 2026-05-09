@@ -174,16 +174,34 @@ public class DailySaleReportService : IDailySaleReportService
     {
         try
         {
-            var existingReport = await _context.DailySaleReports.FirstOrDefaultAsync(dr => dr.Id == id && !dr.IsDeleted);
+            var existingReport = await _context.DailySaleReports
+                .Include(x => x.DailySales)
+                .Include(x => x.Billings)
+                .FirstOrDefaultAsync(dr => dr.Id == id && !dr.IsDeleted);
+
             if (existingReport == null)
             {
-                return false; // Report not found
+                return false;
             }
+
+            // unlink daily sales
+            foreach (var sale in existingReport.DailySales)
+            {
+                sale.DailySaleReportId = null;
+            }
+
+            // unlink billings
+            foreach (var billing in existingReport.Billings)
+            {
+                billing.DailySaleId = null;
+            }
+
             existingReport.IsDeleted = true;
             existingReport.DeletedAt = PhilippineTime.Now;
-            _context.DailySaleReports.Update(existingReport);
-            int result = await _context.SaveChangesAsync();
-            return result > 0;
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
         catch (Exception ex)
         {
@@ -191,7 +209,6 @@ public class DailySaleReportService : IDailySaleReportService
             return false;
         }
     }
-
     public async Task<List<DailySaleDto>> GetAllDailySaleInvoice(DateTime date, BranchOption branch)
     {
         var (start, end) = PhilippineTime.GetDayRange(date);
