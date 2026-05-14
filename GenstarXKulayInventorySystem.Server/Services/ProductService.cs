@@ -57,6 +57,8 @@ public class ProductService:IProductService
             .AsSplitQuery()
             .Include(p => p.MasterProduct!)
                  .ThenInclude(mp => mp.ProductBrand!)
+            .Include(p => p.TiedUpProduct)
+             .ThenInclude(tb => tb.MasterProduct)
             .Where(p =>
                 p.Branch == branch &&
                 !p.IsDeleted &&
