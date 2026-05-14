@@ -7,7 +7,6 @@
             <HeaderContent>
                 <MudTh>Brand</MudTh>
                 <MudTh>Item Name</MudTh>
-                <MudTh>Size</MudTh>
                 <MudTh>Unit</MudTh>
                 <MudTh>Quantity</MudTh>
                 <MudTh>Paint Category</MudTh>
@@ -19,8 +18,6 @@
                     @(context.BranchProduct?.MasterProduct?.ProductBrand?.BrandName ?? "")
                 </MudTd>
                 <MudTd>@context.ItemName</MudTd>
-                @* <MudTd>@context.Size</MudTd> *@
-                <MudTd>@context.CostPrice</MudTd>
                 <MudTd>@context.UnitMeasurement</MudTd>
                 <MudTd>@context.Quantity</MudTd>
                 <MudTd>@context.PaintCategory</MudTd>
