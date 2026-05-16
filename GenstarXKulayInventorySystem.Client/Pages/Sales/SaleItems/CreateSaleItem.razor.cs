@@ -80,7 +80,7 @@ public partial class CreateSaleItem
             }
             response.EnsureSuccessStatusCode();
             var products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>();
-            Products = products ?? new List<BranchProductDto>();
+            Products = products.Where(e => e.ActualQuantity != 0).ToList() ?? new List<BranchProductDto>();
 
         }
         catch (Exception ex) { 
@@ -142,8 +142,7 @@ public partial class CreateSaleItem
         SaleItemDto.BranchProductId = product.Id;
         SaleItemDto.ItemName = product.MasterProduct?.ProductName ?? string.Empty;
         SaleItemDto.UnitMeasurement = product.ProductMesurementOption.GetValueOrDefault();
-        SaleItemDto.CostPrice = product.CostPrice ?? 0;
-
+        SaleItemDto.BranchProduct = product;
         await OnWholeSaleChanged(IsWholeSale);
     }
 
@@ -218,21 +217,51 @@ public partial class CreateSaleItem
 
     protected void SaveItem()
     {
-        if(SaleItemDto.PaintCategory != PaintCategory.Mix)
+        var saleItems = new List<SaleItemDto>();
+
+        // =========================
+        // MAIN ITEM
+        // =========================
+
+        if (SaleItemDto.PaintCategory != PaintCategory.Mix)
         {
             ComputeNotBelowWholeSale();
-            SaleItemDto.CostPrice = SelectedProductFromList?.CostPrice ?? 0m;
+
+            if (SelectedProductFromList != null)
+            {
+                if (IsWholeSale &&
+                    SelectedProductFromList.WholeSaleCostPrice.HasValue &&
+                    SelectedProductFromList.WholeSaleCostPrice.Value > 0)
+                {
+                    SaleItemDto.CostPrice =
+                        SelectedProductFromList.WholeSaleCostPrice.Value;
+                }
+                else
+                {
+                    SaleItemDto.CostPrice =
+                        SelectedProductFromList.CostPrice ?? 0m;
+                }
+            }
         }
         else
         {
-            SaleItemDto.HasDiscount = SaleItemDto.TotalPrice - Paints.Sum(e => e.ProductCost) <= 0;
+            SaleItemDto.HasDiscount =
+                SaleItemDto.TotalPrice - Paints.Sum(e => e.ProductCost) <= 0;
         }
+
         SaleItemDto.ItemPrice = PriceItem;
-        if (SaleItemDto.BranchProductId != null && IsWholeSale && SaleItemDto.ItemPrice == SelectedProductFromList?.WholeSalePrice.GetValueOrDefault())
+
+        if (SaleItemDto.BranchProductId != null &&
+            IsWholeSale &&
+            SaleItemDto.ItemPrice ==
+            SelectedProductFromList?.WholeSalePrice.GetValueOrDefault())
         {
             SaleItemDto.ProductPricingOption = ProductPricingOption.WholeSale;
         }
-        else if (SaleItemDto.BranchProductId !=null && !IsWholeSale && SaleItemDto.ItemPrice == SelectedProductFromList?.RetailPrice)
+        else if (SaleItemDto.BranchProductId != null &&
+                 !IsWholeSale &&
+                 SaleItemDto.ItemPrice ==
+                 SelectedProductFromList?.RetailPrice)
         {
             SaleItemDto.ProductPricingOption = ProductPricingOption.Retail;
         }
@@ -240,9 +269,50 @@ public partial class CreateSaleItem
         {
             SaleItemDto.ProductPricingOption = ProductPricingOption.Override;
         }
+
         SaleItemDto.DataList = Paints;
-        MudDialog.Close(DialogResult.Ok(SaleItemDto));
-        
+
+        saleItems.Add(SaleItemDto);
+
+        // =========================
+        // TIED UP PRODUCT
+        // =========================
+
+        if (SelectedProductFromList?.TiedUpProduct != null)
+        {
+            var tiedUp = SelectedProductFromList.TiedUpProduct;
+
+            var tiedUpItem = new SaleItemDto
+            {
+                BranchProductId = tiedUp.Id,
+                BranchProduct = tiedUp,
+
+                ItemName = tiedUp.MasterProduct?.ProductName ?? "",
+
+                Quantity = SaleItemDto.Quantity,
+
+                Size = tiedUp.Size,
+
+                UnitMeasurement =
+                    tiedUp.ProductMesurementOption.GetValueOrDefault(),
+
+                PaintCategory = SaleItemDto.PaintCategory,
+
+                ItemPrice = tiedUp.RetailPrice ?? 0m,
+
+                CostPrice = tiedUp.CostPrice ?? 0m,
+
+                TotalPrice =
+                    (tiedUp.RetailPrice ?? 0m)
+                    * (SaleItemDto.Quantity <= 0 ? 1 : SaleItemDto.Quantity),
+
+                ProductPricingOption = ProductPricingOption.Retail
+            };
+
+            saleItems.Add(tiedUpItem);
+        }
+
+        MudDialog.Close(DialogResult.Ok(saleItems));
     }
     protected void Cancel()
     {

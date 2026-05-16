@@ -47,9 +47,10 @@ public class AutoMapperProfile : Profile
               .ReverseMap();
 
         _ = CreateMap<SaleItem, SaleItemDto>()
-               .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => DeserializeInvolvePaints(src.DataList)))
-               .ReverseMap()
-               .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => SerializeInvolvePaints(src.DataList)));
+            .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => DeserializeInvolvePaints(src.DataList)))
+            .ReverseMap()
+            .ForMember(dest => dest.DataList, opt => opt.MapFrom(src => SerializeInvolvePaints(src.DataList)))
+            .ForMember(dest => dest.BranchProduct, opt => opt.Ignore());
         _ = CreateMap<Model.Client, ClientDto>()
                  .ForMember(dest => dest.DailySales, opt => opt.MapFrom(src => src.DailySales))
                  .ReverseMap();
@@ -78,7 +79,15 @@ public class AutoMapperProfile : Profile
 
         _ = CreateMap<PullOutRequest, PullOutRequestDto>().ReverseMap();
         _ = CreateMap<GlobalProduct, GlobalProductDto>().ReverseMap();
-        _ = CreateMap<BranchProduct, BranchProductDto>().ReverseMap();
+        _ = CreateMap<BranchProduct, BranchProductDto>()
+             .ForMember(d => d.TiedUpProduct, o => o.Ignore())
+             .ForMember(d => d.BasisProduct, o => o.Ignore());
+
+        _ =  CreateMap<BranchProductDto, BranchProduct>()
+                .ForMember(d => d.MasterProduct, o => o.Ignore())
+                .ForMember(d => d.TiedUpProduct, o => o.Ignore())
+                .ForMember(d => d.BasisProduct, o => o.Ignore())
+                .ForMember(d => d.SaleItems, o => o.Ignore());
         _ = CreateMap<ReturnItem, ReturnItemDto>().ReverseMap();
 
       

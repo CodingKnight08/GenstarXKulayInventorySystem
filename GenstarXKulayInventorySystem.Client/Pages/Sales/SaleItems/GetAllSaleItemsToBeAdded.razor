@@ -5,23 +5,23 @@
     <MudCard Elevation="5" Class="w-100">
         <MudTable Items="SaleItemsToBeAdded" Bordered=true Hover=true Dense=true RowsPerPage="5">
             <HeaderContent>
+                <MudTh>Brand</MudTh>
                 <MudTh>Item Name</MudTh>
-                <MudTh>Size</MudTh>
                 <MudTh>Unit</MudTh>
                 <MudTh>Quantity</MudTh>
                 <MudTh>Paint Category</MudTh>
                 <MudTh>Price</MudTh>
-                <MudTh>Description</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
+                <MudTd>
+                    @(context.BranchProduct?.MasterProduct?.ProductBrand?.BrandName ?? "")
+                </MudTd>
                 <MudTd>@context.ItemName</MudTd>
-                <MudTd>@context.Size</MudTd>
                 <MudTd>@context.UnitMeasurement</MudTd>
                 <MudTd>@context.Quantity</MudTd>
                 <MudTd>@context.PaintCategory</MudTd>
                 <MudTd>@context.ItemPrice</MudTd>
-                <MudTd>@context.Description</MudTd>
                 <MudTd>
                     <MudIconButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(() => RemoveSaleItem(context))" />
                 </MudTd>

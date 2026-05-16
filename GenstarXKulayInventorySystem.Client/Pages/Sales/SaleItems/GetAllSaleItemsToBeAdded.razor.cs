@@ -17,7 +17,8 @@ public partial class GetAllSaleItemsToBeAdded
 
     protected async Task AddSaleItem()
     {
-        var dialog = await Dialog.ShowAsync<CreateSaleItem>("Add Sale Item",
+        var dialog = await Dialog.ShowAsync<CreateSaleItem>(
+            "Add Sale Item",
             new DialogParameters
             {
             { "Branch", Branch }
@@ -31,36 +32,54 @@ public partial class GetAllSaleItemsToBeAdded
             }
         );
 
-        if (dialog != null)
-        {
-            var result = await dialog.Result;
-            if (result is not null && !result.Canceled)
-            {
-                var saleItem = result.Data as SaleItemDto;
-                if (saleItem != null)
-                {
-                    // Mix Category should always be allowed
-                    bool exists = saleItem.PaintCategory != PaintCategory.Mix &&
-                                  SaleItemsToBeAdded.Any(x =>
-                                      x.BranchProductId == saleItem.BranchProductId &&
-                                      string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
+        if (dialog == null)
+            return;
 
-                    if (!exists)
-                    {
-                        SaleItemsToBeAdded.Add(saleItem);
-                        StateHasChanged();
-                        await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
-                        SnackBar.Add("Item has been added!", Severity.Success);
-                    }
-                    else
-                    {
-                        SnackBar.Add("Item already exists in the list!", Severity.Warning);
-                    }
-                }
+        var result = await dialog.Result;
+
+        if (result == null || result.Canceled)
+            return;
+
+        var saleItems = result.Data as List<SaleItemDto>;
+
+        if (saleItems == null || !saleItems.Any())
+            return;
+
+        int addedCount = 0;
+        int duplicateCount = 0;
+
+        foreach (var saleItem in saleItems)
+        {
+            // Mix category is always allowed
+            bool exists = saleItem.PaintCategory != PaintCategory.Mix &&
+                          SaleItemsToBeAdded.Any(x =>
+                              x.BranchProductId == saleItem.BranchProductId &&
+                              string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
+
+            if (!exists)
+            {
+                SaleItemsToBeAdded.Add(saleItem);
+                addedCount++;
+            }
+            else
+            {
+                duplicateCount++;
             }
         }
-    }
 
+        if (addedCount > 0)
+        {
+            await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
+            StateHasChanged();
+
+            SnackBar.Add($"{addedCount} item(s) added successfully!", Severity.Success);
+        }
+
+        if (duplicateCount > 0)
+        {
+            SnackBar.Add($"{duplicateCount} duplicate item(s) skipped.", Severity.Warning);
+        }
+    }
     protected void RemoveSaleItem(SaleItemDto item)
     {
         if (item == null)

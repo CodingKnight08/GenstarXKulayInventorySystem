@@ -19,9 +19,11 @@ public partial class GetAllClients
     [Inject] protected UserState UserState { get; set; } = default!;
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     protected List<ClientDto> Clients { get; set; } = new List<ClientDto>();
+    protected IEnumerable<ClientDto> FilteredClients { get; set; }= new List<ClientDto>();
     protected BranchOption SelectedBranch { get; set; }
     protected int CurrentPageIndex { get; set; }
     protected bool IsLoading { get; set; } = false;
+    protected string SearchClient { get; set; } = string.Empty;
     protected override void OnInitialized()
     {
         SelectedBranch = UserState.Branch.GetValueOrDefault();
@@ -52,6 +54,7 @@ public partial class GetAllClients
             response.EnsureSuccessStatusCode();
             var clients = await response.Content.ReadFromJsonAsync<List<ClientDto>>();
             Clients = clients ?? new List<ClientDto>();
+            FilteredClients = Clients;
         }
         catch (Exception ex) {
             Logger.LogError($"Error loading clients in branch {SelectedBranch}, with error {ex.Message}");
@@ -166,5 +169,25 @@ public partial class GetAllClients
             $"/clients?pageskip={PageSkip}&pagetake={PageTake}",
             replace: true
         );
+    }
+    private void ApplySearch()
+    {
+        if (string.IsNullOrWhiteSpace(SearchClient))
+        {
+            FilteredClients = Clients;
+            PageSkip = 0;
+            return;
+        }
+
+        FilteredClients = Clients.Where(c =>
+            !string.IsNullOrWhiteSpace(c.ClientName) &&
+            c.ClientName.Contains(SearchClient, StringComparison.OrdinalIgnoreCase));
+
+        PageSkip = 0;
+    }
+    private void OnSearchChanged(string value)
+    {
+        SearchClient = value;
+        ApplySearch();
     }
 }

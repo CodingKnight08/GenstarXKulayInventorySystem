@@ -55,12 +55,16 @@ public class ProductService:IProductService
         var products = await _context.BranchProducts
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(bp => bp.MasterProduct)
+            .Include(p => p.MasterProduct!)
+                 .ThenInclude(mp => mp.ProductBrand!)
+            .Include(p => p.TiedUpProduct)
+             .ThenInclude(tb => tb.MasterProduct)
             .Where(p =>
                 p.Branch == branch &&
                 !p.IsDeleted &&
                 p.MasterProduct != null &&
-                p.MasterProduct.BrandId == brandId
+                p.MasterProduct.BrandId == brandId &&
+                p.ActualQuantity > 0 
             )
             .OrderBy(p => p.MasterProduct!.ProductName)  
             .ToListAsync();
@@ -146,6 +150,23 @@ public class ProductService:IProductService
         return _mapper.Map<List<ProductDto>>(products).ToList();
     }
 
+    public async Task<List<GlobalProductDto>> GetAllProductNotInTheBranch(int brandId, BranchOption branch)
+    {
+        var products = await _context.GlobalProducts
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(g =>
+                (brandId == 0 || g.BrandId == brandId) &&   // optional brand filter
+                !g.BranchProducts.Any(bp => bp.Branch == branch && bp.MasterProductId == g.Id)
+            )
+            .ToListAsync();
+        if(products.Count == 0)
+        {
+            return new List<GlobalProductDto>();
+        }
+
+        return _mapper.Map<List<GlobalProductDto>>(products);
+    }
     public async Task<int> GetProductCountAsync(int brandId, BranchOption branch)
     {
         var products = await _context.BranchProducts
@@ -164,29 +185,60 @@ public class ProductService:IProductService
         return product == null ? null : _mapper.Map<BranchProductDto>(product);
     }
 
-    public async Task<bool> AddAsync(ProductDto productDto)
+    public async Task<bool> AddAsync(GlobalProductDto productDto)
     {
+        if (string.IsNullOrWhiteSpace(productDto.ProductName))
+            return false;
+
         try
         {
-            var existingProduct = await _context.Products.AsNoTracking().AsSplitQuery()
-                .FirstOrDefaultAsync(x => x.ProductName == productDto.ProductName &&
-                                           x.Size == productDto.Size && x.ProductMesurementOption == productDto.ProductMesurementOption && x.Branch == productDto.Branch);
-            if (existingProduct != null)
+            var normalizedName = productDto.ProductName.Trim();
+
+            var exists = await _context.Products
+                .AnyAsync(x => x.ProductName.ToLower() == normalizedName.ToLower());
+
+            if (exists)
                 return false;
 
+            productDto.ProductName = normalizedName;
             productDto.CreatedBy = GetCurrentUsername();
             productDto.CreatedAt = DateTime.UtcNow;
-            productDto.ActualQuantity = productDto.Quantity;
-            var product = _mapper.Map<Product>(productDto);
-            _context.Products.Add(product);
+
+            var product = _mapper.Map<GlobalProduct>(productDto);
+
+            _context.GlobalProducts.Add(product);
             await _context.SaveChangesAsync();
 
             return true;
         }
         catch (Exception ex)
         {
-            // Use logging here if available
-            throw new Exception($"Error adding product: {ex.InnerException?.Message ?? ex.Message}");
+            // preserve stack trace
+            throw new InvalidOperationException("Error adding product", ex);
+        }
+    }
+    public async Task<bool> AddBranchProduct(BranchProductDto branchProduct)
+    {
+        if(branchProduct.MasterProductId == null)
+            return false;
+        try
+        {
+            var exist = await _context.BranchProducts
+                .AsNoTracking()
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(e => !e.IsDeleted && e.Branch == branchProduct.Branch && e.MasterProductId == branchProduct.MasterProductId);
+            if (exist is not null)
+                return false;
+            branchProduct.CreatedAt = PhilippineTime.Now;
+            branchProduct.CreatedBy = GetCurrentUsername();
+            var product = _mapper.Map<BranchProduct>(branchProduct);
+            _context.BranchProducts.Add(product);
+            int result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        catch(Exception ex)
+        {
+            throw new InvalidOperationException("Error adding branch product", ex);
         }
     }
 
@@ -213,6 +265,36 @@ public class ProductService:IProductService
             // log the error properly (ILogger or your logging service)
             _logger.LogError(ex, "Error updating product with Id {ProductId}", productDto.Id);
 
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateSaleItemProduct(int? branchProductId, decimal toBeDeducted)
+    {
+        try
+        {
+            if (!branchProductId.HasValue)
+                return false;
+
+            var existingProduct = await _context.BranchProducts
+                .FirstOrDefaultAsync(p => p.Id == branchProductId.Value);
+
+            if (existingProduct == null)
+                return false;
+
+            // CHECK: prevent negative result
+            if (existingProduct.ActualQuantity < toBeDeducted)
+                return false;
+
+            existingProduct.UpdatedAt = PhilippineTime.Now;
+            existingProduct.ActualQuantity -= toBeDeducted;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating product with Id {ProductId}", branchProductId);
             return false;
         }
     }
@@ -480,9 +562,11 @@ public interface IProductService
         string? search = null);
     Task<List<BranchProductDto>> GetAllProductsForWayBill(int brandId, BranchOption branch);
     Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take);
+    Task<List<GlobalProductDto>> GetAllProductNotInTheBranch(int brandId, BranchOption branch);
     Task<int> GetProductCountAsync(int brandId, BranchOption branch);
     Task<BranchProductDto?> GetByIdAsync(int id);
-    Task<bool> AddAsync(ProductDto productDto);
+    Task<bool> AddAsync(GlobalProductDto productDto);
+    Task<bool> AddBranchProduct(BranchProductDto branchProduct);
     Task<bool> UpdateAsync(BranchProductDto productDto);
     Task<bool> UpdateStocksAsync(
     List<UpdateBranchProductDto> stocks);
@@ -506,4 +590,5 @@ public interface IProductService
 
 
     Task<List<SourceAndRequesteeProductDto>> GetAllRequesteeAndSourceProduct(int brandId, BranchOption requester, BranchOption source);
+    Task<bool> UpdateSaleItemProduct(int? branchProductId, decimal toBeDeducted);
 }

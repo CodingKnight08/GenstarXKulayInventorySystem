@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 
 namespace GenstarXKulayInventorySystem.Server.Services;
@@ -49,6 +50,9 @@ public class SaleItemService:ISaleItemService
         var query = _context.SaleItems
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(si => si.BranchProduct)
+            .ThenInclude(bp => bp.MasterProduct)
+            .ThenInclude(mp => mp.ProductBrand)
             .Where(e => e.DailySaleId == dailySaleId && !e.IsDeleted);
 
         int totalCount = await query.CountAsync();
@@ -68,17 +72,22 @@ public class SaleItemService:ISaleItemService
     }
 
 
-    public async Task<List<SaleItemDto>> GetAllUndeductedItemsAsync()
+    public async Task<List<SaleItemDto>> GetAllUndeductedItemsAsync(BranchOption branch)
     {
-        List<SaleItem> salesItems = await _context.SaleItems
-            .AsNoTracking()
+        List<SaleItem> salesItems = await _context.DailySales
             .AsSplitQuery()
-            .Where(si => !si.IsDeleted && !si.IsDeducted).ToListAsync();
-        if(salesItems == null || salesItems.Count == 0)
+            .Where(ds => !ds.IsDeleted && ds.Branch == branch)
+            .SelectMany(ds => ds.SaleItems)
+            .Where(si => !si.IsDeleted && !si.IsDeducted)
+            .ToListAsync();
+
+        if (salesItems == null || salesItems.Count == 0)
         {
             return new List<SaleItemDto>();
         }
+
         List<SaleItemDto> saleItemsDto = _mapper.Map<List<SaleItemDto>>(salesItems);
+
         return saleItemsDto;
     }
 
@@ -133,20 +142,15 @@ public class SaleItemService:ISaleItemService
         }
     }
 
-    public async Task<bool> UpdateSaleItemStatus(SaleItemDto saleItem)
+    public async Task<bool> UpdateSaleItemStatus(int saleItemId)
     {
-        var entity = new SaleItem
-        {
-            Id = saleItem.Id,
-            UpdatedAt = DateTime.UtcNow,
-            UpdatedBy = GetCurrentUsername(),
-            IsDeducted = true
-        };
+        var entity = await _context.SaleItems.FindAsync(saleItemId);
 
-        _context.SaleItems.Attach(entity);
-        _context.Entry(entity).Property(x => x.UpdatedAt).IsModified = true;
-        _context.Entry(entity).Property(x => x.UpdatedBy).IsModified = true;
-        _context.Entry(entity).Property(x => x.IsDeducted).IsModified = true;
+        if (entity == null) return false;
+
+        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedBy = GetCurrentUsername();
+        entity.IsDeducted = true;
 
         return await _context.SaveChangesAsync() > 0;
     }
@@ -178,10 +182,11 @@ public interface ISaleItemService
 {
     Task<List<SaleItemDto>> GetAllSaleItemsAsync(int dailySaleId);
     Task<SaleItemPageResultDto<SaleItemDto>> GetAllSaleItemsPageAsync(int dailySaleId, int skip, int take);
-    Task<List<SaleItemDto>> GetAllUndeductedItemsAsync();
+    Task<List<SaleItemDto>> GetAllUndeductedItemsAsync(BranchOption branch);
     Task<SaleItemDto?> GetSaleItemById(int saleItemId);
     Task<bool> AddSaleItemAsync(SaleItemDto saleItemDto);
     Task<bool> UpdateSaleItemAsync(SaleItemDto saleItem);
-    Task<bool> UpdateSaleItemStatus(SaleItemDto saleItem);
+    Task<bool> UpdateSaleItemStatus(int saleItemId);
     Task<bool> DeleteSaleItemAsync(int saleItemId);
 }
+

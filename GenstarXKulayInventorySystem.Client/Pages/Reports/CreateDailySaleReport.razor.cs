@@ -267,7 +267,7 @@ public partial class CreateDailySaleReport
         DailySaleReport.Transportation = Expenses.Where(e => e.Category == BillingCategory.Transportation).Sum(e => e.Amount);
         DailySaleReport.Supplies = Expenses.Where(e => e.Category == BillingCategory.OfficeSupplies).Sum(e => e.Amount);
         DailySaleReport.Foods = Expenses.Where(e => e.Category == BillingCategory.Foods).Sum(e => e.Amount);
-        DailySaleReport.BeginningBalance = DailySaleReport.TotalCash;
+        DailySaleReport.BeginningBalance = DailySaleReport.TotalCash + DailySaleReport.TotalChecks;
         DailySaleReport.Commissions = Expenses.Where(e => e.Category == BillingCategory.Commissions).Sum(e => e.Amount);
         DailySaleReport.SalaryAndAdvances = Expenses.Where(e => e.Category == BillingCategory.SalaryAndAdvances).Sum(e => e.Amount);
         DailySaleReport.Others = Expenses

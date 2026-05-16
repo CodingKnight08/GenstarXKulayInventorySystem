@@ -10,56 +10,27 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands.Produ
 public partial class CreateProduct
 {
     [Parameter] public int BrandId { get; set; }
-    [Parameter] public BranchOption Branch { get; set; }
     [Inject] private UserState UserState { get; set; } = default!;
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
 
 
-    protected ProductDto NewProduct { get; set; } = new ProductDto();
-    
-    protected List<ProductCategoryDto> Categories { get; set; } = new List<ProductCategoryDto>();
+    protected GlobalProductDto NewProduct { get; set; } = new GlobalProductDto();
+    protected ProductMesurementOption Unit { get; set; }
+   
     protected bool IsLoading = false;
-    protected bool IsDisabled => string.IsNullOrWhiteSpace(NewProduct.ProductName)
-                                || NewProduct.Size.Equals(0)
-                                || NewProduct.CostPrice.Equals(0)
-                                || NewProduct.ProductMesurementOption == null
-                                || NewProduct.RetailPrice == null
-                                || NewProduct.CostPrice > NewProduct.WholesalePrice
-                                || NewProduct.RetailPrice < NewProduct.CostPrice
-                                || NewProduct.RetailPrice < NewProduct.WholesalePrice
-                                || NewProduct.BufferStocks == null
-                                || NewProduct.BufferStocks == 0;
-                        
+    protected bool IsDisabled => string.IsNullOrWhiteSpace(NewProduct.ProductName);
+                           
 
 
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
-        await LoadCategoriesAsync();
-        NewProduct.Branch = Branch;
         
     }
 
-    protected async Task LoadCategoriesAsync()
-    {
-        try
-        {
-            var response = await HttpClient.GetAsync("api/productcategory/all");
-            response.EnsureSuccessStatusCode();
-            Categories = await response.Content.ReadFromJsonAsync<List<ProductCategoryDto>>() ?? new List<ProductCategoryDto>();
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error fetching categories: {ex.Message}");
-            Snackbar.Add("Failed to load categories. Please try again later.", Severity.Error);
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
+   
     protected void Cancel()
     {
        MudDialog.Cancel();
@@ -96,7 +67,31 @@ public partial class CreateProduct
         }
     }
 
-  
+    private void OnUnitChanged(ProductMesurementOption value)
+    {
+        Unit = value;
 
+        var unitLabel = ProductUnit(value);
+
+        if (string.IsNullOrWhiteSpace(NewProduct.ProductName))
+            return;
+
+        // Remove existing (...) if user changes unit again (important)
+        var baseName = RemoveUnitSuffix(NewProduct.ProductName);
+
+        NewProduct.ProductName = $"{baseName} {unitLabel}";
+    }
+    private string RemoveUnitSuffix(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return name;
+
+        var index = name.LastIndexOf('(');
+
+        if (index > 0 && name.EndsWith(")"))
+            return name[..index].Trim();
+
+        return name;
+    }
 
 }
