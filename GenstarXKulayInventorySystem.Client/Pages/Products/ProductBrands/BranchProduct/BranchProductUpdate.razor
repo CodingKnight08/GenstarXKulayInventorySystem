@@ -1,0 +1,49 @@
+﻿@page "/branch-product-price-update"
+@using GenstarXKulayInventorySystem.Shared.DTOS
+@using ClosedXML.Excel
+
+<MudMainContent>
+ <MudPaper Class="px-3">
+        <h3>📦 Branch Product Price Preview (Excel Upload)</h3>
+
+        <InputFile OnChange="HandleFileSelected" accept=".xlsx" />
+
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <p style="color:@(IsError ? "red" : "green")">@Message</p>
+        }
+
+        @if (ToBeupdated.Any())
+        {
+            <MudText Typo="Typo.h6" Class="mt-3">
+                Preview Data
+            </MudText>
+
+            <MudTable Items="ToBeupdated" Dense="true" Hover="true" Bordered="true" Striped="true" RowsPerPage="10">
+
+                <HeaderContent>
+                    <MudTh>BranchProductId</MudTh>
+                    <MudTh>BrandName</MudTh>
+                    <MudTh>ProductName</MudTh>
+                    <MudTh>CostPrice</MudTh>
+                    <MudTh>RetailPrice</MudTh>
+                    <MudTh>WholeSalePrice</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd DataLabel="BranchProductId">@context.BranchProductId</MudTd>
+                    <MudTd DataLabel="BrandName">@context.BrandName</MudTd>
+                    <MudTd DataLabel="ProductName">@context.ProductName</MudTd>
+                    <MudTd DataLabel="CostPrice">@context.CostPrice</MudTd>
+                    <MudTd DataLabel="RetailPrice">@context.RetailPrice</MudTd>
+                    <MudTd DataLabel="WholeSalePrice">@context.WholeSalePrice</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager HorizontalAlignment="HorizontalAlignment.Center" />
+                </PagerContent>
+            </MudTable>
+            <MudButton Class="float-end mt-5" Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdatePrices">Update Price</MudButton>
+        }
+ </MudPaper>
+
+</MudMainContent>
