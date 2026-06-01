@@ -144,6 +144,7 @@ builder.Services.AddScoped<IStatementReportService, StatementReportService>();
 builder.Services.AddScoped<IWayBillService, WayBillService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHostedService<SalesHostedService>();
+builder.Services.AddScoped<IBranchProductService, BranchProductService>();
 builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]) });
 
