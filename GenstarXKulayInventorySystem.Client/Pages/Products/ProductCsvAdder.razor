@@ -1,0 +1,41 @@
+﻿@page "/products/csv-adder"
+@using MudBlazor
+
+<MudMainContent>
+    <h3>📦 Upload Products, Brands & Branch Products</h3>
+
+    <!-- ---------------- Products Upload ---------------- -->
+    <div class="mb-4">
+        <h5>Import Products (CSV or Excel)</h5>
+        <InputFile OnChange="UploadProductFile" />
+        <MudText Typo="Typo.body1">@ProductStatusMessage</MudText>
+    </div>
+
+    <!-- ---------------- Brands Upload ---------------- -->
+    <div class="mb-4">
+        <h5>Import Product Brands (CSV or Excel)</h5>
+        <InputFile OnChange="UploadBrandFile" />
+        <MudText Typo="Typo.body1">@BrandStatusMessage</MudText>
+    </div>
+
+    <!-- ---------------- Branch Products Upload ---------------- -->
+    <div class="mb-4">
+        <h5>Import Branch Products (CSV or Excel)</h5>
+        <InputFile OnChange="UploadBranchProductFile" />
+        <MudText Typo="Typo.body1">@BranchProductStatusMessage</MudText>
+    </div>
+
+    <div class="mb-4">
+        <h5>Update Branch Product Actual Quantity (CSV)</h5>
+        <InputFile OnChange="UploadBranchProductActualQuantityFile" />
+        <MudText Typo="Typo.body1">@BranchProductActualQtyStatusMessage</MudText>
+    </div>
+
+    <div class="mb-4">
+        <h5>Update Branch Product Prices (CSV)</h5>
+        <InputFile OnChange="UploadBranchProductPriceFile" />
+        <MudText Typo="Typo.body1">@BranchProductPriceStatusMessage</MudText>
+    </div>
+</MudMainContent>
+
+
