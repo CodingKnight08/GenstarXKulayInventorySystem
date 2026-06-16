@@ -16,6 +16,7 @@ public enum UserRole
 {
     Admin,
     Secretary,
-    User
+    User,
+    Staff,
 }
 
