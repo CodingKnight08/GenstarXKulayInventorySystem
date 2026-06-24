@@ -1,0 +1,67 @@
+﻿@page "/"
+@layout HomeLayout
+
+<MudMainContent Style="padding:0 !important; min-height:100vh;">
+    <div style="
+        position: fixed;
+        top: 20px;
+        right: 30px;
+        display: flex;
+        gap: 12px;
+        z-index: 1000;">
+
+       
+
+        <MudButton Variant="Variant.Filled"
+                   Style="@($"background-color:{Colors.Cyan.Accent3}; color:white;")"
+                   OnClick="@GoToClient">
+            Client
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   OnClick="@GoToStaff">
+            Staff
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.PersonAdd"
+                   OnClick="@GoToRegister">
+            Register
+        </MudButton>
+
+    </div>
+    <div style="
+        position: relative;
+        background: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+        url('/clientbackground.png');
+        background-size: cover;
+        background-position: center;
+        height:100vh;">
+
+        <About />
+
+    </div>
+    <Services/>
+</MudMainContent>
+@code {
+    [Inject] NavigationManager Navigation { get; set; } = default!;
+
+    private void GoToClient()
+    {
+        Navigation.NavigateTo("/client-login");
+    }
+
+    private void GoToStaff()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+    private void GoToRegister()
+    {
+        Navigation.NavigateTo("/register");
+    }
+
+   
+}

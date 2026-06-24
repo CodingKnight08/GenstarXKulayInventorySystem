@@ -1,0 +1,86 @@
+﻿<style>
+    .about-container {
+        position: absolute;
+        top: 50%;
+        left: 60px;
+        transform: translateY(-50%);
+        width: 500px;
+        max-width: calc(100vw - 120px);
+        z-index: 10;
+    }
+
+    .about-card {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 20px;
+        color: white;
+    }
+
+    /* RIGHT LOGO SECTION */
+    .logo-container {
+        position: absolute;
+        top: 50%;
+        right: 360px;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: row;
+        gap: 40px;
+        align-items: center;
+        z-index: 10;
+    }
+
+        .logo-container img {
+            width: 250px;
+            height: 250px; /* must be equal for perfect circle */
+            object-fit: cover;
+
+            filter: drop-shadow(0 10px 25px rgba(0,0,0,0.5));
+            transition: transform 0.3s ease;
+        }
+
+            .logo-container img:hover {
+                transform: scale(1.05);
+            }
+
+</style>
+
+<!-- LEFT: ABOUT -->
+<div class="about-container">
+
+    <MudCard Class="pa-6 about-card" Elevation="0">
+
+        <MudText Typo="Typo.h4" Style="color:white;" GutterBottom="true">
+            About Genstar Paint Trade Center
+        </MudText>
+
+        <MudText Typo="Typo.body1"
+                 Style="line-height:1.8;color:rgba(255,255,255,0.9);">
+
+            Genstar Paint Trade Center was founded by Mr. Sonny Cariño Chong in 1998.
+            He first established the business along Magsaysay Avenue, General Santos City
+            (beside Mitchy's Car Accessories).
+
+            <br /><br />
+
+            At its early stage, the company focused on automotive paints with a 75:25 ratio
+            of Car Paints to House Paints. It became the first dealer of Dupont Paints
+            (now Cromax) in the SOCKSARGEN area.
+
+            <br /><br />
+
+            Over the years, the business expanded into house, marine, and industrial paints,
+            shifting to a 60:40 product ratio while maintaining its manual mixing tradition.
+
+        </MudText>
+
+    </MudCard>
+
+</div>
+
+<!-- RIGHT: LOGOS -->
+<div class="logo-container">
+    <img src="/Kulay.jpg" alt="Kulays Logo" />
+    <img src="/Genstar.png" alt="Genstar Logo" />
+</div>
