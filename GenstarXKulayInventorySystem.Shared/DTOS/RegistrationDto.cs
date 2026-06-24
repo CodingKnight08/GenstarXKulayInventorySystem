@@ -14,6 +14,7 @@ public class RegistrationDto:BaseEntityDto
     public string Password { get; set; } = string.Empty;
     public string ConfirmPassword { get; set; } = string.Empty;
     public bool IsApproved { get; set; } = false;
+    public bool IsClient { get; set; } = false;
 }
 public class LoginDto
 {

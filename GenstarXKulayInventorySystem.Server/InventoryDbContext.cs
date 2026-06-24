@@ -419,7 +419,31 @@ public class InventoryDbContext: IdentityDbContext<User>
                 .HasForeignKey(e => e.WayBillItemId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(u => u.CreatedAt)
+                  .IsRequired();
 
+            entity.Property(u => u.CreatedBy)
+                  .HasMaxLength(100);
+
+            entity.Property(u => u.UpdatedBy)
+                  .HasMaxLength(100);
+
+            entity.Property(u => u.Role)
+                  .HasConversion<int>();
+
+            entity.Property(u => u.Branch)
+                  .HasConversion<int>();
+
+            entity.Property(u => u.IsClient)
+                  .HasDefaultValue(false);
+
+            entity.HasOne(u => u.Client)
+                  .WithMany()
+                  .HasForeignKey(u => u.ClientId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
 
         base.OnModelCreating(modelBuilder);
     }
