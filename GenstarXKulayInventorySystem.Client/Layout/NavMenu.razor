@@ -11,9 +11,9 @@
                 background-position:center;
                 background-size:contain;">
      </div>
-    <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" >Dashboard</MudNavLink>
-    <AuthorizeView Roles="Admin,Secretary,User" Context="GeneralAuth">
-
+    <MudNavLink Icon="@Icons.Material.Filled.ManageSearch" Href="/search-items">Search Items</MudNavLink>
+    <AuthorizeView Roles="Admin,Secretary,Staff" Context="GeneralAuth">
+     <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
     <MudNavGroup Icon="@Icons.Material.Filled.Token" IconColor="@Color.Success" Title="Products">
          <MudNavLink Href="/productbrands" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Brands</MudNavLink>
           <MudNavLink Href="/productcategory" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage" IconColor="@Color.Error">Category</MudNavLink>
