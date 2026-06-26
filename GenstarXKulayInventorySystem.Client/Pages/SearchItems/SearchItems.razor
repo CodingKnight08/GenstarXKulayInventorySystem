@@ -1,8 +1,121 @@
 ﻿@page "/search-items"
 @layout MainLayout
 
-<MudMainContent Style="background-image: url('/clientbackground.png');
-    background-size: cover;
-    background-position: center;
-    min-height: 100vh;">
+<MudMainContent Class="pa-2 pa-sm-4">
+
+    <MudPaper Class="p-4 mt-5" Elevation="1">
+
+        <MudGrid Spacing="2" Class="my-3">
+
+            <!-- Search -->
+            <MudItem xs="12" md="6">
+                <MudTextField T="string"
+                              Label="Search Item"
+                              @bind-Value="SearchItem"
+                              Variant="Variant.Outlined"
+                              Clearable="true"
+                              Immediate="false"
+                              FullWidth="true"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              OnKeyDown="HandleKeyDown" />
+            </MudItem>
+
+            <!-- Brand Switch -->
+            <MudItem xs="12" sm="6" md="3"
+                     Class="d-flex align-center">
+                <MudSwitch T="bool"
+                           @bind-Value="IsBrand"
+                           Color="Color.Primary"
+                           Label="Search by Brand" />
+            </MudItem>
+
+            <!-- Search Button -->
+            <MudItem xs="12" sm="6" md="3">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Disabled="@IsLoading"
+                           OnClick="Search">
+                    Search
+                </MudButton>
+            </MudItem>
+
+        </MudGrid>
+
+    </MudPaper>
+
+    @if (IsLoading)
+    {
+        <MudPaper Class="pa-6 mt-4" Elevation="1">
+
+            <MudStack AlignItems="AlignItems.Center"
+                      Justify="Justify.Center"
+                      Spacing="2">
+
+                <MudProgressCircular Indeterminate="true"
+                                     Size="Size.Large"
+                                     Color="Color.Primary" />
+
+                <MudText Typo="Typo.body1">
+                    Loading products...
+                </MudText>
+
+            </MudStack>
+
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="mt-4" Elevation="2">
+
+            <MudTable Items="Results"
+                      Hover="true"
+                      Dense="true"
+                      Striped="true"
+                      Breakpoint="Breakpoint.Md"
+                      RowsPerPage="10">
+
+                <HeaderContent>
+                    <MudTh>Brand</MudTh>
+                    <MudTh>Product Name</MudTh>
+                    <MudTh>User Qty</MudTh>
+                    <MudTh>Warehouse Qty</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+
+                    <MudTd DataLabel="Brand">
+                        @context.MasterProduct?.ProductBrand?.BrandName
+                    </MudTd>
+
+                    <MudTd DataLabel="Product Name">
+                        @context.MasterProduct?.ProductName
+                    </MudTd>
+
+                    <MudTd DataLabel="User Qty">
+                        @context.ActualQuantity
+                    </MudTd>
+
+                    <MudTd DataLabel="Warehouse Qty">
+                        @GetWarehouseQuantity(context)
+                    </MudTd>
+
+                </RowTemplate>
+
+                <NoRecordsContent>
+                    <MudText Class="pa-4">
+                        No items found.
+                    </MudText>
+                </NoRecordsContent>
+
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+                </PagerContent>
+
+            </MudTable>
+
+        </MudPaper>
+    }
+
 </MudMainContent>
