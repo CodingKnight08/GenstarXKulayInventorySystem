@@ -96,7 +96,7 @@ public partial class LoginPage
 
     protected void Register()
     {
-        NavigationManager.NavigateTo("/register");
+        NavigationManager.NavigateTo($"/register?client=false");
     }
     private void TogglePasswordVisibility()
     {
