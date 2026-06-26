@@ -7,7 +7,7 @@ using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 public class ProductController : ControllerBase
 {
@@ -156,6 +156,23 @@ public class ProductController : ControllerBase
         }
     }
 
+    [HttpGet("all/stocks/{branch}")]
+    public async Task<ActionResult<List<BranchProductDto>>> GetAllProductsByBranch(
+      BranchOption branch,
+      [FromQuery] bool isBrand = false,
+      [FromQuery] string? searchText = null)
+    {
+        try
+        {
+            var products = await _productService.GetAllProductsByStore(branch, isBrand, searchText);
+
+            return Ok(products ?? new List<BranchProductDto>());
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error retrieving products: {ex.Message}");
+        }
+    }
 
     // GET: api/products/5
     [HttpGet("{id}")]

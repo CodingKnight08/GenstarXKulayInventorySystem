@@ -10,7 +10,7 @@ public class RegistrationDto:BaseEntityDto
     public string FullName { get; set; } = null!;
     public string Email { get; set; } = null!;
     public string? ContactNumber { get; set; } = string.Empty;
-    public BranchOption Branch { get; set; } = BranchOption.Warehouse;
+    public BranchOption Branch { get; set; } = BranchOption.GeneralSantosCity;
     public string Password { get; set; } = string.Empty;
     public string ConfirmPassword { get; set; } = string.Empty;
     public bool IsApproved { get; set; } = false;

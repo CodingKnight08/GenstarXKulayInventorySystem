@@ -7,51 +7,48 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuestPDF.Infrastructure;
 using System.Security.Claims;
 using System.Text;
-using QuestPDF.Infrastructure;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Detect environment
-var environment = builder.Environment.EnvironmentName;
-Console.WriteLine($"Starting in environment: {environment}");
+Console.WriteLine($"Starting in environment: {builder.Environment.EnvironmentName}");
 
-// ✅ Handle PaaS environments like Railway or MonsterASP
+// Handle PaaS environments like Railway or MonsterASP
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
 {
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 }
 
-// ✅ Add MVC Controllers
+// Controllers
 builder.Services.AddControllers();
 
-// ✅ Enable CORS
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
-        policy
-            .WithOrigins(
-                "https://localhost:7035",                     // Local dev client
+    {
+        policy.WithOrigins(
+                "https://localhost:7035",
                 "http://genstar-kulay-inventory.runasp.net",
                 "http://twodragon88.premiumasp.net",
-                "http://twodragon88-corp.premiumasp.net"
-            )
-            .AllowAnyMethod()    // Allow GET, POST, PUT, DELETE, etc.
-            .AllowAnyHeader()    // Allow any headers
-            .AllowCredentials()  // Allow cookies or auth headers if needed
-    );
+                "http://twodragon88-corp.premiumasp.net",
+                "https://twodragon88.shop")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
 });
 
-
-// ✅ Identity
+// Identity
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<InventoryDbContext>()
     .AddDefaultTokenProviders();
 
-// ✅ JWT Authentication
+// JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -67,7 +64,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
         RoleClaimType = ClaimTypes.Role,
         NameClaimType = ClaimTypes.Name
     };
@@ -75,58 +73,63 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// ✅ Swagger / OpenAPI
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+// Swagger (Development Only)
+if (builder.Environment.IsDevelopment())
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
+    builder.Services.AddEndpointsApiExplorer();
+
+    builder.Services.AddSwaggerGen(c =>
     {
-        Title = "Genstar XKulay Inventory API",
-        Version = "v1"
+        c.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Genstar XKulay Inventory API",
+            Version = "v1"
+        });
     });
-});
+}
 
 builder.Services.AddHttpContextAccessor();
 
-// ✅ AutoMapper
+// AutoMapper
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<AutoMapperProfile>();
 });
 
-// ✅ Password policy
+// Password Policy
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 6;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
 });
 
-// ✅ SQL Server Configuration
+// SQL Server
 builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 {
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions =>
+        sql =>
         {
-            sqlOptions.EnableRetryOnFailure();
+            sql.EnableRetryOnFailure();
         });
 }, ServiceLifetime.Scoped);
 
-//QuestPDF configuration
+// QuestPDF
 QuestPDF.Settings.License = LicenseType.Community;
 QuestPDF.Settings.EnableDebugging = false;
 
-// ✅ Hosted + Scoped services
-// Avoid running hosted services when generating Swagger
+// Hosted Services
 var isSwaggerBuild = builder.Environment.IsEnvironment("SwaggerBuild");
 
 if (!isSwaggerBuild)
 {
     builder.Services.AddHostedService<SalesHostedService>();
 }
+
+// Scoped Services
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
@@ -143,57 +146,65 @@ builder.Services.AddScoped<IRequestItemsService, RequestItemsService>();
 builder.Services.AddScoped<IStatementReportService, StatementReportService>();
 builder.Services.AddScoped<IWayBillService, WayBillService>();
 builder.Services.AddScoped<JwtService>();
-builder.Services.AddHostedService<SalesHostedService>();
+
 builder.Services.AddScoped(sp =>
-    new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]) });
+    new HttpClient
+    {
+        BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]!)
+    });
 
 var app = builder.Build();
-// ✅ Apply migrations and seed users/roles in normal runtime (not during Swagger generation)
+
+// Database Migration & Seeding
 if (!isSwaggerBuild)
 {
     using var scope = app.Services.CreateScope();
-    var services = scope.ServiceProvider;
 
     try
     {
-        var dbContext = services.GetRequiredService<InventoryDbContext>();
-        dbContext.Database.Migrate(); // Apply migrations
+        var db = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+        db.Database.Migrate();
 
-        var userManager = services.GetRequiredService<UserManager<User>>();
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Seed roles and admin user
         await InventoryDbContext.SeedUserAsync(userManager, roleManager);
+
         Console.WriteLine("Database seeding completed successfully.");
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred while migrating or seeding the database.");
     }
 }
 
-
-// ✅ Middleware pipeline
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+// Swagger Middleware (Development Only)
+if (app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Genstar XKulay Inventory API v1");
-    c.RoutePrefix = "swagger";
-});
+    app.UseSwagger();
+
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Genstar XKulay Inventory API v1");
+        c.RoutePrefix = "swagger";
+    });
+}
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 app.UseBlazorFrameworkFiles();
 
 app.UseRouting();
 
 app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();              
-app.MapFallbackToFile("index.html"); 
+app.MapControllers();
+
+app.MapFallbackToFile("index.html");
 
 app.Run();
-

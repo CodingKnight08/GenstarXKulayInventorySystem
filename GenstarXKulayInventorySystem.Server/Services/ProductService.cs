@@ -50,6 +50,48 @@ public class ProductService:IProductService
         
         return products.Select(product => _mapper.Map<ProductDto>(product)).ToList();
     }
+    public async Task<List<BranchProductDto>> GetAllProductsByStore(
+     BranchOption branch,
+     bool isBrand,
+     string? searchText)
+    {
+        var query = _context.BranchProducts
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(p => p.MasterProduct)
+                .ThenInclude(mp => mp.ProductBrand)
+            .Where(p =>
+                (p.Branch == branch || p.Branch == BranchOption.Warehouse) &&
+                !p.IsDeleted &&
+                p.ActualQuantity > 0);
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            if (isBrand)
+            {
+                // Search products belonging to the selected brand
+                query = query.Where(p =>
+                    p.MasterProduct!.ProductBrand!.BrandName.Contains(searchText));
+            }
+            else
+            {
+                // Search products regardless of brand
+                query = query.Where(p =>
+                    p.MasterProduct!.ProductName.Contains(searchText));
+            }
+        }
+
+        query = isBrand
+            ? query.OrderBy(p => p.MasterProduct!.ProductName)
+            : query.OrderBy(p => p.MasterProduct!.ProductBrand!.BrandName)
+                   .ThenBy(p => p.MasterProduct!.ProductName);
+
+        var products = await query
+            .Take(100)
+            .ToListAsync();
+
+        return _mapper.Map<List<BranchProductDto>>(products);
+    }
     public async Task<List<BranchProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch)
     {
         var products = await _context.BranchProducts
@@ -560,6 +602,10 @@ public interface IProductService
         int skip,
         int take,
         string? search = null);
+    Task<List<BranchProductDto>> GetAllProductsByStore(
+    BranchOption branch,
+    bool isBrand,
+    string? searchText);
     Task<List<BranchProductDto>> GetAllProductsForWayBill(int brandId, BranchOption branch);
     Task<List<ProductDto>> GetAllProductsAsyncByBranch(int brandId, BranchOption branch, int skip, int take);
     Task<List<GlobalProductDto>> GetAllProductNotInTheBranch(int brandId, BranchOption branch);

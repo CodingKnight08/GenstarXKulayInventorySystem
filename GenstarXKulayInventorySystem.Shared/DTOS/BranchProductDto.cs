@@ -22,3 +22,4 @@ public class BranchProductDto:BaseEntityDto
     public BranchProductDto? BasisProduct { get; set; } //for future purpose
     public ProductMesurementOption? ProductMesurementOption { get; set; }
 }
+
