@@ -1,50 +1,264 @@
 ﻿@page "/"
 @layout HomeLayout
+<style>
+    .footer-section {
+        background: #1d1d1d;
+        color: white;
+        padding: 70px 0 25px;
+    }
 
-<MudMainContent Style="padding:0 !important; min-height:100vh;">
-    <div style="
-        position: fixed;
-        top: 20px;
-        right: 30px;
-        display: flex;
-        gap: 12px;
-        z-index: 1000;">
+    .footer-title {
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
 
-       
+    .footer-brand img {
+        display: block;
+    }
 
-        <MudButton Variant="Variant.Filled"
-                   Style="@($"background-color:{Colors.Cyan.Accent3}; color:white;")"
-                   OnClick="@GoToClient">
-            Client
-        </MudButton>
+    .footer-link {
+        color: white;
+        text-decoration: none;
+        transition: .25s;
+    }
 
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Success"
-                   OnClick="@GoToStaff">
-            Staff
-        </MudButton>
+        .footer-link:hover {
+            color: #4fc3f7;
+        }
 
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.PersonAdd"
-                   OnClick="@GoToRegister">
-            Register
-        </MudButton>
+    .footer-section .mud-icon-root {
+        font-size: 1.6rem;
+    }
 
-    </div>
-    <div style="
-        position: relative;
-        background: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
-        url('/clientbackground.png');
-        background-size: cover;
-        background-position: center;
-        height:100vh;">
+    .footer-section .mud-divider {
+        border-color: rgba(255,255,255,.15);
+    }
 
-        <About />
+   
+</style>
+ <MudHidden Breakpoint="Breakpoint.SmAndUp" Invert="true">
+        <div class="w-100 p-3 d-flex align-items-center justify-content-between bg-white shadow-sm">
 
-    </div>
-    <Services/>
-</MudMainContent>
+            <!-- Left Logo -->
+            <div class="d-flex align-items-center gap-2">
+                <img src="/Kulay.jpg"
+                     alt="Kulay Logo"
+                     style="width:50px;height:50px;border-radius:50%;object-fit:cover;" />
+
+                <img src="/Genstar.png"
+                     alt="Genstar Logo"
+                     style="height:50px;object-fit:contain;" />
+
+                <span class="fw-bold fs-5">
+                    Genstar Paint Trade Center
+                </span>
+            </div>
+
+            <!-- Right Buttons -->
+            <div class="d-flex gap-2">
+                <MudButton Variant="Variant.Filled"
+                           Style="@($"background-color:{Colors.Cyan.Accent3};color:white;")"
+                           OnClick="@GoToClient">
+                    Client
+                </MudButton>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Success"
+                           OnClick="@GoToStaff">
+                    Staff
+                </MudButton>
+            </div>
+
+        </div>
+    </MudHidden>
+   <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
+        <div class="container-fluid bg-white shadow-sm py-3">
+
+            <div class="row align-items-center">
+
+                <!-- Logo and Title -->
+                <div class="col-12 col-md d-flex flex-column flex-md-row align-items-center text-center text-md-start mb-3 mb-md-0">
+
+                    <div class="d-flex align-items-center mb-2 mb-md-0">
+                        <img src="/Kulay.jpg"
+                             alt="Kulay Logo"
+                             class="rounded-circle me-2"
+                             style="width:50px;height:50px;object-fit:cover;" />
+
+                        <img src="/Genstar.png"
+                             alt="Genstar Logo"
+                             style="height:50px;object-fit:contain;" />
+                    </div>
+
+                    <span class="fw-bold fs-5 ms-md-3">
+                        Genstar Paint Trade Center
+                    </span>
+
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12 col-md-auto">
+                    <div class="d-flex justify-content-center gap-2">
+
+                        <MudButton Class="flex-fill"
+                                   Variant="Variant.Filled"
+                                   Style="@($"background-color:{Colors.Cyan.Accent3};color:white;")"
+                                   OnClick="@GoToClient">
+                            Client
+                        </MudButton>
+
+                        <MudButton Class="flex-fill"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Success"
+                                   OnClick="@GoToStaff">
+                            Staff
+                        </MudButton>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+   </MudHidden> 
+
+    <About />
+
+
+    <Services/> 
+     <Contact/>
+<footer class="footer-section">
+
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+
+        <MudGrid Spacing="5">
+
+            <!-- Company -->
+            <MudItem xs="12" md="4">
+
+                <div class="footer-brand">
+
+                    <div class="d-flex align-items-center mb-4">
+
+                        <img src="/Kulay.jpg"
+                             class="rounded-circle me-3"
+                             style="width:60px;height:60px;object-fit:cover;" />
+
+                        <img src="/Genstar.png"
+                             style="height:60px;" />
+
+                    </div>
+
+                    <MudText Typo="Typo.h5" Class="fw-bold mb-2">
+                        Genstar Paint Trade Center
+                    </MudText>
+
+                    <MudText Typo="Typo.body2">
+                        To be a front-runner in providing quality yet affordable paints to end users
+                    </MudText>
+
+                </div>
+
+            </MudItem>
+
+            <!-- Mission & Vision -->
+            <MudItem xs="12" md="4">
+
+                <MudText Typo="Typo.h5" Class="footer-title">
+                    Mission & Vision
+                </MudText>
+
+                <MudText Typo="Typo.subtitle1" Class="fw-bold mt-4">
+                    Mission
+                </MudText>
+
+                <MudText Typo="Typo.body2">
+                    To provide high-quality paint products and exceptional customer
+                    service while helping homeowners, contractors, and businesses
+                    achieve beautiful and durable finishes.
+                </MudText>
+
+                <MudText Typo="Typo.subtitle1" Class="fw-bold mt-4">
+                    Vision
+                </MudText>
+
+                <MudText Typo="Typo.body2">
+                    To become a trusted paint supplier in
+                    Mindanao through innovation, integrity, and customer satisfaction.
+                </MudText>
+
+            </MudItem>
+
+            <!-- Contact -->
+            <MudItem xs="12" md="4">
+
+                <MudText Typo="Typo.h5" Class="footer-title">
+                    Contact Information
+                </MudText>
+
+                <MudStack Spacing="3" Class="mt-4">
+
+                    <div class="d-flex align-items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.LocationOn"
+                                 Color="Color.Warning"
+                                 Class="me-3" />
+
+                        <span>
+                            Door 3, Napala Building,<br />
+                            Magsaysay Avenue, General Santos City
+                        </span>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Phone"
+                                 Color="Color.Success"
+                                 Class="me-3" />
+
+                        <span>(083) 553-20-26</span>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Email"
+                                 Color="Color.Info"
+                                 Class="me-3" />
+
+                        <a href="mailto:twodragon88.shop"
+                           class="footer-link">
+                           twodragon88.shop
+                        </a>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <MudIcon Icon="@Icons.Custom.Brands.Facebook"
+                                 Style="color:#1877F2"
+                                 Class="me-3" />
+
+                        <a href="https://facebook.com/genstarpainttradecenter"
+                           target="_blank"
+                           class="footer-link">
+                            Facebook Page
+                        </a>
+                    </div>
+
+                </MudStack>
+
+            </MudItem>
+
+        </MudGrid>
+
+        <MudDivider Class="my-5" />
+
+        <div class="text-center">
+
+            <MudText Typo="Typo.body2">
+                © @DateTime.Now.Year Genstar Paint Trade Center. All Rights Reserved.
+            </MudText>
+
+        </div>
+
+    </MudContainer>
+
+</footer>
 @code {
     [Inject] NavigationManager Navigation { get; set; } = default!;
 
