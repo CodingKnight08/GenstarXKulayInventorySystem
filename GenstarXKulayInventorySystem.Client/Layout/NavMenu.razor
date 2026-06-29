@@ -18,33 +18,35 @@
          <MudNavLink Href="/productbrands" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Brands</MudNavLink>
           <MudNavLink Href="/productcategory" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage" IconColor="@Color.Error">Category</MudNavLink>
     </MudNavGroup>
-   
-    <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
-    <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
-    <MudNavGroup Icon="@Icons.Material.Filled.Inventory" IconColor="@Color.Default" Title="Orders">
-        <MudNavLink Href="/purchase-order" Match="NavLinkMatch.Prefix">Purchase Orders</MudNavLink>
-        <MudNavLink Href="/received-order" Match="NavLinkMatch.Prefix">Recieve Orders</MudNavLink>
-    </MudNavGroup>
-   <MudNavGroup Title="Request Orders" Icon="@Icons.Material.Filled.DriveFileMove" IconColor="@Color.Tertiary">
-        @if(Branch != BranchOption.Warehouse)
-            {
-                <MudNavLink Href="/requestitems" Match="NavLinkMatch.Prefix">Request Items</MudNavLink>
-                <MudNavLink Href="/receiveitems" Match="NavLinkMatch.Prefix">Receive Items</MudNavLink>
-            }
-            
+   <AuthorizeView Roles="Admin,Secretary">
+            <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
+            <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
+            <MudNavGroup Icon="@Icons.Material.Filled.Inventory" IconColor="@Color.Default" Title="Orders">
+                <MudNavLink Href="/purchase-order" Match="NavLinkMatch.Prefix">Purchase Orders</MudNavLink>
+                <MudNavLink Href="/received-order" Match="NavLinkMatch.Prefix">Recieve Orders</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title="Request Orders" Icon="@Icons.Material.Filled.DriveFileMove" IconColor="@Color.Tertiary">
+                @if (Branch != BranchOption.Warehouse)
+                {
+                    <MudNavLink Href="/requestitems" Match="NavLinkMatch.Prefix">Request Items</MudNavLink>
+                    <MudNavLink Href="/receiveitems" Match="NavLinkMatch.Prefix">Receive Items</MudNavLink>
+                }
+
                 <MudNavLink Href="/pullouts" Match="NavLinkMatch.Prefix">PullOut</MudNavLink>
+
             
+            </MudNavGroup>
+            <MudNavLink Href="/reports" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="@Color.Secondary">Reports</MudNavLink>
+            <MudNavLink Href="/statements" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.FactCheck" IconColor="@Color.Surface">Statements</MudNavLink>
+            <MudNavLink Href="/waybills" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Newspaper" IconColor="@Color.Info">Way Bill</MudNavLink>
+            <MudNavGroup Icon="@Icons.Material.Filled.Groups" IconColor="@Color.Tertiary" Title="Group">
+                <MudNavLink Href="/suppliers" Match="NavLinkMatch.Prefix">Suppliers</MudNavLink>
+                <MudNavLink Href="/clients" Match="NavLinkMatch.Prefix">Clients</MudNavLink>
+                <MudNavLink Href="/operational-providers" Match="NavLinkMatch.Prefix">Billing Providers</MudNavLink>
 
-    </MudNavGroup>
-    <MudNavLink Href="/reports" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LibraryBooks" IconColor="@Color.Secondary">Reports</MudNavLink>
-    <MudNavLink Href="/statements" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.FactCheck" IconColor="@Color.Surface">Statements</MudNavLink>
-    <MudNavLink Href="/waybills" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Newspaper" IconColor="@Color.Info">Way Bill</MudNavLink>
-    <MudNavGroup Icon="@Icons.Material.Filled.Groups" IconColor="@Color.Tertiary" Title="Group">
-        <MudNavLink Href="/suppliers" Match="NavLinkMatch.Prefix">Suppliers</MudNavLink>
-        <MudNavLink Href="/clients" Match="NavLinkMatch.Prefix">Clients</MudNavLink>
-        <MudNavLink Href="/operational-providers" Match="NavLinkMatch.Prefix">Billing Providers</MudNavLink>
-
-    </MudNavGroup>
+            </MudNavGroup>
+   </AuthorizeView>
+   
 
     <MudNavGroup Icon="@Icons.Material.Filled.Settings" IconColor="@Color.Info" Title="Settings" >
         <AuthorizeView Roles="Admin" Context="AdminAuth">
