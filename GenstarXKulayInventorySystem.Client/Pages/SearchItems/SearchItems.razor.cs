@@ -17,6 +17,7 @@ public partial class SearchItems
     private bool IsLoading { get; set; } = false;
     private string SearchItem { get; set; } = string.Empty;
     private bool IsBrand { get; set; }
+    private bool ShowPrices = false;
     protected override async Task OnInitializedAsync()
     {
         Branch = UserState.Branch.Value;
