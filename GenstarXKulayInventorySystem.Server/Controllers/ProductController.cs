@@ -7,7 +7,7 @@ using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 public class ProductController : ControllerBase
 {
