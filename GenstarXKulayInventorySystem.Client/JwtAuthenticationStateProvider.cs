@@ -67,6 +67,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
     public void NotifyUserLogout()
     {
         var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(anonymous)));
     }
 }
