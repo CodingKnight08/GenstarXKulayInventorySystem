@@ -444,6 +444,28 @@ public class InventoryDbContext: IdentityDbContext<User>
                   .HasForeignKey(u => u.ClientId)
                   .OnDelete(DeleteBehavior.SetNull);
         });
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(rt => rt.Id);
+
+            entity.Property(rt => rt.Token)
+                  .IsRequired()
+                  .HasMaxLength(500);
+
+            entity.Property(rt => rt.UserId)
+                  .IsRequired();
+
+            entity.Property(rt => rt.ExpiryDate)
+                  .IsRequired();
+
+            entity.Property(rt => rt.Revoked)
+                  .HasDefaultValue(false);
+
+            entity.HasOne(rt => rt.User)
+                  .WithMany(u => u.RefreshTokens)
+                  .HasForeignKey(rt => rt.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
 
         base.OnModelCreating(modelBuilder);
     }
@@ -475,6 +497,7 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<WayBill> WayBills { get; set; }
     public DbSet<WayBillItems> WayBillItems { get; set; }
     public DbSet<WayBillDamageItem> WayBillDamageItems { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }  
 
     public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {
