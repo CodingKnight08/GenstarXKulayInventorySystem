@@ -58,18 +58,20 @@ public partial class ClientLogin
                 Logger.LogWarning("Login failed: {Error}", error);
                 return;
             }
-
             var result = await response.Content.ReadFromJsonAsync<LoginResponseDto>(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            if (result?.Token is null)
+            if (string.IsNullOrWhiteSpace(result?.AccessToken))
             {
                 await LocalStorage.RemoveItemAsync("authToken");
                 SnackBar.Add("Login failed: no token returned.", Severity.Error);
                 return;
             }
 
-            var cleanToken = result.Token.Trim().Trim('"');
+            var cleanToken = result.AccessToken.Trim().Trim('"');
+
+            await LocalStorage.SetItemAsync("authToken", cleanToken);
+            await LocalStorage.SetItemAsync("refreshToken", result.RefreshToken);
 
             // Decode JWT to inspect claims
             var handler = new JwtSecurityTokenHandler();
