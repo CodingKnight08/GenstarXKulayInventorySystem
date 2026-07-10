@@ -32,11 +32,12 @@ public partial class LoginPage
 
         if (!string.IsNullOrWhiteSpace(token) && JwtIsValid(token))
         {
-            NavigationManager.NavigateTo("/dashboard", forceLoad: true);
+            NavigationManager.NavigateTo("/dashboard", true);
         }
         else
         {
             await LocalStorage.RemoveItemAsync("authToken");
+            await LocalStorage.RemoveItemAsync("refreshToken");
         }
     }
 
@@ -53,44 +54,60 @@ public partial class LoginPage
 
             if (!response.IsSuccessStatusCode)
             {
-                var error = await response.Content.ReadAsStringAsync();
                 await LocalStorage.RemoveItemAsync("authToken");
+                await LocalStorage.RemoveItemAsync("refreshToken");
+
                 SnackBar.Add("Invalid username or password.", Severity.Error);
-                Logger.LogWarning("Login failed: {Error}", error);
                 return;
             }
 
             var result = await response.Content.ReadFromJsonAsync<LoginResponseDto>(
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
-            if (result?.Token is null)
+            if (result == null ||
+                string.IsNullOrWhiteSpace(result.AccessToken) ||
+                string.IsNullOrWhiteSpace(result.RefreshToken))
             {
                 await LocalStorage.RemoveItemAsync("authToken");
-                SnackBar.Add("Login failed: no token returned.", Severity.Error);
+                await LocalStorage.RemoveItemAsync("refreshToken");
+
+                SnackBar.Add("Login failed.", Severity.Error);
                 return;
             }
 
-            var cleanToken = result.Token.Trim().Trim('"');
+            var cleanAccessToken = result.AccessToken.Trim().Trim('"');
 
-            // Decode JWT to inspect claims
+            // Optional: Inspect JWT claims
             var handler = new JwtSecurityTokenHandler();
-            var jwt = handler.ReadJwtToken(cleanToken);
+            var jwt = handler.ReadJwtToken(cleanAccessToken);
 
             foreach (var claim in jwt.Claims)
+            {
                 Logger.LogInformation("JWT Claim: {Type} = {Value}", claim.Type, claim.Value);
+            }
 
-            // Save token in local storage
-            await LocalStorage.SetItemAsync("authToken", cleanToken);
+            // Save BOTH tokens
+            await LocalStorage.SetItemAsync("authToken", cleanAccessToken);
+            await LocalStorage.SetItemAsync("refreshToken", result.RefreshToken);
 
             // Notify AuthenticationStateProvider
-            JwtAuthProvider.NotifyUserAuthentication(cleanToken);
+            JwtAuthProvider.NotifyUserAuthentication(cleanAccessToken);
 
-            NavigationManager.NavigateTo("/dashboard", forceLoad: true);
+            SnackBar.Add("Login successful.", Severity.Success);
+
+            NavigationManager.NavigateTo("/dashboard", true);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "An error occurred during login.");
-            SnackBar.Add("An unexpected error occurred. Please try again.", Severity.Error);
+            Logger.LogError(ex, "Login failed.");
+
+            await LocalStorage.RemoveItemAsync("authToken");
+            await LocalStorage.RemoveItemAsync("refreshToken");
+
+            SnackBar.Add("An unexpected error occurred.", Severity.Error);
         }
     }
 
