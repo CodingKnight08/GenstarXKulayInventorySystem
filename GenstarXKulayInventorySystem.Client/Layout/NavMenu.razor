@@ -71,6 +71,7 @@
     [Parameter] public BranchOption Branch { get; set; }
     [Inject] ILocalStorageService LocalStorage { get; set; } = default!;
     [Inject] NavigationManager Navigation { get; set; } = default!;
+    [Inject] private JwtAuthenticationStateProvider JwtAuthProvider { get; set; } = default!;
     private string Url { get; set; } = string.Empty;
 
     protected override void OnParametersSet()
@@ -88,6 +89,9 @@
     protected async Task Logout()
     {
         await LocalStorage.RemoveItemAsync("authToken");
+        await LocalStorage.RemoveItemAsync("refreshToken");
+
+        JwtAuthProvider.NotifyUserLogout();
         await LocalStorage.ClearAsync();
         Navigation.NavigateTo("/", forceLoad: true);
     }
