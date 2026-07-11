@@ -25,6 +25,7 @@ public class SaleItemDto:BaseEntityDto
     public decimal TotalPrice { get; set; } = 0;
     public decimal CostPrice { get; set; } = 0;
     public bool HasDiscount { get; set; } = false;
+    public bool Catalyst { get; set; } = false;
 }
 
 public class InvolvePaintsDto
