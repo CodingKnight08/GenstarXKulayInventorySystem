@@ -29,8 +29,7 @@ public partial class GetAllSaleItemsToBeAdded
                 FullWidth = true,
                 CloseButton = true,
                 BackdropClick = false
-            }
-        );
+            });
 
         if (dialog == null)
             return;
@@ -47,16 +46,32 @@ public partial class GetAllSaleItemsToBeAdded
 
         int addedCount = 0;
         int duplicateCount = 0;
+        int updatedCount = 0;
 
         foreach (var saleItem in saleItems)
         {
-            // Mix category is always allowed
-            bool exists = saleItem.PaintCategory != PaintCategory.Mix &&
-                          SaleItemsToBeAdded.Any(x =>
-                              x.BranchProductId == saleItem.BranchProductId &&
-                              string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
+            var existing = SaleItemsToBeAdded.FirstOrDefault(x =>
+                x.BranchProductId == saleItem.BranchProductId &&
+                string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
 
-            if (!exists)
+            // Mix category is always allowed
+            if (saleItem.PaintCategory == PaintCategory.Mix)
+            {
+                SaleItemsToBeAdded.Add(saleItem);
+                addedCount++;
+                continue;
+            }
+
+            // Catalyst: add quantity to existing item
+            if (saleItem.Catalyst && existing != null)
+            {
+                existing.Quantity += saleItem.Quantity;
+                existing.TotalPrice = existing.ItemPrice * (existing.Size ?? 1m) * existing.Quantity;
+                updatedCount++;
+                continue;
+            }
+
+            if (existing == null)
             {
                 SaleItemsToBeAdded.Add(saleItem);
                 addedCount++;
@@ -67,18 +82,20 @@ public partial class GetAllSaleItemsToBeAdded
             }
         }
 
-        if (addedCount > 0)
+        if (addedCount > 0 || updatedCount > 0)
         {
             await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
             StateHasChanged();
-
-            SnackBar.Add($"{addedCount} item(s) added successfully!", Severity.Success);
         }
+
+        if (addedCount > 0)
+            SnackBar.Add($"{addedCount} item(s) added successfully!", Severity.Success);
+
+        if (updatedCount > 0)
+            SnackBar.Add($"{updatedCount} catalyst item(s) quantity updated.", Severity.Info);
 
         if (duplicateCount > 0)
-        {
             SnackBar.Add($"{duplicateCount} duplicate item(s) skipped.", Severity.Warning);
-        }
     }
     protected void RemoveSaleItem(SaleItemDto item)
     {
