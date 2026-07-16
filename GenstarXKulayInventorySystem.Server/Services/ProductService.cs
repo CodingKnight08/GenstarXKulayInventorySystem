@@ -50,47 +50,84 @@ public class ProductService:IProductService
         
         return products.Select(product => _mapper.Map<ProductDto>(product)).ToList();
     }
-    public async Task<List<BranchProductDto>> GetAllProductsByStore(
-     BranchOption branch,
-     bool isBrand,
-     string? searchText)
+    public async Task<List<StocksDto>> GetAllProductsByStore(
+    BranchOption branch,
+    bool isBrand,
+    string? searchText)
     {
+        // Determine the other branch
+        BranchOption otherBranch = branch switch
+        {
+            BranchOption.Polomolok => BranchOption.GeneralSantosCity,
+            BranchOption.GeneralSantosCity => BranchOption.Polomolok,
+            _ => BranchOption.Warehouse
+        };
+
         var query = _context.BranchProducts
             .AsNoTracking()
-            .AsSplitQuery()
-            .Include(p => p.MasterProduct)
-                .ThenInclude(mp => mp.ProductBrand)
-            .Where(p =>
-                (p.Branch == branch || p.Branch == BranchOption.Warehouse) &&
-                !p.IsDeleted &&
-                p.ActualQuantity > 0);
+            .Include(x => x.MasterProduct)
+                .ThenInclude(x => x.ProductBrand)
+            .Where(x =>
+                !x.IsDeleted &&
+                x.ActualQuantity > 0);
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
             if (isBrand)
             {
-                // Search products belonging to the selected brand
-                query = query.Where(p =>
-                    p.MasterProduct!.ProductBrand!.BrandName.Contains(searchText));
+                query = query.Where(x =>
+                    x.MasterProduct!.ProductBrand!.BrandName.Contains(searchText));
             }
             else
             {
-                // Search products regardless of brand
-                query = query.Where(p =>
-                    p.MasterProduct!.ProductName.Contains(searchText));
+                query = query.Where(x =>
+                    x.MasterProduct!.ProductName.Contains(searchText));
             }
         }
 
-        query = isBrand
-            ? query.OrderBy(p => p.MasterProduct!.ProductName)
-            : query.OrderBy(p => p.MasterProduct!.ProductBrand!.BrandName)
-                   .ThenBy(p => p.MasterProduct!.ProductName);
-
         var products = await query
+            .GroupBy(x => x.MasterProductId)
+            .Select(g => new StocksDto
+            {
+                MasterProductId = g.Key!.Value,
+
+                ProductName = g.First().MasterProduct!.ProductName,
+                BrandName = g.First().MasterProduct!.ProductBrand!.BrandName,
+
+                // Logged-in user's branch quantity
+                BranchQuantity = g
+                    .Where(x => x.Branch == branch)
+                    .Sum(x => x.ActualQuantity),
+
+                // Other branch quantity
+                Branch2 = g
+                    .Where(x => x.Branch == otherBranch)
+                    .Sum(x => x.ActualQuantity),
+
+                // Warehouse quantity
+                WarehouseQuantity = g
+                    .Where(x => x.Branch == BranchOption.Warehouse)
+                    .Sum(x => x.ActualQuantity),
+
+                // Prices from the logged-in user's branch
+                RetailPrice = g
+                    .Where(x => x.Branch == branch)
+                    .Select(x => x.RetailPrice)
+                    .FirstOrDefault(),
+
+                WholeSalePrice = g
+                    .Where(x => x.Branch == branch)
+                    .Select(x => x.WholeSalePrice)
+                    .FirstOrDefault(),
+
+                Branch = branch
+            })
+            .OrderBy(x => x.BrandName)
+            .ThenBy(x => x.ProductName)
             .Take(100)
             .ToListAsync();
 
-        return _mapper.Map<List<BranchProductDto>>(products);
+        return products;
     }
     public async Task<List<BranchProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch)
     {
@@ -602,7 +639,7 @@ public interface IProductService
         int skip,
         int take,
         string? search = null);
-    Task<List<BranchProductDto>> GetAllProductsByStore(
+    Task<List<StocksDto>> GetAllProductsByStore(
     BranchOption branch,
     bool isBrand,
     string? searchText);
