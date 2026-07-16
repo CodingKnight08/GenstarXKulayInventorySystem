@@ -72,23 +72,21 @@ public class SaleItemService:ISaleItemService
     }
 
 
-    public async Task<List<SaleItemDto>> GetAllUndeductedItemsAsync(BranchOption branch)
+    public async Task<List<SaleItemDto>> GetAllUndeductedItemsAsync()
     {
         List<SaleItem> salesItems = await _context.DailySales
             .AsSplitQuery()
-            .Where(ds => !ds.IsDeleted && ds.Branch == branch)
+            .Where(ds => !ds.IsDeleted)
             .SelectMany(ds => ds.SaleItems)
             .Where(si => !si.IsDeleted && !si.IsDeducted)
             .ToListAsync();
 
-        if (salesItems == null || salesItems.Count == 0)
+        if (!salesItems.Any())
         {
             return new List<SaleItemDto>();
         }
 
-        List<SaleItemDto> saleItemsDto = _mapper.Map<List<SaleItemDto>>(salesItems);
-
-        return saleItemsDto;
+        return _mapper.Map<List<SaleItemDto>>(salesItems);
     }
 
     public async Task<SaleItemDto?> GetSaleItemById(int saleItemId)
@@ -182,7 +180,7 @@ public interface ISaleItemService
 {
     Task<List<SaleItemDto>> GetAllSaleItemsAsync(int dailySaleId);
     Task<SaleItemPageResultDto<SaleItemDto>> GetAllSaleItemsPageAsync(int dailySaleId, int skip, int take);
-    Task<List<SaleItemDto>> GetAllUndeductedItemsAsync(BranchOption branch);
+    Task<List<SaleItemDto>> GetAllUndeductedItemsAsync();
     Task<SaleItemDto?> GetSaleItemById(int saleItemId);
     Task<bool> AddSaleItemAsync(SaleItemDto saleItemDto);
     Task<bool> UpdateSaleItemAsync(SaleItemDto saleItem);
