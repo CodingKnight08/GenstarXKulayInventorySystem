@@ -157,7 +157,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet("all/stocks/{branch}")]
-    public async Task<ActionResult<List<BranchProductDto>>> GetAllProductsByBranch(
+    public async Task<ActionResult<List<StocksDto>>> GetAllProductsByBranch(
       BranchOption branch,
       [FromQuery] bool isBrand = false,
       [FromQuery] string? searchText = null)
@@ -166,7 +166,7 @@ public class ProductController : ControllerBase
         {
             var products = await _productService.GetAllProductsByStore(branch, isBrand, searchText);
 
-            return Ok(products ?? new List<BranchProductDto>());
+            return Ok(products ?? new List<StocksDto>());
         }
         catch (Exception ex)
         {
