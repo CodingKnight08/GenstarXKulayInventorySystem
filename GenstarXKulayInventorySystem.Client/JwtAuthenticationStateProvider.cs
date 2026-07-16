@@ -22,11 +22,21 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var token = await _localStorage.GetItemAsync<string>("authToken");
+
         if (string.IsNullOrWhiteSpace(token))
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 
-        var handler = new JwtSecurityTokenHandler();
-        var jwt = handler.ReadJwtToken(token);
+        JwtSecurityToken jwt;
+
+        try
+        {
+            jwt = _tokenHandler.ReadJwtToken(token);
+        }
+        catch
+        {
+            await _localStorage.RemoveItemAsync("authToken");
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+        }
 
         if (jwt.ValidTo <= DateTime.UtcNow)
         {
@@ -34,26 +44,29 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
 
-        // Normalize role claims
         var claims = jwt.Claims.Select(c =>
-            (c.Type == "role" || c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
+            (c.Type == "role" || c.Type == ClaimTypes.Role)
                 ? new Claim(ClaimTypes.Role, c.Value)
                 : c
         ).ToList();
 
-        var identity = new ClaimsIdentity(claims, "jwtAuth", ClaimTypes.Name, ClaimTypes.Role);
-        var principal = new ClaimsPrincipal(identity);
-
-        return new AuthenticationState(principal);
+        return new AuthenticationState(
+            new ClaimsPrincipal(
+                new ClaimsIdentity(claims, "jwtAuth", ClaimTypes.Name, ClaimTypes.Role)));
     }
 
     public void NotifyUserAuthentication(string token)
     {
-        var handler = new JwtSecurityTokenHandler();
-        var jwt = handler.ReadJwtToken(token);
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            NotifyUserLogout();
+            return;
+        }
+
+        var jwt = _tokenHandler.ReadJwtToken(token);
 
         var claims = jwt.Claims.Select(c =>
-            (c.Type == "role" || c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
+            (c.Type == "role" || c.Type == ClaimTypes.Role)
                 ? new Claim(ClaimTypes.Role, c.Value)
                 : c
         ).ToList();
