@@ -11,8 +11,7 @@ public partial class SearchItems
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private ILogger<SearchItems> Logger { get; set; } = default!;
     [Inject] private UserState UserState { get; set; } = default!;
-    private List<BranchProductDto> AllProducts { get; set; } = new List<BranchProductDto>();
-    private IEnumerable<BranchProductDto> Results { get;set;} = new List<BranchProductDto>();
+    private IEnumerable<StocksDto> Results { get; set; } = new List<StocksDto>();
     private BranchOption Branch { get; set; } 
     private bool IsLoading { get; set; } = false;
     private string SearchItem { get; set; } = string.Empty;
@@ -35,7 +34,7 @@ public partial class SearchItems
             var response = await HttpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
-            Results = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>() ?? [];
+            Results = await response.Content.ReadFromJsonAsync<List<StocksDto>>() ?? [];
         }
         catch (Exception ex)
         {
@@ -52,25 +51,23 @@ public partial class SearchItems
     private async Task Search()
     {
         
-
         await LoadProducts();
     }
-    private decimal GetWarehouseQuantity(BranchProductDto product)
-    {
-        if (product.MasterProductId is null)
-            return 0;
-
-        return AllProducts
-            .Where(x =>
-                x.Branch == BranchOption.Warehouse &&
-                x.MasterProductId == product.MasterProductId)
-            .Sum(x => x.ActualQuantity);
-    }
+   
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
             await Search();
         }
+    }
+    private string GetOtherBranchName()
+    {
+        return Branch switch
+        {
+            BranchOption.Polomolok => "General Santos City",
+            BranchOption.GeneralSantosCity => "Polomolok",
+            _ => "Other Branch"
+        };
     }
 }

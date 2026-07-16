@@ -68,12 +68,14 @@
     else
     {
         <MudPaper Class="mt-4" Elevation="2">
+
             <div class="d-flex justify-end mb-2">
                 <MudIconButton Icon="@(ShowPrices ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
                                Color="Color.Primary"
                                Title="@(ShowPrices ? "Hide Prices" : "Show Prices")"
                                OnClick="@(() => ShowPrices = !ShowPrices)" />
             </div>
+
             <MudTable Items="Results"
                       Hover="true"
                       Dense="true"
@@ -84,42 +86,55 @@
                 <HeaderContent>
                     <MudTh>Brand</MudTh>
                     <MudTh>Product Name</MudTh>
-                    <MudTh>User Qty</MudTh>
+
+                    <MudTh>@Branch</MudTh>
+                    @if (!ShowPrices)
+                    {
+                        <MudTh>@GetOtherBranchName()</MudTh>
+                        <MudTh>Warehouse</MudTh>
+                    }
                     @if (ShowPrices)
                     {
                         <MudTh>Selling</MudTh>
                         <MudTh>Whole Sale</MudTh>
                     }
-                    <MudTh>Warehouse Qty</MudTh>
                 </HeaderContent>
 
                 <RowTemplate>
 
                     <MudTd DataLabel="Brand">
-                        @context.MasterProduct?.ProductBrand?.BrandName
+                        @context.BrandName
                     </MudTd>
 
                     <MudTd DataLabel="Product Name">
-                        @context.MasterProduct?.ProductName
+                        @context.ProductName
                     </MudTd>
-
-                    <MudTd DataLabel="User Qty">
-                        @context.ActualQuantity
+                    
+                        
+                    
+                    <MudTd DataLabel="@Branch.ToString()">
+                        @context.BranchQuantity
                     </MudTd>
+                    @if (!ShowPrices)
+                    {
+                        <MudTd DataLabel="@GetOtherBranchName()">
+                            @context.Branch2
+                        </MudTd>
 
+                        <MudTd DataLabel="Warehouse">
+                            @context.WarehouseQuantity
+                        </MudTd>
+                    }
                     @if (ShowPrices)
                     {
                         <MudTd DataLabel="Selling">
-                            @(context.RetailPrice?.ToString("N2") ?? "0")
+                            @(context.RetailPrice?.ToString("N2") ?? "0.00")
                         </MudTd>
 
                         <MudTd DataLabel="Whole Sale">
-                            @(context.WholeSalePrice?.ToString("N2") ?? "0")
+                            @(context.WholeSalePrice?.ToString("N2") ?? "0.00")
                         </MudTd>
                     }
-                    <MudTd DataLabel="Warehouse Qty">
-                        @GetWarehouseQuantity(context)
-                    </MudTd>
 
                 </RowTemplate>
 
