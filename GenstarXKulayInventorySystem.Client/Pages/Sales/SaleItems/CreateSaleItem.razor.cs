@@ -3,6 +3,7 @@ using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems;
@@ -15,19 +16,29 @@ public partial class CreateSaleItem
     [CascadingParameter] protected IMudDialogInstance MudDialog { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
     protected SaleItemDto SaleItemDto { get; set; } = new SaleItemDto();
     protected List<ProductBrandDto> ProductBrands { get; set; } = new List<ProductBrandDto>();
-    protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
-    protected ProductDto? SelectedProductFromList { get; set; } = new ProductDto();
+    protected List<BranchProductDto> Products { get; set; } = new List<BranchProductDto>();
+    protected BranchProductDto? SelectedProductFromList { get; set; } = new BranchProductDto();
     protected List<InvolvePaintsDto> Paints { get; set; } = new List<InvolvePaintsDto>();
-
+    protected string BrandName { get; set; } = string.Empty;
     protected ProductBrandDto? SelectedBrand { get; set; } = new ProductBrandDto();
     protected string SelectedProduct { get; set; } = string.Empty;
     protected bool IsLoading { get; set; } = false;
     protected bool IsProductLoading { get; set; } = false;
     protected bool IsWholeSale { get; set; } = false;
+    protected bool IsRepack { get; set; } = false;
+    protected bool OverridePrice { get; set; } = false;
+    protected decimal PriceItem { get; set; } = 0;
 
-    protected bool IsValid => !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) && SaleItemDto.ItemPrice > 0 && SaleItemDto.Quantity > 0;
+    protected bool IsValid =>
+     !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) &&
+     (
+         SaleItemDto.ItemName.Contains("catalyst", StringComparison.OrdinalIgnoreCase)
+         ||
+         (PriceItem > 0 && SaleItemDto.Quantity > 0)
+     );
     protected override async Task OnInitializedAsync()
     {
         await LoadBrands();
@@ -59,17 +70,17 @@ public partial class CreateSaleItem
         IsProductLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/by/{SelectedBrand?.Id}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/products/by/{SelectedBrand?.Id}/{Branch}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                Products = new List<ProductDto>();
+                Products = new List<BranchProductDto>();
                 Snackbar.Add("Products for the selected brand is low.", Severity.Warning);
                 return;
             }
             response.EnsureSuccessStatusCode();
-            var products = await response.Content.ReadFromJsonAsync<List<ProductDto>>();
-            Products = products ?? new List<ProductDto>();
+            var products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>();
+            Products = products.Where(e => e.ActualQuantity != 0).ToList() ?? new List<BranchProductDto>();
 
         }
         catch (Exception ex) { 
@@ -82,107 +93,209 @@ public partial class CreateSaleItem
             IsProductLoading = false;
         }
     }
-    protected Task<IEnumerable<string?>> SearchBrands(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<ProductBrandDto>> SearchBrands(string value, CancellationToken cancellationToken)
     {
-        if (ProductBrands is null || !ProductBrands.Any())
-            return Task.FromResult(Enumerable.Empty<string?>());
+        if (ProductBrands == null || ProductBrands.Count == 0)
+            return Task.FromResult(Enumerable.Empty<ProductBrandDto>());
+
+        var query = value?.Trim() ?? string.Empty;
 
         var result = ProductBrands
-            .Where(b => !string.IsNullOrWhiteSpace(b.BrandName)
-                     && (string.IsNullOrWhiteSpace(value)
-                     || b.BrandName.Contains(value, StringComparison.OrdinalIgnoreCase)))
-            .Select(b => (string?)b.BrandName); // cast to nullable
+            .Where(b => string.IsNullOrWhiteSpace(value) ||
+            b.BrandName.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(b => b.Id) 
+            .Select(g => g.First()); 
+
 
         return Task.FromResult(result);
     }
-    
-    protected Task<IEnumerable<ProductDto>> SearchProductsDto(string value, CancellationToken cancellationToken)
+
+
+    protected Task<IEnumerable<BranchProductDto>> SearchProductsDto(string value, CancellationToken cancellationToken)
     {
         if (Products is null || !Products.Any())
-            return Task.FromResult(Enumerable.Empty<ProductDto>());
+            return Task.FromResult(Enumerable.Empty<BranchProductDto>());
 
         var result = Products
-            .Where(p => string.IsNullOrWhiteSpace(value) ||
-                        p.ProductName.Contains(value, StringComparison.OrdinalIgnoreCase))
-            .GroupBy(p => p.Id)         
-            .Select(g => g.First());
+                  .Where(p => string.IsNullOrWhiteSpace(value) ||
+                              ((p.MasterProduct?.ProductName ?? string.Empty)
+                                  .Contains(value, StringComparison.OrdinalIgnoreCase)))
+                  .GroupBy(p => p.Id)
+                  .Select(g => g.First());
+
 
         return Task.FromResult(result);
     }
 
-    protected void OnProductSelectDto(ProductDto product)
+    protected async Task OnProductSelectDto(BranchProductDto product)
     {
-        if (product is null) return;
+        if (product is null)
+        {
+            SelectedProductFromList = null;
+            SaleItemDto.BranchProductId = null;
+            SaleItemDto.ItemName = string.Empty;
+            return;
+        }
 
         SelectedProductFromList = product;
-        SelectedProduct = product.ProductName;
-        SaleItemDto.ProductId = product.Id;
-        SaleItemDto.ItemName = product.ProductName;
-
-        OnWholeSaleChanged(IsWholeSale);
+        SelectedProduct = product.MasterProduct?.ProductName ?? string.Empty;
+        SaleItemDto.BranchProductId = product.Id;
+        SaleItemDto.ItemName = product.MasterProduct?.ProductName ?? string.Empty;
+        SaleItemDto.UnitMeasurement = product.ProductMesurementOption.GetValueOrDefault();
+        SaleItemDto.BranchProduct = product;
+        await OnWholeSaleChanged(IsWholeSale);
     }
 
+    protected void OnBrandTyped(string text)
+    {
+        SelectedBrand = ProductBrands.FirstOrDefault(b =>
+            !string.IsNullOrWhiteSpace(b.BrandName) &&
+            string.Equals(b.BrandName, text, StringComparison.OrdinalIgnoreCase));
+        if (SelectedBrand != null)
+        {
+            BrandName = SelectedBrand.BrandName ?? string.Empty;
+            _ = OnBrandSelect(SelectedBrand);
+        }
+        else
+        {
+            BrandName = text;
+            SelectedBrand = null;
+            Products = new List<BranchProductDto>();
+            SelectedProduct = string.Empty;
+            SaleItemDto.BranchProductId = null;
+            SaleItemDto.ItemName = string.Empty;
+        }
+    }
     protected void OnProductTyped(string text)
     {
         SelectedProduct = text;
         SaleItemDto.ItemName = text;
+        SaleItemDto.BranchProductId = null;
+        SelectedProductFromList = null;
+        
+    }
 
-        var matchedProduct = Products.FirstOrDefault(e =>
-            !string.IsNullOrWhiteSpace(e.ProductNameAndUnit) &&
-            string.Equals(e.ProductName, text, StringComparison.OrdinalIgnoreCase));
-
-        if (matchedProduct != null)
+   protected void OnPaintCategoryChange(PaintCategory paintType)
+    {
+        SaleItemDto.PaintCategory = paintType;
+        SaleItemDto.BranchProductId = null;
+        SaleItemDto.ItemName = string.Empty;
+        SelectedProduct = string.Empty;
+        SaleItemDto.ItemPrice = 0;
+        SelectedBrand = new ProductBrandDto();
+        Products = new List<BranchProductDto>();
+        if(paintType == PaintCategory.Repack)
         {
-            SaleItemDto.ProductId = matchedProduct.Id;
-            SelectedProductFromList = matchedProduct;
-            SaleItemDto.UnitMeasurement = matchedProduct.ProductMesurementOption.GetValueOrDefault();
-            OnWholeSaleChanged(IsWholeSale);
+            IsRepack = true;
         }
-        else
+
+    }
+
+    protected async Task OnBrandSelect(ProductBrandDto brand)
+    {
+        if (brand is null)
         {
-            SaleItemDto.ProductId = null;
+            SelectedBrand = null;
+            Products.Clear();
             SelectedProductFromList = null;
-        }
-    }
-
-
-
-
-    protected async Task OnBrandSelect(string brand) {
-        if (string.IsNullOrWhiteSpace(brand) && ProductBrands == null)
-            return;
-
-        SelectedBrand = ProductBrands.FirstOrDefault(b =>
-            !string.IsNullOrWhiteSpace(b.BrandName) &&
-            string.Equals(b.BrandName, brand, StringComparison.OrdinalIgnoreCase)
-        );
-        if(SelectedBrand != null)
-        {
-            await LoadBrandProducts();
-            SelectedProduct = string.Empty;
-            SaleItemDto.ProductId = null;
+            SaleItemDto.BranchProductId = null;
             SaleItemDto.ItemName = string.Empty;
-            StateHasChanged();
+            return;
         }
+
+        SelectedBrand = brand;
+        BrandName = brand.BrandName ?? string.Empty;
+
+        // Clear old selections
+        SelectedProductFromList = null;
+        SaleItemDto.BranchProductId = null;
+        SaleItemDto.ItemName = string.Empty;
+
+        await LoadBrandProducts();
     }
+
 
     protected void SaveItem()
     {
-        if(SaleItemDto.ProductId != null && IsWholeSale)
+        var saleItems = new List<SaleItemDto>();
+
+        // =========================
+        // MAIN ITEM
+        // =========================
+
+        SaleItemDto.ItemPrice = PriceItem;
+
+        if (SaleItemDto.BranchProductId != null && SelectedProductFromList != null)
         {
-            SaleItemDto.ProductPricingOption = ProductPricingOption.WholeSale;
+            // Determine pricing option
+            if (IsWholeSale &&
+                SaleItemDto.ItemPrice == SelectedProductFromList.WholeSalePrice.GetValueOrDefault())
+            {
+                SaleItemDto.ProductPricingOption = ProductPricingOption.WholeSale;
+            }
+            else if (!IsWholeSale &&
+                     SaleItemDto.ItemPrice == SelectedProductFromList.RetailPrice.GetValueOrDefault())
+            {
+                SaleItemDto.ProductPricingOption = ProductPricingOption.Retail;
+            }
+            else
+            {
+                SaleItemDto.ProductPricingOption = ProductPricingOption.Override;
+            }
+
+            // Determine cost price
+            SaleItemDto.CostPrice =
+                SaleItemDto.ProductPricingOption == ProductPricingOption.WholeSale
+                    ? (SelectedProductFromList.WholeSaleCostPrice.GetValueOrDefault() > 0
+                        ? SelectedProductFromList.WholeSaleCostPrice.Value
+                        : SelectedProductFromList.CostPrice.GetValueOrDefault())
+                    : SelectedProductFromList.CostPrice.GetValueOrDefault();
+
+            // Compute discount for non-mix items
+            if (SaleItemDto.PaintCategory != PaintCategory.Mix)
+            {
+                ComputeNotBelowWholeSale();
+            }
         }
-        else if (SaleItemDto.ProductId !=null && !IsWholeSale)
+        else if (SaleItemDto.PaintCategory == PaintCategory.Mix)
         {
-            SaleItemDto.ProductPricingOption = ProductPricingOption.Retail;
+            SaleItemDto.HasDiscount =
+                SaleItemDto.TotalPrice - Paints.Sum(e => e.ProductCost) <= 0;
         }
-        else
-        {
-            SaleItemDto.ProductPricingOption = ProductPricingOption.Override;
-        }
+
         SaleItemDto.DataList = Paints;
-        MudDialog.Close(DialogResult.Ok(SaleItemDto));
-        
+
+        saleItems.Add(SaleItemDto);
+
+        // =========================
+        // TIED UP PRODUCT
+        // =========================
+
+        if (SelectedProductFromList?.TiedUpProduct != null)
+        {
+            var tiedUp = SelectedProductFromList.TiedUpProduct;
+
+            var tiedUpItem = new SaleItemDto
+            {
+                BranchProductId = tiedUp.Id,
+                BranchProduct = tiedUp,
+                ItemName = tiedUp.MasterProduct?.ProductName ?? "",
+                Quantity = SaleItemDto.Quantity,
+                Size = tiedUp.Size,
+                UnitMeasurement = tiedUp.ProductMesurementOption.GetValueOrDefault(),
+                PaintCategory = SaleItemDto.PaintCategory,
+                ItemPrice = tiedUp.RetailPrice ?? 0m,
+                CostPrice = tiedUp.CostPrice ?? 0m,
+                TotalPrice = (tiedUp.RetailPrice ?? 0m) *
+                             (SaleItemDto.Quantity <= 0 ? 1 : SaleItemDto.Quantity),
+                ProductPricingOption = ProductPricingOption.Retail,
+                Catalyst = true
+            };
+
+            saleItems.Add(tiedUpItem);
+        }
+
+        MudDialog.Close(DialogResult.Ok(saleItems));
     }
     protected void Cancel()
     {
@@ -192,9 +305,11 @@ public partial class CreateSaleItem
     protected bool ShouldShowSaleType()
     {
         return SaleItemDto.PaintCategory == PaintCategory.Solid
-               && SaleItemDto.ProductId != null;
+               && SelectedProductFromList?.WholeSalePrice.HasValue == true
+               && SelectedProductFromList.WholeSalePrice.Value > 0;
+
     }
-    protected void OnWholeSaleChanged(bool value)
+    protected async Task OnWholeSaleChanged(bool value)
     {
         IsWholeSale = value;
 
@@ -202,16 +317,14 @@ public partial class CreateSaleItem
             return;
 
         if (IsWholeSale)
-        {
-            SaleItemDto.ItemPrice = SelectedProductFromList.WholesalePrice.GetValueOrDefault();  // adjust property name
-        }
+            PriceItem = SelectedProductFromList.WholeSalePrice.GetValueOrDefault();
         else
-        {
-            SaleItemDto.ItemPrice = SelectedProductFromList.RetailPrice.GetValueOrDefault();    // adjust property name
-        }
+            PriceItem = SelectedProductFromList.RetailPrice.GetValueOrDefault();
 
-        StateHasChanged(); // force UI update
+        RecalculateTotalPrice();
+        await Task.CompletedTask;
     }
+
 
 
     protected async Task AddPaintIncluded()
@@ -254,5 +367,78 @@ public partial class CreateSaleItem
             }
         }
 
+    }
+   
+    protected async Task Trial(decimal price)
+    {
+        PriceItem = price;
+        RecalculateTotalPrice();
+        await Task.CompletedTask;
+    }
+
+    protected void ComputeNotBelowWholeSale()
+    {
+        if (SaleItemDto.BranchProductId != null
+            && SelectedProductFromList != null
+            && PriceItem > 0
+            && SelectedProductFromList.RetailPrice > 0)
+        {
+            decimal basePrice =
+                    SaleItemDto.CostPrice
+                    * (SaleItemDto.Size ?? 1m)
+                    * SaleItemDto.Quantity;
+
+            decimal productPurchasePrice =
+                SaleItemDto.ItemPrice
+                * (SaleItemDto.Size ?? 1m)
+                * SaleItemDto.Quantity;
+
+            SaleItemDto.HasDiscount = (SaleItemDto.TotalPrice < basePrice);
+        }
+        else
+        {
+            SaleItemDto.HasDiscount = false;
+        }
+    }
+
+    protected void OnSizeChanged(decimal? newSize)
+    {
+        SaleItemDto.Size = newSize;
+        RecalculateTotalPrice();
+    }
+
+    private void RecalculateTotalPrice()
+    {
+        var size = SaleItemDto.Size ?? 1;
+        var qty = SaleItemDto.Quantity > 0 ? SaleItemDto.Quantity : 1;
+
+        SaleItemDto.TotalPrice = PriceItem * size * qty;
+        StateHasChanged();
+    }
+    protected void OnQuantityChanged(decimal newQty)
+    {
+        SaleItemDto.Quantity = newQty;
+        RecalculateTotalPrice();
+    }
+    protected void RemovePaintIncluded(InvolvePaintsDto item)
+    {
+        Paints.Remove(item);
+
+        RecalculateMixDiscount();
+        StateHasChanged();
+    }
+    private void RecalculateMixDiscount()
+    {
+        var paintsTotal = Paints.Sum(p => p.ProductCost);
+
+        SaleItemDto.HasDiscount = SaleItemDto.TotalPrice - paintsTotal <= 0;
+    }
+
+    private decimal GetMaxQuantity()
+    {
+        if (SaleItemDto.PaintCategory == PaintCategory.Mix)
+            return decimal.MaxValue;
+
+        return SelectedProductFromList?.ActualQuantity ?? decimal.MaxValue;
     }
 }

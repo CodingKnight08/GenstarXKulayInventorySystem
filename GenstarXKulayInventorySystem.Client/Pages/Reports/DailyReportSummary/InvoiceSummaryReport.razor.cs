@@ -15,12 +15,26 @@ public partial class InvoiceSummaryReport
 
     protected override void OnParametersSet()
     {
-        TotalAMount();
+        IsLoading = true;
+       TotalAmount = ComputeTotalAMount();
+        IsLoading = false;
     }
 
-    
-    protected void TotalAMount()
+
+    protected decimal ComputeTotalAMount()
     {
-        TotalAmount = InvoicesSales.Sum(x => x.TotalAmount ?? 0);
+        decimal invoiceCash = 0m;
+
+        foreach (var dailySale in InvoicesSales)
+        {
+            decimal itemsTotal = dailySale.SaleItems?.Sum(item => item.ItemPrice * item.Quantity) ?? 0m;
+
+            decimal commission = dailySale.Commission ?? 0m;
+
+            invoiceCash += itemsTotal + commission;
+        }
+
+        return Math.Round(invoiceCash, 2);
     }
+
 }

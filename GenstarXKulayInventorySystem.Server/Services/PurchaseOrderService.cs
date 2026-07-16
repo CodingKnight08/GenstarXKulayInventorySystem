@@ -3,9 +3,10 @@ using GenstarXKulayInventorySystem.Server.Model;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
-using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -60,6 +61,32 @@ public class PurchaseOrderService:IPurchaseOrderService
         return purchaseOrderDtos;
     }
 
+    public async Task<List<PurchaseOrderDto>> GetAllByBranchAndDateAsync(PurchaseShipToOption branch, DateTime date)
+    {
+        var (start, end) = PhilippineTime.GetDayRange(date);
+
+        List<PurchaseOrder> purchaseOrders = await _context.PurchaseOrders
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(c => c.Supplier)
+            .Include(c => c.PurchaseOrderItems)
+            .Where(e => !e.IsDeleted
+                        && e.PurchaseShipToOption == branch
+                        && e.PurchaseOrderDate >= start
+                        && e.PurchaseOrderDate <= end)
+            .OrderByDescending(e => e.PurchaseOrderDate)
+            .ToListAsync();
+
+        if (purchaseOrders == null || purchaseOrders.Count == 0)
+        {
+            return new List<PurchaseOrderDto>();
+        }
+
+        List<PurchaseOrderDto> purchaseOrderDtos = _mapper.Map<List<PurchaseOrderDto>>(purchaseOrders);
+        return purchaseOrderDtos;
+    }
+
+
     public async Task<PurchaseOrderDto?> GetByIdAsync(int id)
     {
         var purchaseOrder = await _context.PurchaseOrders
@@ -79,14 +106,16 @@ public class PurchaseOrderService:IPurchaseOrderService
             if (existingPurchaseOrder != null)
                 return false;
             var purchaseOrder = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
+            purchaseOrder.PurchaseOrderDate = PhilippineTime.ToPH(purchaseOrderDto.PurchaseOrderDate);
+            purchaseOrder.ExpectedDeliveryDate = PhilippineTime.ToPH(purchaseOrderDto.ExpectedDeliveryDate.Value);
             purchaseOrder.CreatedBy = GetCurrentUsername();
-            purchaseOrder.CreatedAt = DateTime.UtcNow;
+            purchaseOrder.CreatedAt = PhilippineTime.Now;
             purchaseOrder.AssumeTotalAmount = purchaseOrderDto.PurchaseOrderItems.Sum(item => (item.ItemAmount ?? 0) * item.ItemQuantity);
             foreach (var item in purchaseOrder.PurchaseOrderItems)
             {
                 item.PurchaseOrder = null;
                 item.ProductBrand = null;
-                item.Product = null;
+                item.BranchProduct = null;
                 item.CreatedBy = purchaseOrder.CreatedBy;
                 item.CreatedAt = purchaseOrder.PurchaseOrderDate;
             }
@@ -220,6 +249,7 @@ public class PurchaseOrderService:IPurchaseOrderService
 public interface IPurchaseOrderService
 {
     Task<List<PurchaseOrderDto>> GetAllAsync();
+    Task<List<PurchaseOrderDto>> GetAllByBranchAndDateAsync(PurchaseShipToOption branch, DateTime date);
     Task<List<PurchaseOrderDto>> GetAllReceiveAllPOAsync();
     Task<PurchaseOrderDto?> GetByIdAsync(int id);
     Task<bool> AddAsync(PurchaseOrderDto purchaseOrderDto);

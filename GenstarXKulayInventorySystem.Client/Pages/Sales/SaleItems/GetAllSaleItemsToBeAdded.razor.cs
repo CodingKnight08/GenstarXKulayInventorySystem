@@ -17,7 +17,8 @@ public partial class GetAllSaleItemsToBeAdded
 
     protected async Task AddSaleItem()
     {
-        var dialog = await Dialog.ShowAsync<CreateSaleItem>("Add Sale Item",
+        var dialog = await Dialog.ShowAsync<CreateSaleItem>(
+            "Add Sale Item",
             new DialogParameters
             {
             { "Branch", Branch }
@@ -28,37 +29,95 @@ public partial class GetAllSaleItemsToBeAdded
                 FullWidth = true,
                 CloseButton = true,
                 BackdropClick = false
-            }
-        );
+            });
 
-        if (dialog != null)
+        if (dialog == null)
+            return;
+
+        var result = await dialog.Result;
+
+        if (result == null || result.Canceled)
+            return;
+
+        var saleItems = result.Data as List<SaleItemDto>;
+
+        if (saleItems == null || !saleItems.Any())
+            return;
+
+        int addedCount = 0;
+        int duplicateCount = 0;
+        int updatedCount = 0;
+
+        foreach (var saleItem in saleItems)
         {
-            var result = await dialog.Result;
-            if (result is not null && !result.Canceled)
-            {
-                var saleItem = result.Data as SaleItemDto;
-                if (saleItem != null)
-                {
-                    bool exists = SaleItemsToBeAdded.Any(x =>
-                        x.ProductId == saleItem.ProductId ||
-                        string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
+            var existing = SaleItemsToBeAdded.FirstOrDefault(x =>
+                x.BranchProductId == saleItem.BranchProductId &&
+                string.Equals(x.ItemName, saleItem.ItemName, StringComparison.OrdinalIgnoreCase));
 
-                    if (!exists)
-                    {
-                        SaleItemsToBeAdded.Add(saleItem);
-                        StateHasChanged();
-                        await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
-                        SnackBar.Add("Item has been added!", Severity.Success);
-                    }
-                    else
-                    {
-                        SnackBar.Add("Item already exists in the list!", Severity.Warning);
-                    }
-                }
+            // Mix category is always allowed
+            if (saleItem.PaintCategory == PaintCategory.Mix)
+            {
+                SaleItemsToBeAdded.Add(saleItem);
+                addedCount++;
+                continue;
+            }
+
+            // Catalyst: add quantity to existing item
+            if (saleItem.Catalyst && existing != null)
+            {
+                existing.Quantity += saleItem.Quantity;
+                existing.TotalPrice = existing.ItemPrice * (existing.Size ?? 1m) * existing.Quantity;
+                updatedCount++;
+                continue;
+            }
+
+            if (existing == null)
+            {
+                SaleItemsToBeAdded.Add(saleItem);
+                addedCount++;
+            }
+            else
+            {
+                duplicateCount++;
             }
         }
+
+        if (addedCount > 0 || updatedCount > 0)
+        {
+            await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
+            StateHasChanged();
+        }
+
+        if (addedCount > 0)
+            SnackBar.Add($"{addedCount} item(s) added successfully!", Severity.Success);
+
+        if (updatedCount > 0)
+            SnackBar.Add($"{updatedCount} catalyst item(s) quantity updated.", Severity.Info);
+
+        if (duplicateCount > 0)
+            SnackBar.Add($"{duplicateCount} duplicate item(s) skipped.", Severity.Warning);
+    }
+    protected void RemoveSaleItem(SaleItemDto item)
+    {
+        if (item == null)
+            return;
+
+        // Confirm delete (optional)
+        var confirmMessage = $"Are you sure you want to remove '{item.ItemName}'?";
+        Dialog.ShowMessageBox("Confirm Delete", confirmMessage,
+            yesText: "Yes", noText: "Cancel", options: new DialogOptions { CloseButton = true })
+        .ContinueWith(async t =>
+        {
+            if (t.Result == true)
+            {
+                SaleItemsToBeAdded.Remove(item);
+                StateHasChanged();
+                await OnSaleItemsChanged.InvokeAsync(SaleItemsToBeAdded);
+                SnackBar.Add($"'{item.ItemName}' removed successfully.", Severity.Info);
+            }
+        });
     }
 
-
+    
 
 }

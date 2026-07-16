@@ -1,0 +1,51 @@
+﻿@page "/receiveitems"
+@layout MainLayout 
+
+
+<MudMainContent Class="w-auto h-100">
+    <MudText Align="Align.Center" Typo="Typo.h5">Recieve Pull Outs</MudText>
+    @if (IsLoading)
+    {
+        <MudCard Elevation="5" Class="d-flex flex-column align-items-center justify-content-center">
+            <MudProgressCircular Indeterminate="true" Size="Size.Medium" Color="Color.Info" />
+            <MudText Align="Align.Center" Typo="Typo.subtitle2">Loading</MudText>
+        </MudCard>
+    }
+    else
+    {
+        <MudCard Class="w-100 pa-3" Elevation="0">
+            <MudTable Items="RecievePullOuts" Hover="true" Bordered=true Striped="true">
+                <HeaderContent>
+                    <MudTh>Date Requested</MudTh>
+                    <MudTh>Branch</MudTh>
+                    <MudTh>Date Recieved</MudTh>
+                    <MudTh>Notes</MudTh>
+                    <MudTh></MudTh>
+
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.DateRequest?.ToString("MMMM dd, yyyy")</MudTd>
+                    <MudTd>@context.BranchRequestedTo.ToString()</MudTd>
+                    <MudTd>
+                        @(context.DateDelivered?.ToString("MMMM dd, yyyy hh:mm tt ") ?? "-")
+                    </MudTd>
+                    <MudTd>@context.Note</MudTd>
+                    <MudTd>
+                        <MudIconButton 
+                            Icon="@Icons.Material.Filled.Visibility" 
+                            Size="Size.Small"
+                            Color="Color.Info" 
+                            Variant="Variant.Text"
+                            OnClick="()=>ViewRecieve(context.Id)"/>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Align="Align.Center">No Pull out Recieved</MudText>
+                </NoRecordsContent>
+                <PagerContent>
+                    <MudTablePager HorizontalAlignment="HorizontalAlignment.End" PageSizeOptions="new int[] {5,10,15,20}"/>
+                </PagerContent>
+            </MudTable>
+        </MudCard>
+    }
+</MudMainContent>

@@ -1,11 +1,24 @@
 ﻿@page "/clients"
+@using GenstarXKulayInventorySystem.Shared.DTOS
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 
 <MudMainContent Class="w-auto h-100 d-flex flex-column align-items-center gap-3">
     <MudCard Elevation="0" Class="p-2 w-100 h-auto">
         <MudText Typo="Typo.h5" Align="Align.Center" Class="mt-3">Client List</MudText>
-        <MudCard Elevation="0" Class="w-100 d-flex flex-row align-items-center justify-content-end gap-2">
-            <MudItem xl="3">
+        <MudCard Elevation="0" Class="w-100 d-flex flex-row align-items-center justify-content-between gap-2">
+            <MudItem xl="6" xs="12" >
+                <MudTextField T="string"
+                              Value="SearchClient"
+                              ValueChanged="OnSearchChanged"
+                              Placeholder="Enter Client"
+                              Label="Search"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Variant="Variant.Text"
+                              Immediate="true"
+                              Clearable="true" />
+            </MudItem>
+            <MudItem xl="3" xs="12" Class="d-flex flex-lg-row flex-sm-column gap-3">
                 <MudSelect T="BranchOption"
                            Value="SelectedBranch"
                            ValueChanged="OnBranchChange"
@@ -18,11 +31,11 @@
                         </MudSelectItem>
                     }
                 </MudSelect>
-
+                <MudButton StartIcon="@Icons.Material.Filled.PersonAdd" Variant="Variant.Filled" Color="Color.Info" OnClick="CreateClientAsync">Add Client</MudButton>
 
             </MudItem>
            
-            <MudButton StartIcon="@Icons.Material.Filled.PersonAdd" Variant="Variant.Filled" Color="Color.Info" OnClick="CreateClientAsync">Add Client</MudButton>
+           
         </MudCard>
     </MudCard>
     @if (IsLoading)
@@ -38,11 +51,17 @@
 
         <MudCard Elevation="0" Class="w-100 p-3">
             <MudTable 
-            Dense="true"
-            Hover="true"
-            Bordered="true"
-            
-            Items="Clients">
+                T="ClientDto"
+                Dense="true"
+                Hover="true"
+                Bordered="true"
+                Striped="true"
+                Square="true"
+                RowsPerPage="@PageTake"
+                CurrentPage="@CurrentPageIndex"
+                CurrentPageChanged="@OnPageChanged"
+                RowsPerPageChanged="@OnRowsPerPageChanged"
+                Items="FilteredClients">
             <HeaderContent>
                 <MudTh>Client Name</MudTh>
                 <MudTh>Address</MudTh>
@@ -63,6 +82,9 @@
             <NoRecordsContent>
                 <MudText Align="Align.Center" Typo="Typo.subtitle1" Color="Color.Error">No Clients Available</MudText>
             </NoRecordsContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="@(new int[] {5,10,20})"/>
+            </PagerContent>
         </MudTable>
     </MudCard>
     }

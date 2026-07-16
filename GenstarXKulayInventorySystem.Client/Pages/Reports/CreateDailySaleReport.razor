@@ -1,4 +1,5 @@
-﻿@if(IsLoading){
+﻿@using GenstarXKulayInventorySystem.Shared.DTOS
+@if(IsLoading){
     <MudDialog>
         <DialogContent>
             <MudCard Elevation="0" Class="d-flex flex-column justify-content-center align-items-center">
@@ -19,7 +20,7 @@ else
             @if(!IsSaving){
             <MudGrid Spacing="6">
 
-                <MudItem xl="7">
+                <MudItem xl="7" lg="7">
                     <MudGrid Spacing="5">
                         <MudItem xs="12">
                             <MudNumericField 
@@ -35,47 +36,48 @@ else
                                 Required=true
                                 />
                         </MudItem>
-                        <MudItem xl="12">
+                        <MudItem xl="12" lg="12">
                             <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="text-decoration-underline">SUMMARY</MudText>
                         </MudItem>
 
-                        <MudItem xl="6">
-                            <MudText Typo="Typo.subtitle2" Align="Align.Center"> Cash</MudText>
+                        <MudItem xl="6" lg="7">
+                            <MudText Typo="Typo.subtitle2" Class="text-xl-center text-lg-end"> Cash</MudText>
                         </MudItem>
-                        <MudItem xl="6">
-                            <MudText Typo="Typo.subtitle2" Align="Align.Left"> Check</MudText>
+                        <MudItem xl="6" lg="5">
+                            <MudText Typo="Typo.subtitle2" Class="text-xl-center text-lg-end"> Check</MudText>
 
                         </MudItem>
                     </MudGrid>
                  
                 </MudItem>
-                <MudItem xl="2"></MudItem>
-                <MudItem xl="3">
+                <MudItem xl="2" lg="2"></MudItem>
+                <MudItem xl="3" lg="3">
                     <MudGrid Spacing="5">
-                        <MudItem xl="12">
-                            <MudDatePicker @bind-Date="DailySaleReport.Date"
+                        <MudItem xl="12" lg="12">
+                            <MudDatePicker Date="DailySaleReport.Date"
                                            MinDate="@DateTime.Now.AddYears(-10)"
                                            Label="Date"
                                            Variant="Variant.Text"
-                                           ReadOnly="true" />
+                                           DateChanged="OnDateChanged"
+                                           ReadOnly="UserState.Role != UserRole.Admin" />
                         </MudItem>
-                        <MudItem xl="12">
+                        <MudItem xl="12" lg="12">
                            <MudNumericField 
                                T="decimal?"
                                @bind-Value="DailySaleReport.TotalSalesToday" 
                                HideSpinButtons="true" 
                                Label="Total Sales Today"
-                               Format="F2"
+                               Format="N2"
                                Variant="Variant.Text" 
                                ReadOnly=true/>
                         </MudItem>
-                        <MudItem xl="12">
+                        <MudItem xl="12" lg="12">
                             <MudNumericField T="decimal?"
                                              Value="DailySaleReport.BeginningBalance"
                                              ValueChanged="@(value => { DailySaleReport.BeginningBalance = value; OnTotalSalesTodayChange(); })"
                                              HideSpinButtons="true"
                                              Label="Beginning Balance"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text" 
                                              Required=true
                                              ReadOnly=true
@@ -89,31 +91,31 @@ else
 
 
              
-                <MudItem xl="7">
+                <MudItem xl="7" lg="7">
                     <MudGrid>
-                        <MudItem xl="12">
+                        <MudItem xl="12" lg="12">
                             <MudText Typo="Typo.subtitle1" Align="Align.Left">Daily Sales</MudText>
                         </MudItem>
-                        <MudItem xl="2">
+                        <MudItem xl="2" lg="3">
                             <MudText>*Invoice</MudText>
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal"
                                              @bind-Value="DailySaleReport.InvoiceCash"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true 
                                              ReadOnly="true"
                                              />
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal"
                                              @bind-Value="DailySaleReport.InvoiceChecks"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true
                                              ReadOnly=true />
@@ -123,16 +125,16 @@ else
                 </MudItem>
                 <MudItem xl="4">
                     <MudGrid>
-                        <MudItem xl="12">
+                        <MudItem xl="12" lg="12">
                             <MudText Typo="Typo.subtitle1" Align="Align.Left" Class="text-decoration-underline">EXPENSES</MudText>
                         </MudItem>
-                        <MudItem xl="12">
+                        <MudItem xl="12" lg="12">
                             <MudNumericField 
                                 T="decimal?" 
                                 @bind-Value="DailySaleReport.Transportation"
                                 Adornment="Adornment.Start"
                                 AdornmentText="₱"
-                                Format="F2"
+                                Format="N2"
                                 HideSpinButtons=true
                                 Label="Transportation"
                                 ReadOnly=true />
@@ -141,27 +143,27 @@ else
                     </MudGrid>
                 </MudItem>
 
-                <MudItem xl="7">
+                <MudItem xl="7" lg="7">
                     <MudGrid>
-                        <MudItem xl="2">
+                        <MudItem xl="2" lg="3">
                             <MudText>*Non-Invoice</MudText>
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal"
                                              @bind-Value="DailySaleReport.NonInvoiceCash"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true
                                                  ReadOnly=true />
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal"
                                              @bind-Value="DailySaleReport.NonInvoiceChecks"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true 
                                              ReadOnly=true/>
@@ -169,12 +171,12 @@ else
                     </MudGrid>
 
                 </MudItem>
-                <MudItem xl="4">
+                <MudItem xl="4" lg="4">
                     <MudNumericField 
                         T="decimal?" 
                         Adornment="Adornment.Start"
                         AdornmentText="₱"
-                        Format="F2" 
+                        Format="N2" 
                         @bind-Value="DailySaleReport.Foods" 
                         HideSpinButtons=true 
                         Label="Foods/Snacks" 
@@ -182,28 +184,29 @@ else
                         />
 
                 </MudItem>
-                <MudItem xl="7">
+
+                <MudItem xl="7" lg="7">
                     <MudGrid>
-                        <MudItem xl="2">
+                        <MudItem xl="2" lg="3">
                             <MudText Typo="Typo.subtitle2">Total:</MudText>
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal"
                                              @bind-Value="DailySaleReport.TotalCash"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true
                                              ReadOnly=true
                                              />
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal"
                                              @bind-Value="DailySaleReport.TotalChecks"
                                              Adornment="Adornment.Start"
                                              AdornmentText="₱"
-                                             Format="F2"
+                                             Format="N2"
                                              Variant="Variant.Text"
                                              HideSpinButtons=true
                                              ReadOnly=true
@@ -212,29 +215,30 @@ else
                     </MudGrid>
 
                 </MudItem>
-                <MudItem xl="4">
+                <MudItem xl="4" lg="4">
                     <MudNumericField 
                         Value="DailySaleReport.SalaryAndAdvances"
                         ValueChanged="@(value => { DailySaleReport.SalaryAndAdvances = value; OnExpensesChange(); })"
                         T="decimal?"
                         Adornment="Adornment.Start"
                         AdornmentText="₱"
-                        Format="F2"
+                        Format="N2"
                         HideSpinButtons=true
-                        Label="Salary/Advances" />
+                        Label="Salary/Advances" 
+                        ReadOnly="true"/>
                 </MudItem>
-                <MudItem xl="7">
+                <MudItem xl="7" lg="7">
                     <MudGrid>
-                        <MudItem xl="3">
+                        <MudItem xl="3" lg="3">
                             <MudText Typo="Typo.subtitle2">Charge Sales</MudText>
 
                         </MudItem>
-                        <MudItem xl="6">
+                        <MudItem xl="6" lg="6">
                             <MudNumericField
                                 T="decimal?" 
                                 Adornment="Adornment.Start"
                                 AdornmentText="₱"
-                                Format="F2"
+                                Format="N2"
                                 @bind-Value="DailySaleReport.ChargeSales"
                                 HideSpinButtons=true
                                 ReadOnly=true
@@ -243,7 +247,7 @@ else
                     </MudGrid>
                     
                 </MudItem>
-                <MudItem xl="4">
+                <MudItem xl="4" lg="4">
                     <MudNumericField Value="DailySaleReport.Commissions"
                                      ValueChanged="@(value => { DailySaleReport.Commissions = value; OnExpensesChange(); })"
                                      Label="Commisions"
@@ -251,20 +255,21 @@ else
                                      HideSpinButtons=true
                                      T="decimal?"
                                      AdornmentText="₱"
-                                     Format="F2" />
+                                     Format="N2"
+                                     ReadOnly="true"/>
                 </MudItem>
 
-                <MudItem xl="7">
+                <MudItem xl="7" lg="7">
                     <MudGrid>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudText>TOTAL SALES:</MudText>
                         </MudItem>
-                        <MudItem xl="7">
+                        <MudItem xl="7" lg="7">
                             <MudNumericField T="decimal"
                                 @bind-Value="DailySaleReport.TotalSales" 
                                 Adornment="Adornment.Start"
                                 AdornmentText="₱"
-                                Format="F2"
+                                Format="N2"
                                 Variant="Variant.Text"
                                 HideSpinButtons=true
                                 ReadOnly=true
@@ -272,7 +277,7 @@ else
                         </MudItem>
                     </MudGrid>
                 </MudItem>
-                <MudItem xl="4">
+                <MudItem xl="4" lg="4">
                     <MudNumericField 
                                      T="decimal?" 
                                      @bind-Value="DailySaleReport.Supplies"
@@ -280,70 +285,73 @@ else
                                      HideSpinButtons=true 
                                      Adornment="Adornment.Start"
                                      AdornmentText="₱"
-                                     Format="F2" 
+                                     Format="N2" 
                                      ReadOnly=true
                                      />
                 </MudItem>
-                <MudItem xl="7">
+                <MudItem xl="7" lg="7">
                     <MudGrid>
-                        <MudItem xl="2">
+                        <MudItem xl="2" lg="3">
                             <MudText>Collections:</MudText>
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal?" @bind-Value="DailySaleReport.CollectionCash" HideSpinButtons=true Adornment="Adornment.Start" AdornmentText="₱"
-                                             Format="F2" ReadOnly=true />
+                                             Format="N2" ReadOnly=true />
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal?" @bind-Value="DailySaleReport.CollectionChecks" HideSpinButtons=true Adornment="Adornment.Start" AdornmentText="₱"
-                                             Format="F2" ReadOnly=true />
+                                             Format="N2" ReadOnly=true />
                         </MudItem>
                     </MudGrid>
                 </MudItem>
-                <MudItem xl="4">
+                <MudItem xl="4" lg="4">
                     <MudNumericField Label="Others"
                         T="decimal?"
-                        @bind-Value="DailySaleReport.Others" 
+                        Value="DailySaleReport.Others" 
                         Adornment="Adornment.Start"
+                        ValueChanged="@(value => { DailySaleReport.Others = value; OnExpensesChange(); })"
                         AdornmentText="₱"
                         HideSpinButtons=true
-                        Format="F2" />
+                        Format="N2" />
                 </MudItem>
 
-                <MudItem xl="7">
+                <MudItem xl="7" lg="7">
                     <MudGrid>
-                        <MudItem xl="3">
+                        <MudItem xl="3" lg="4">
                             <MudText>Total Collections:</MudText>
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal?"
                                             Value="DailySaleReport.TotalCollectionCash" 
                                             Adornment="Adornment.Start"
                                              AdornmentText="₱"
                                              HideSpinButtons=true
-                                             Format="F2" />
+                                             Format="N2" />
                         </MudItem>
-                        <MudItem xl="4">
+                        <MudItem xl="4" lg="4">
                             <MudNumericField T="decimal?" 
                                             Value="DailySaleReport.TotalCollectionChecks" 
                                             Adornment="Adornment.Start"
                                              AdornmentText="₱"
                                              HideSpinButtons=true
-                                             Format="F2" />
+                                             Format="N2" />
 
                         </MudItem>
                     </MudGrid>
                 </MudItem>
-                <MudItem xl="4">
-                    <MudNumericField T="decimal?" 
-                        @bind-Value="DailySaleReport.TotalExpenses"
-                        Adornment="Adornment.Start"
-                        Label="Total Expenses"
-                        AdornmentText="₱"
-                        HideSpinButtons=true
-                        Format="F2" />
+                <MudItem xl="4" lg="4">
+                        <MudNumericField 
+                            T="decimal"
+                            Label="Purchase Order"
+                            Adornment="Adornment.Start"
+                            AdornmentText="₱"
+                            Format="N2"
+                            Value="TotalPurchaseOrder"
+                            HideSpinButtons=true
+                            ReadOnly=true />
                 </MudItem>
 
-                <MudItem xl="7">
+                <MudItem xl="7" lg="7">
                     <MudTextField T="string" 
                                   @bind-Value="DailySaleReport.Notes"
                                   Adornment="Adornment.Start"
@@ -352,20 +360,42 @@ else
                                   MaxLines="3"
                                    />
                 </MudItem>
+                    <MudItem xl="4" lg="4">
+                        <MudNumericField T="decimal?"
+                                         @bind-Value="DailySaleReport.TotalExpenses"
+                                         Adornment="Adornment.Start"
+                                         Label="Total Expenses"
+                                         AdornmentText="₱"
+                                         HideSpinButtons=true
+                                         Format="N2" />
+                    </MudItem>
 
-                <MudItem xl="7">
+                <MudItem xl="7" lg="7">
                     <MudTextField @bind-Value="DailySaleReport.PreparedBy" Label="Prepared By:" />
                 </MudItem>
-                <MudItem xl="4">
+                <MudItem xl="4" lg="4">
                     <MudNumericField T="decimal?" 
                         @bind-Value="DailySaleReport.TotalCashOnHand" 
                         Label="Total Cash" 
                         Adornment="Adornment.Start"
                                      AdornmentText="₱"
                                      HideSpinButtons=true
-                                     Format="F2" />
+                                     Format="N2" />
 
                 </MudItem>
+                <MudItem sm="4">
+                    <MudNumericField T="decimal" @bind-Value="TotalLandedCost" Label="Landed Cost Total" Format="N2" HideSpinButtons=true />
+
+                </MudItem>
+                  <MudItem sm="4">
+                    <MudNumericField T="decimal" @bind-Value="TotalItemsSales" Label="Sales Cost Total"  Format="N2" HideSpinButtons=true />
+
+                </MudItem>
+                  <MudItem sm="4">
+                    <MudNumericField T="decimal" Value="TotalNetIncome" Label="Net Income"  Format="N2" HideSpinButtons=true />
+
+                </MudItem>
+                 
                 </MudGrid>
             }
             else

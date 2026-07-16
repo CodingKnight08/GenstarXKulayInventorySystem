@@ -7,13 +7,21 @@
         <MudTh>Brand</MudTh>
         <MudTh>Item Name</MudTh>
         <MudTh>Size</MudTh>
+        <MudTh>Quantity</MudTh>
         <MudTh>Unit</MudTh>
+        <MudTh>Price</MudTh>
+        <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Brand">@context.BrandName</MudTd>
         <MudTd DataLabel="Paint Name">@context.ProductName</MudTd>
         <MudTd DataLabel="Size">@context.Size</MudTd>
+        <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
         <MudTd DataLabel="Unit">@context.UnitMeasurement</MudTd>
+        <MudTd DataLabel="Price">@context.ProductCost.ToString("N2")</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => Remove(context))" />
+        </MudTd>
     </RowTemplate>
     <NoRecordsContent>
         <MudText Typo="Typo.subtitle2" Align="Align.Center" Color="Color.Warning">No Items Added!</MudText>
@@ -22,9 +30,14 @@
 @code{
     [Parameter] public List<InvolvePaintsDto> PaintItems { get; set; } = new();
     protected List<InvolvePaintsDto> PaintsDtos { get; set; } = new();
-
+    [Parameter] public EventCallback<InvolvePaintsDto> OnRemove { get; set; }
     protected override void OnParametersSet()
     {
         PaintsDtos = PaintItems.ToList();
     }   
+    private async Task Remove(InvolvePaintsDto item)
+    {
+        if (OnRemove.HasDelegate)
+            await OnRemove.InvokeAsync(item);
+    }
 }

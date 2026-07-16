@@ -31,6 +31,8 @@ public class DailySaleReportDto: BaseEntityDto
     public string Notes { get; set; } = string.Empty;
     public string PreparedBy { get; set; } = string.Empty;
     public BranchOption Branch { get; set; }
+    public decimal? LandedCost { get; set; }
+    public decimal? GrossProfit { get; set; }
     public decimal? TotalCollectionCash => CollectionCash;
     public decimal? TotalCollectionChecks => CollectionChecks;
 

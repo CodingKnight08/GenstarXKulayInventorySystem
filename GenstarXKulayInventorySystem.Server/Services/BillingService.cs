@@ -5,6 +5,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -26,23 +27,39 @@ public class BillingService:IBillingService
         return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
     }
     // Billings 
-        public async Task<List<BillingDto>> GetAllBillingAsync()
+    public async Task<List<BillingDto>> GetAllBillingAsync(
+      BranchOption branch,
+      DateTime date)
+    {
+        BillingBranch billingBranch = branch switch
         {
-            List<Billing> billings = await _context.Billings
-                .AsNoTracking()
-                .AsSplitQuery()
-                .Include(b => b.OperationsProvider)
-                .Where(e => !e.IsDeleted)
-                .OrderByDescending(e => e.DateOfBilling).ToListAsync();
+            BranchOption.Polomolok => BillingBranch.Kulay,
+            BranchOption.GeneralSantosCity => BillingBranch.GenStar,
+            BranchOption.Warehouse => BillingBranch.Warehouse,
+            _ => throw new ArgumentOutOfRangeException(nameof(branch), branch, null)
+        };
 
-            if (billings == null || billings.Count == 0)
-            {
-                return new List<BillingDto>();
-            }
+        var startDate = date.Date;
+        var endDate = startDate.AddDays(1);
 
-            List<BillingDto> billingDtos = _mapper.Map<List<BillingDto>>(billings);
-            return billingDtos;
-        }
+        var billings = await _context.Billings
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(b => b.OperationsProvider)
+            .Where(b =>
+                !b.IsDeleted &&
+                b.Branch == billingBranch &&
+                b.DateOfBilling >= startDate &&
+                b.DateOfBilling < endDate)
+            .OrderByDescending(b => b.DateOfBilling)
+            .ToListAsync();
+
+        return billings.Any()
+            ? _mapper.Map<List<BillingDto>>(billings)
+            : new List<BillingDto>();
+    }
+
+
     public async Task<List<BillingDto>> GetAllNotPurchaseOrderBillings()
     {
         var billings = await _context.Billings
@@ -63,8 +80,8 @@ public class BillingService:IBillingService
 
     public async Task<List<BillingDto>> GetAllExpensesBillingPerDay(DateTime date, BillingBranch branch)
     {
-        var start = date.Date.ToUniversalTime();
-        var end = start.AddDays(1);
+        var (start, end) = PhilippineTime.GetDayRange(date);
+        
 
         var billings = await _context.Billings
             .AsNoTracking()
@@ -94,31 +111,38 @@ public class BillingService:IBillingService
     {
         try
         {
+            var phNow = PhilippineTime.Now;
+            var billingName = $"{billingDto.BillingName}";
             var existingBilling = await _context.Billings
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.BillingName == billingDto.BillingName && x.Branch == billingDto.Branch && x.DateOfBilling.Date == billingDto.DateOfBilling.Date);
+                .FirstOrDefaultAsync(x => x.BillingName == billingName && x.Branch == billingDto.Branch && x.DateOfBilling.Date == billingDto.DateOfBilling.Date);
             if (existingBilling != null)
                 return false;
             var billing = _mapper.Map<Billing>(billingDto);
+            
             if (billing.IsPaid)
             {
-                billing.DatePaid = DateTime.UtcNow;
+                billing.DatePaid = billingDto.DateOfBilling;
             }
+            billing.BillingName = billingName;
             billing.CreatedBy = GetCurrentUsername();
-            billing.CreatedAt = DateTime.UtcNow;
+            billing.CreatedAt = phNow;
             _ = await _context.Billings.AddAsync(billing);
             _ =await _context.SaveChangesAsync();
             string code = billingDto.Category switch
             {
-                BillingCategory.Logistics => "LB",
+                BillingCategory.Transportation => "TB",
                 BillingCategory.Electric => "EB",
                 BillingCategory.Internet => "IB",
                 BillingCategory.Telephone => "TB",
                 BillingCategory.Water => "WB",
                 BillingCategory.Cellphone => "CB",
-                BillingCategory.SchoolSupplies => "SSB",
+                BillingCategory.OfficeSupplies => "SSB",
                 BillingCategory.Other => "OTB",
                 BillingCategory.Foods => "FB",
+                BillingCategory.ProfessionalFees => "PFB",
+                BillingCategory.RepairsAndMaintenance => "RMB",
+                BillingCategory.SalaryAndAdvances => "SAB",
                 _ => "NA" // fallback
             };
 
@@ -145,9 +169,10 @@ public class BillingService:IBillingService
             if (existingBilling == null)
                 return false;
             var billing = _mapper.Map<Billing>(billingDto);
+            var phNow = PhilippineTime.Now;
             if (billingDto.IsPaid)
             {
-                billing.DatePaid = DateTime.UtcNow;
+                billing.DatePaid = phNow;
             }
             billing.UpdatedBy = GetCurrentUsername();
             billing.UpdatedAt = DateTime.UtcNow;
@@ -310,7 +335,7 @@ public class BillingService:IBillingService
 
 public interface IBillingService
 {
-    Task<List<BillingDto>> GetAllBillingAsync();
+    Task<List<BillingDto>> GetAllBillingAsync(BranchOption branch, DateTime date);
     Task<List<BillingDto>> GetAllExpensesBillingPerDay(DateTime date, BillingBranch branch);
     Task<BillingDto?> GetBillingById(int id);
     Task<bool> AddBillingAsync(BillingDto billingDto);

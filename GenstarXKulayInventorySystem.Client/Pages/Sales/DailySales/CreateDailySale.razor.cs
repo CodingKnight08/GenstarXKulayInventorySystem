@@ -7,11 +7,18 @@ using System.Runtime.CompilerServices;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Sales.DailySales;
 
 public partial class CreateDailySale
 {
+    [Parameter, SupplyParameterFromQuery(Name="date")] 
+    public string? DateString { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name="pageskip")]
+    public int PageSkip { get; set; } = 0;
+    [Parameter, SupplyParameterFromQuery(Name="pagetake")]
+    public int PageTake { get; set; } = 10;
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ILogger<CreateDailySale> Logger { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
@@ -34,7 +41,6 @@ public partial class CreateDailySale
         Sale.SaleItems.Count != 0 &&
         (Sale.SalesOption == PurchaseRecieptOption.NonBIR || !string.IsNullOrWhiteSpace(Sale.RecieptReference));
 
-
     protected override async Task OnInitializedAsync()
     {
         await LoadClients();
@@ -42,11 +48,29 @@ public partial class CreateDailySale
         Sale.Branch = UserState.Branch.GetValueOrDefault();
     }
 
+    protected override void OnParametersSet()
+    {
+        var now = PhilippineTime.Now;
+
+        if (!string.IsNullOrWhiteSpace(DateString) &&
+            DateTime.TryParse(DateString, out var parsedDate))
+        {
+            // ✅ Use selected date + current PH time
+            Sale.DateOfSales = parsedDate.Date.Add(now.TimeOfDay);
+        }
+        else
+        {
+            // ✅ Fallback: today PH time
+            Sale.DateOfSales = now;
+        }
+    }
+
     protected async Task LoadClients()
     {
         IsClientLoading = true;
         try
         {
+            
             var response = await HttpClient.GetAsync($"api/client/all/{Sale.Branch}");
             response.EnsureSuccessStatusCode();
             var clients = await response.Content.ReadFromJsonAsync<List<ClientDto>>();
@@ -101,15 +125,22 @@ public partial class CreateDailySale
                 {
                     Sale.PaymentTermsOption = PaymentTermsOption.Today;
                 }
-          
+                if (Sale.PaymentTermsOption == PaymentTermsOption.Today)
+                {
+                    Sale.IsPaid = true;
+                }
 
 
 
-                var response = await HttpClient.PostAsJsonAsync("api/sales", Sale);
+            Sale.HasDiscount = Sale.SaleItems.Any(x => x.HasDiscount);
+            Sale.IsApproved = !Sale.HasDiscount;
+            Sale.IsChargedSales = Sale.PaymentType == null;
+
+            var response = await HttpClient.PostAsJsonAsync("api/sales", Sale);
             response.EnsureSuccessStatusCode();
 
             Snackbar.Add("Sale created successfully!", Severity.Success);
-            NavigationManager.NavigateTo("/sales");
+            NavigationManager.NavigateTo( $"/sales?pageskip={PageSkip}&pagetake={PageTake}&date={Sale.DateOfSales:yyyy-MM-dd}");
         }
         catch (Exception ex)
         {
@@ -167,8 +198,10 @@ public partial class CreateDailySale
     private void HandleSaleItemsChanged(List<SaleItemDto> saleItems)
     {
         Sale.SaleItems = saleItems; // 🔗 Bind sale items to DailySaleDto
+        Sale.TotalAmount = saleItems.Sum(item => item.TotalPrice); // 🔗 Update total amount
+        StateHasChanged();
     }
 
+   
 
-    
 }

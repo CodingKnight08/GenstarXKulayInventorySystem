@@ -32,16 +32,19 @@
                     <small class="text-danger mt-1">Username is required.</small>
                 }
             </div>
-
-            <div class="mb-3 d-flex flex-column">
-                <label class="form-label fw-semibold">Branch</label>
-               <select class="form-select" @bind="NewRegistrant.Branch">
-                    @foreach (var branch in Enum.GetValues<BranchOption>())
-                    {
-                        <option value="@branch">@branch</option>
-                    }
-                </select>
-            </div>
+            @if (!IsStaff)
+            {
+                <div class="mb-3 d-flex flex-column">
+                    <label class="form-label fw-semibold">Branch</label>
+                    <select class="form-select" @bind="NewRegistrant.Branch">
+                        @foreach (var branch in Enum.GetValues<BranchOption>())
+                        {
+                            <option value="@branch">@branch</option>
+                        }
+                    </select>
+                </div>
+            }
+            
 
             <!-- Email -->
             <div class="mb-3 d-flex flex-column">

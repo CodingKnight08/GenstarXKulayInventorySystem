@@ -9,38 +9,50 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
+using QuestPDF.Infrastructure;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-var port = Environment.GetEnvironmentVariable("PORT");
+// Detect environment
+var environment = builder.Environment.EnvironmentName;
+Console.WriteLine($"Starting in environment: {environment}");
 
+// ✅ Handle PaaS environments like Railway or MonsterASP
+var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
 {
-    // Running on Railway or another PaaS
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 }
 
-// Add services to the container  
+// ✅ Add MVC Controllers
 builder.Services.AddControllers();
 
-
-// Enable CORS to allow calls from your Blazor WebAssembly client  
+// ✅ Enable CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowClient", policy =>
-       policy.WithOrigins(
-            "https://localhost:7035", // Dev client
-            "https://genstarxkulayinventorysystem-production.up.railway.app", 
-            "https://helpful-gentleness-production.up.railway.app" 
-        )
-              .AllowAnyMethod()
-              .AllowAnyHeader());
+    options.AddPolicy("AllowAll", policy =>
+        policy
+            .WithOrigins(
+                "https://localhost:7035",                     // Local dev client
+                "http://genstar-kulay-inventory.runasp.net",
+                "http://twodragon88.premiumasp.net",
+                "http://twodragon88-corp.premiumasp.net",
+                "https://twodragon88.shop"
+            )
+            .AllowAnyMethod()    // Allow GET, POST, PUT, DELETE, etc.
+            .AllowAnyHeader()    // Allow any headers
+            .AllowCredentials()  // Allow cookies or auth headers if needed
+    );
 });
+
+
+// ✅ Identity
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<InventoryDbContext>()
     .AddDefaultTokenProviders();
 
-var jwtSettings = builder.Configuration.GetSection("Jwt");
+// ✅ JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -54,40 +66,36 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-
-        RoleClaimType = ClaimTypes.Role, // ✅ Ensure this matches your JWT
+        RoleClaimType = ClaimTypes.Role,
         NameClaimType = ClaimTypes.Name
     };
 });
 
-
 builder.Services.AddAuthorization();
 
-// Swagger/OpenAPI configuration  
+// ✅ Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Your API Title",
+        Title = "Genstar XKulay Inventory API",
         Version = "v1"
     });
 });
 
-
 builder.Services.AddHttpContextAccessor();
 
-
-// AutoMapper profile
+// ✅ AutoMapper
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<AutoMapperProfile>();
 });
 
+// ✅ Password policy
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.Password.RequireDigit = false;
@@ -97,47 +105,29 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireLowercase = false;
 });
 
-
-// Register DbContextFactory (with retry on failure) MSSQL
-//builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
-//{
-//    options.UseSqlServer(
-//        builder.Configuration.GetConnectionString("DefaultConnection"),
-//        sqlOptions =>
-//        {
-//            sqlOptions.EnableRetryOnFailure();
-//        });
-//}, ServiceLifetime.Scoped);
-
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-string connectionString;
-
-if (!string.IsNullOrEmpty(databaseUrl))
-{
-    // Convert DATABASE_URL to Npgsql format
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':');
-
-    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};Pooling=true;Trust Server Certificate=true;";
-}
-else
-{
-    // fallback to local
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-}
-
+// ✅ SQL Server Configuration
 builder.Services.AddDbContextFactory<InventoryDbContext>(options =>
 {
-    options.UseNpgsql(connectionString, npgsqlOptions =>
-    {
-        npgsqlOptions.EnableRetryOnFailure();
-    });
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure();
+        });
 }, ServiceLifetime.Scoped);
 
+//QuestPDF configuration
+QuestPDF.Settings.License = LicenseType.Community;
+QuestPDF.Settings.EnableDebugging = false;
 
+// ✅ Hosted + Scoped services
+// Avoid running hosted services when generating Swagger
+var isSwaggerBuild = builder.Environment.IsEnvironment("SwaggerBuild");
 
-builder.Services.AddHostedService<SalesHostedService>();
-//Register Services
+if (!isSwaggerBuild)
+{
+    builder.Services.AddHostedService<SalesHostedService>();
+}
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
@@ -149,53 +139,61 @@ builder.Services.AddScoped<ISaleItemService, SaleItemService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IDailySaleReportService, DailySaleReportService>();
 builder.Services.AddScoped<IOperationsProviderService, OperationsProviderService>();
+builder.Services.AddScoped<IPullOutRequestService, PullOutRequestService>();
+builder.Services.AddScoped<IRequestItemsService, RequestItemsService>();
+builder.Services.AddScoped<IStatementReportService, StatementReportService>();
+builder.Services.AddScoped<IWayBillService, WayBillService>();
 builder.Services.AddScoped<JwtService>();
-    
+builder.Services.AddScoped(sp =>
+    new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]) });
 
-
-var app = builder.Build(); // Build must happen BEFORE using app.Services
-
-// Apply migrations to create/update database automatically
-using (var scope = app.Services.CreateScope())
+var app = builder.Build();
+// ✅ Apply migrations and seed users/roles in normal runtime (not during Swagger generation)
+if (!isSwaggerBuild)
 {
-    var services = scope.ServiceProvider; // 👈 this was missing
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
 
-    var dbContext = services.GetRequiredService<InventoryDbContext>();
-    dbContext.Database.Migrate();
-
-    var userManager = services.GetRequiredService<UserManager<User>>();
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-    await InventoryDbContext.SeedUserAsync(userManager, roleManager);
-
-}
-
-
-
-// Middleware pipeline  
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
+    try
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API Title v1");
-        c.RoutePrefix = "swagger"; 
-    });
+        var dbContext = services.GetRequiredService<InventoryDbContext>();
+        dbContext.Database.Migrate(); // Apply migrations
+
+        var userManager = services.GetRequiredService<UserManager<User>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        // Seed roles and admin user
+        await InventoryDbContext.SeedUserAsync(userManager, roleManager);
+        Console.WriteLine("Database seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+    }
 }
 
-app.UseDeveloperExceptionPage();
-app.UseHttpsRedirection();
 
-app.UseCors("AllowClient");
+// ✅ Middleware pipeline
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Genstar XKulay Inventory API v1");
+    c.RoutePrefix = "swagger";
+});
 
-// 🔑 Add this line
-app.UseAuthentication();
-
-app.UseAuthorization();
-app.UseBlazorFrameworkFiles();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.MapFallbackToFile("index.html");
+app.UseBlazorFrameworkFiles();
+
+app.UseRouting();
+
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 app.Run();
+

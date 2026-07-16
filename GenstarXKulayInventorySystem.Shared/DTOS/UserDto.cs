@@ -11,11 +11,13 @@ public class UserDto:BaseEntityDto
     public string Email { get; set; } = null!;
     public UserRole Role { get; set; }
     public BranchOption Branch { get; set; }
+    public bool IsClient { get; set; } = false;
 }
 public enum UserRole
 {
     Admin,
     Secretary,
-    User
+    User,
+    Staff,
 }
 

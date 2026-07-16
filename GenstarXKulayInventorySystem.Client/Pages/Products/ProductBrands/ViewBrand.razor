@@ -54,17 +54,28 @@
                         </MudSelect>
                      </AuthorizeView>
                   </MudItem>
-                <AuthorizeView Roles="Secretary,Admin">
-                    <MudItem lg="8" Class="d-flex flex-row justify-content-end mb-3 me-3">
+                  <MudItem lg="8" Class="d-flex flex-row justify-content-end mb-3 me-3 gap-4">
+                    <AuthorizeView Roles="Secretary,Admin">
+                            <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Secondary" OnClick="UpdateStocks">
+                                Update Stocks
+                            </MudButton>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Admin">
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
                                    StartIcon="@Icons.Material.Filled.Add"
                                    OnClick="AddProduct">
                             Add Product
                         </MudButton>
-                    </MudItem>
-                </AuthorizeView>
-                
+                        <MudButton Variant="Variant.Filled"
+                            Color="Color.Tertiary"
+                            StartIcon="@Icons.Material.Filled.Add"
+                            OnClick="CreateBranchProduct"
+                        >
+                            Add Branch Product
+                        </MudButton>
+                    </AuthorizeView>
+                </MudItem>
             </MudGrid>
         </MudCard>
        
@@ -74,9 +85,17 @@
             
         
         <MudCard Elevation="0">
-
+               <MudCard Class="w-50 p-3" Elevation="0">
+                <MudTextField T="string"
+                              Placeholder="Search products..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              ValueChanged="OnSearchChanged"
+                              Class="mb-3" />
+               </MudCard>
                 <MudCardContent>
-                    <MudTable T="ProductDto"
+                    <MudTable T="BranchProductDto"
                               @ref="productTable"
                               ServerData="ServerLoadData"
                               Hover="true"
@@ -86,53 +105,59 @@
                               HorizontalScrollbar="true">
 
                         <HeaderContent>
+                        <AuthorizeView Roles="Admin" Context="role">
+                            <MudTh>Id</MudTh>
+                            </AuthorizeView>
                             <MudTh Style="position:sticky; left:0; z-index:2; background:white;">
                                 Product Name
                             </MudTh>
                             <MudTh>Size</MudTh>
                             <MudTh>Unit</MudTh>
-                            <MudTh>Category</MudTh>
                             <MudTh>Quantity</MudTh>
                             <MudTh>Lvl Stock</MudTh>
-                            <MudTh>Color</MudTh>
                             <MudTh>Capital Price</MudTh>
                             <MudTh>Retail Price</MudTh>
                             <MudTh>Wholesale Price</MudTh>
+                            <MudTh>Cost Price 2</MudTh>
                             <MudTh>Actions</MudTh>
                         </HeaderContent>
 
                         <RowTemplate>
+                            <AuthorizeView Roles="Admin" Context="role">
+                            <MudTd>@context.Id</MudTd>
+                            </AuthorizeView>
                             <MudTd Style="position:sticky; left:0; z-index:1; background:white;"
                                    DataLabel="Product Name">
-                                @context.ProductName
+                            @(context.MasterProduct?.ProductName ?? "--")
                             </MudTd>
                             <MudTd DataLabel="Size">@context.Size</MudTd>
-                            <MudTd DataLabel="Unit">@context.ProductMesurementOption.ToString()</MudTd>
-                            <MudTd DataLabel="Category">
-                                @(
-                                                        context.ProductCategoryId != null
-                                                        ? Categories.FirstOrDefault(c => c.Id == context.ProductCategoryId)?.Name ?? "None"
-                                                        : "None"
-                                                        )
+                        <MudTd DataLabel="Unit">
+                            @(context.ProductMesurementOption?.ToString() ?? "--")
                         </MudTd>
+                            
                         <MudTd DataLabel="Quantity"
                                Style=@($"color:{(context.ActualQuantity < context.BufferStocks ? "red" : "inherit")}")>
                             @context.ActualQuantity
                         </MudTd>
                         <MudTd DataLabel="LevelStock">@context.BufferStocks</MudTd>
-                        <MudTd DataLabel="Color">@context.Color</MudTd>
                         <MudTd DataLabel="Capital"> ₱ @context.CostPrice</MudTd>
                         <MudTd DataLabel="RetailPrice"> ₱@context.RetailPrice</MudTd>
-                        <MudTd DataLabel="Wholesale"> ₱@context.WholesalePrice</MudTd>
+                        <MudTd DataLabel="Wholesale"> ₱@context.WholeSalePrice</MudTd>
+                        <MudTd DataLabel="CostPrice2">₱@context.WholeSaleCostPrice</MudTd>
                         <MudTd DataLabel="Action">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Color="Color.Success"
-                                           Variant="Variant.Text"
-                                           OnClick="()=>UpdateProduct(context.Id)" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Color="Color.Error"
-                                           Variant="Variant.Text"
-                                           OnClick="() => DeleteProduct(context.Id)" />
+                            <AuthorizeView Roles="Admin,Secretary" Context="auth"> 
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Success"
+                                               Variant="Variant.Text"
+                                               OnClick="()=>UpdateProduct(context.Id)" />
+                            </AuthorizeView>
+                            <AuthorizeView Roles="Admin" Context="auth">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Variant="Variant.Text"
+                                               OnClick="() => DeleteProduct(context.Id)" />
+                            </AuthorizeView>
+                           
                         </MudTd>
                     </RowTemplate>
 

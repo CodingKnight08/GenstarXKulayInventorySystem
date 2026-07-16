@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 using static MudBlazor.Colors;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Orders.PurchaseOrders;
@@ -28,10 +29,11 @@ public partial class CreatePurchaseOrders
     protected bool IsLoading { get; set; } = true;
     protected bool IsNewSupplier { get; set; } = false;
     protected MudForm _form { get; set; } = default!;
-
+    protected BranchOption Branch { get; set; }
     protected bool IsPurchaseOrderValid => !string.IsNullOrWhiteSpace(SupplierName) && NewPurchaseOrder.PurchaseOrderItems.Count !=0;
     protected override  async Task OnInitializedAsync()
     {
+        Branch = UserState.Branch.GetValueOrDefault();
         IsLoading = true;
         await LoadSuppliers();
         NewPurchaseOrder.PurchaseShipToOption = UtilitiesHelper.GetPurchaseToShipOption(UserState.Branch.GetValueOrDefault());
@@ -42,7 +44,7 @@ public partial class CreatePurchaseOrders
     {
         try
         {
-            var response = await HttpClient.GetAsync("api/supplier/all");
+            var response = await HttpClient.GetAsync($"api/supplier/all/{Branch}");
             response.EnsureSuccessStatusCode();
             var suppliers = await response.Content.ReadFromJsonAsync<List<SupplierDto>>();
             Suppliers = suppliers ?? new List<SupplierDto>();

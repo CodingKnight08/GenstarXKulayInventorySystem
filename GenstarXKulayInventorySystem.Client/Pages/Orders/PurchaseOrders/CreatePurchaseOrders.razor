@@ -85,7 +85,7 @@ else
                                Date="NewPurchaseOrder.PurchaseOrderDate" />
                   </MudItem>    
                    <MudItem xl="1" xs="12">
-                        <MudDatePicker Label="Date to Recieve" MinDate="NewPurchaseOrder.PurchaseOrderDate" Date="NewPurchaseOrder.ExpectedDeliveryDate" DateChanged="@(newDate => OnExpectedDateChanged(newDate))"/>
+                        <MudDatePicker Label="Date to Recieve" MinDate="DateTime.UtcNow.AddDays(-1)" Date="NewPurchaseOrder.ExpectedDeliveryDate" DateChanged="@(newDate => OnExpectedDateChanged(newDate))"/>
                   </MudItem>  
                   <MudItem xl="4" xs="12">
                       <MudTextField Label="Remarks" @bind-Value="NewPurchaseOrder.Remarks" />

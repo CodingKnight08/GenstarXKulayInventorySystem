@@ -1,4 +1,5 @@
 ﻿@using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems
+@using GenstarXKulayInventorySystem.Shared.DTOS
 @using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
@@ -12,7 +13,7 @@
                     <MudTextField Placeholder="Enter Client Name" Label="Client Name" @bind-Value="Sale.NameOfClient" ReadOnly=true />
                 </MudItem>
                 <MudItem xl="2">
-                    <MudSelect T="PaymentMethod?" @bind-Value="Sale.PaymentType" Label="Payment Method" Placeholder="Please Select Payment Method">
+                    <MudSelect T="PaymentMethod?" @bind-Value="Sale.PaymentType" Label="Payment Method" Placeholder="Please Select Payment Method" Disabled="Sale.IsPaid">
                         @foreach (var method in Enum.GetValues(typeof(PaymentMethod)).Cast<PaymentMethod>())
                         {
                             <MudSelectItem T="PaymentMethod?" Value="@method">
@@ -23,7 +24,7 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xl="2">
-                    <MudSelect T="PurchaseRecieptOption?" @bind-Value="Sale.SalesOption" Label="Receipt Type">
+                    <MudSelect T="PurchaseRecieptOption?" @bind-Value="Sale.SalesOption" Label="Receipt Type" Disabled="Sale.IsPaid">
 
 
                         @foreach (var option in Enum.GetValues(typeof(PurchaseRecieptOption)).Cast<PurchaseRecieptOption>())
@@ -39,7 +40,7 @@
                 <MudItem xl="2">
                     <MudTextField T="string" Placeholder="Auto Generated" Label="Sale Number" @bind-Value="Sale.SalesNumber" ReadOnly=true/>
                 </MudItem>
-                <MudItem xl="2">
+               @*  <MudItem xl="2">
                     <MudSelect T="BranchOption"
                                @bind-Value="Sale.Branch"
                                ReadOnly=true
@@ -52,7 +53,7 @@
                         }
 
                     </MudSelect>
-                </MudItem>
+                </MudItem> *@
                 <MudItem xl="3">
                     <MudTextField @bind-Value="Sale.RecieptReference"
                                   T="string"
@@ -60,6 +61,21 @@
                                   Label="Reciept No."
                                   
                                   />
+                </MudItem>
+                <MudItem xl="3" lg="3" md="6" sm="12">
+                <MudNumericField T="decimal?"
+                                 @bind-Value="Sale.Commission"
+                                 HideSpinButtons="true"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 Label="Commission" />
+
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Placeholder="PO Number" @bind-Value="Sale.PONumber" Adornment="Adornment.Start" AdornmentText="PO-" Label="PO. Number" Variant="Variant.Text" />
+                </MudItem>
+                <MudItem xl="2" lg="3" >
+                    <MudCheckBox T="bool" @bind-Value="Sale.IsApproved" Label="Approved" ReadOnly="UserState.Role != UserRole.Admin"/>
                 </MudItem>
                 @if (Sale.PaymentType == null)
                 {

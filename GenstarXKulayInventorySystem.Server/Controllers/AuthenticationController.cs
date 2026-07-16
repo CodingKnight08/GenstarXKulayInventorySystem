@@ -83,13 +83,25 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    public async Task<IActionResult> Login(LoginDto loginDto)
     {
-        var token = await _authService.LoginAsync(loginDto);
-        if (token == null)
+        var response = await _authService.LoginAsync(loginDto);
+
+        if (response == null)
             return Unauthorized();
 
-        return Ok(new { Token = token });
+        return Ok(response);
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
+    {
+        var result = await _authService.RefreshTokenAsync(dto);
+
+        if (result == null)
+            return Unauthorized();
+
+        return Ok(result);
     }
 
     [HttpDelete("remove")]

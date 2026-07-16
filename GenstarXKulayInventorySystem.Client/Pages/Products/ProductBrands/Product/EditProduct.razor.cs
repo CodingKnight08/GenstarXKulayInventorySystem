@@ -13,14 +13,14 @@ public partial class EditProduct
     [CascadingParameter] protected IMudDialogInstance DialogService { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
 
-    protected ProductDto UpdatedProduct { get; set; } = new();
+    protected BranchProductDto UpdatedProduct { get; set; } = new();
     protected List<ProductCategoryDto> Categories { get; set; } = new();
     protected bool IsLoading { get; set; } = true;
     protected string? ErrorMessage { get; set; }
     protected CultureInfo _en = new("en-US");
     protected bool IsUpdating { get; set; } = false;
-    protected bool IsDisabled => string.IsNullOrWhiteSpace(UpdatedProduct.ProductName)
-                               || UpdatedProduct.Size.Equals(0)
+    protected bool IsDisabled => 
+                                UpdatedProduct.Size.Equals(0)
                                 || UpdatedProduct.CostPrice.Equals(0)
                                 || UpdatedProduct.ProductMesurementOption == null || UpdatedProduct.BufferStocks == 0;
     protected override async Task OnInitializedAsync()
@@ -40,7 +40,7 @@ public partial class EditProduct
         {
             var response = await HttpClient.GetAsync($"api/product/{ProductId}");
             response.EnsureSuccessStatusCode();
-            UpdatedProduct = await response.Content.ReadFromJsonAsync<ProductDto>() ?? new ProductDto();
+            UpdatedProduct = await response.Content.ReadFromJsonAsync<BranchProductDto>() ?? new BranchProductDto();
         }
         catch (Exception ex)
         {

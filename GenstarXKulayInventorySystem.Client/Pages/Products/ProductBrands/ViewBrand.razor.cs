@@ -1,4 +1,5 @@
-﻿using GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands.Product;
+﻿using GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands.BranchProduct;
+using GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands.Product;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -10,22 +11,28 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Products.ProductBrands;
 public partial class ViewBrand
 {
     [Parameter] public int BrandId { get; set; }
+    [Parameter, SupplyParameterFromQuery(Name = "pageskip")]
+    public int PageSkip { get; set; } = 0;
+    [Parameter, SupplyParameterFromQuery(Name = "pagetake")]
+    public int PageTake { get; set; } = 10;
     [Inject] public HttpClient HttpClient { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
     [Inject] protected UserState UserState { get; set; } = default!;
     [Inject] protected ILogger<ViewBrand> Logger { get; set; } = default!;
+    [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     protected ProductBrandDto Brand { get; set; } = new ProductBrandDto();
-    protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
+    protected List<BranchProductDto> Products { get; set; } = new List<BranchProductDto>();
     protected List<ProductCategoryDto> Categories { get; set; } = new List<ProductCategoryDto>();
     protected BranchOption Branch { get; set; }
-    protected MudTable<ProductDto>? productTable;
+    protected MudTable<BranchProductDto>? productTable;
     protected bool IsLoading = false;
     protected string? ErrorMessage { get; set; }
     protected List<BreadcrumbItem> items = new();
-    protected int PageSkip { get; set; } = 0;
-    protected int PageTake { get; set; } = 10;
+    protected string SearchTerm { get; set; } = string.Empty;
     protected int CurrentPage { get; set; }
     protected int Count { get; set; }
+    protected int Skip { get; set; }
+    protected int Take { get; set; }
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
@@ -33,9 +40,10 @@ public partial class ViewBrand
         await LoadBrandAsync();
         //await LoadProductsAsync();
         await LoadCategoriesAsync();
+        await LoadBranchProducts();
         items =
         [
-            new("Products", href: $"/products"),
+            new("Brands", href: $"/productbrands?pageskip={PageSkip}&pagetake={PageTake}"),
             new("Brand Detail", href: "#", disabled: true),
         ];
         
@@ -43,8 +51,16 @@ public partial class ViewBrand
 
         IsLoading = false;
     }
-    
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && productTable != null)
+        {
+            CurrentPage = PageSkip / PageTake;
+
+            productTable.NavigateTo(CurrentPage);
+        }
+    }
 
     protected async Task LoadBrandAsync()
     {
@@ -77,58 +93,75 @@ public partial class ViewBrand
         }
     }
 
-    protected async Task<TableData<ProductDto>> ServerLoadData(TableState state, CancellationToken cancellationToken)
+    protected async Task<TableData<BranchProductDto>> ServerLoadData(TableState state, CancellationToken cancellationToken)
     {
         try
         {
-            var skip = state.Page * state.PageSize;
-            var take = state.PageSize;
+            int skip = state.Page * state.PageSize;
+            int take = state.PageSize;
 
-            var response = await HttpClient.GetAsync(
-                $"api/product/paged/by/{BrandId}/{Branch}?skip={skip}&take={take}",
-                cancellationToken);
+            var url = $"api/product/by/{BrandId}/{Branch}?skip={skip}&take={take}&search={SearchTerm}";
 
-            response.EnsureSuccessStatusCode();
+            Logger.LogInformation($"Loading products → {url}");
 
-            var result = await response.Content.ReadFromJsonAsync<ProductPageResultDto<ProductDto>>(cancellationToken: cancellationToken);
+            var response = await HttpClient.GetAsync(url, cancellationToken);
 
-            if (result is null)
-                return new TableData<ProductDto> { Items = new List<ProductDto>(), TotalItems = 0 };
-
-            return new TableData<ProductDto>
+            if (!response.IsSuccessStatusCode)
             {
-                Items = result.Products,
-                TotalItems = result.TotalCount
+                return new TableData<BranchProductDto>
+                {
+                    Items = new List<BranchProductDto>(),
+                    TotalItems = 0
+                };
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<BranchProductPageResultDto<BranchProductDto>>(cancellationToken);
+
+            return new TableData<BranchProductDto>
+            {
+                Items = result?.Products ?? new List<BranchProductDto>(),
+                TotalItems = result?.TotalCount ?? 0
             };
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Error loading products: {ex.Message}");
-            return new TableData<ProductDto> { Items = new List<ProductDto>(), TotalItems = 0 };
+            Logger.LogError($"Client Error loading products: {ex.Message}");
+            return new TableData<BranchProductDto>
+            {
+                Items = new List<BranchProductDto>(),
+                TotalItems = 0
+            };
+        }
+    }
+    protected async Task LoadBranchProducts()
+    {
+        try
+        {
+            var response = await HttpClient.GetAsync($"api/product/all/existing/products/{BrandId}/{Branch}");
+            response.EnsureSuccessStatusCode();
+            Products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>() ?? new List<BranchProductDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching brand: {ex.Message}");
+            ErrorMessage = "Failed to load brand details. Please try again later.";
         }
     }
     private async Task OnBranchChanged(BranchOption newBranch)
     {
         Branch = newBranch;
-        if (productTable is not null)
-        {
-            await productTable.ReloadServerData();
-        }
-    }
 
+        if (productTable != null)
+            await productTable.ReloadServerData();
+    }
     protected void OnPageChanged(int page)
     {
         CurrentPage = page;
-        PageSkip = CurrentPage * PageTake;
+        Skip = CurrentPage * Take;
         StateHasChanged();
     }
 
-    protected void OnRowsPerPageChanged(int newPageSize)
-    {
-        PageTake = newPageSize;
-        CurrentPage = 0;
-        PageSkip = 0;
-    }
+  
     protected async Task LoadCategoriesAsync()
     {
         try
@@ -152,13 +185,13 @@ public partial class ViewBrand
             CloseButton = true,
             MaxWidth = MaxWidth.Medium,
             FullWidth = true,
-            BackdropClick = false
+            BackdropClick = false,
+           
         };
         var dialogRef = await DialogService.ShowAsync<CreateProduct>(
             "Add Product",
             new DialogParameters {
                 ["BrandId"] = BrandId ,
-                ["Branch"] = Branch
             }, dialogOptions);
 
         if (dialogRef is not null)
@@ -172,7 +205,13 @@ public partial class ViewBrand
             }
         }
     }
+    private async Task OnSearchChanged(string text)
+    {
+        SearchTerm = text;
 
+        if (productTable is not null)
+            await productTable.ReloadServerData();
+    }
 
     protected async Task UpdateProduct(int productId)
     {
@@ -201,6 +240,41 @@ public partial class ViewBrand
                 StateHasChanged();
             }
         }
+    }
 
+    protected void UpdateStocks()
+    {
+        NavigationManager.NavigateTo($"/productbrands/update-stocks/{BrandId}");
+
+    }
+
+    protected async Task CreateBranchProduct()
+    {
+        var dialogParameters = new DialogParameters
+        {
+            ["BrandId"] = BrandId,
+            ["Branch"] = Branch,
+        };
+
+        var dialogOptions = new DialogOptions
+        {
+            FullWidth = true,
+            MaxWidth = MaxWidth.Medium,
+            BackdropClick = false,
+        };
+
+        var dialog = await DialogService.ShowAsync<CreateBranchProduct>(
+            "Create Branch Product",
+            dialogParameters,
+            dialogOptions);
+
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+        {
+            await LoadBranchProducts();            // refresh existing list (important for your logic)
+            await productTable!.ReloadServerData(); // reload MudTable server data
+            StateHasChanged();
+        }
     }
 }

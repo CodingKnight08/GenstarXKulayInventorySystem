@@ -1,10 +1,10 @@
 ﻿@using MudBlazor
-@page "/"
+@page "/login"
 @layout LoginLayout
 
 <MudPaper Height="100vh" Width="100vw"
     Class="d-flex flex-column align-items-center justify-content-center"
-    Style="background-image: url('/bg-image.jpg'); background-size: cover; background-position: center;">
+    Style="background-image: url('/clientbackground.png'); background-size: cover; background-position: center;">
 
     <MudCard Elevation="25" Square=true style="min-width:20%;height:50%;background-color:white;" Class="p-3 border-2 rounded-3 d-flex flex-column align-items-center justify-content-start">
         <div class="w-100 h-25 d-flex flex-row mb-3">
@@ -33,9 +33,20 @@
         {
             <small class="text-danger mb-2">Username is required.</small>
         }
-        <div class="d-flex flex-row align-items-center mb-4">
+        <div class="d-flex flex-row align-items-center mb-4 position-relative">
             <span class="material-icons me-2" style="font-size:2rem;">lock</span>
-            <input type="password" class="form-control flex-grow-1" placeholder="Password" @bind-value="User.Password" />
+            <input class="form-control flex-grow-1"
+                   placeholder="Password"
+                   type="@PasswordInputType"
+                   @bind-value="User.Password"
+                   @onkeydown="HandleKeyDown" />
+
+            <!-- Password visibility toggle icon -->
+            <span class="material-icons position-absolute end-0 me-3"
+                  style="cursor:pointer; color:gray;"
+                  @onclick="TogglePasswordVisibility">
+                @(ShowPassword ? "visibility_off" : "visibility")
+            </span>
         </div>
         @if (ShowValidation && string.IsNullOrWhiteSpace(User.Password))
         {

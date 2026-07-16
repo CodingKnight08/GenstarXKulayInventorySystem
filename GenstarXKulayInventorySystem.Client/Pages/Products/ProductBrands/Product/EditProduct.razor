@@ -1,4 +1,5 @@
-﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @if(IsLoading){
     <MudDialog Class="p-2 overflow-hidden">
         <DialogContent>
@@ -26,33 +27,27 @@ else
             <MudGrid Spacing="2">
                 <!-- Product Name -->
                 <MudItem xl="12">
-                    <MudTextField @bind-Value="UpdatedProduct.ProductName"
+                    <MudTextField @bind-Value="UpdatedProduct.MasterProduct.ProductName"
                                   Label="Product Name"
                                   Required="true"
                                   Margin="Margin.Dense"
                                   FullWidth="true"
+                                  ReadOnly=true
                                   RequiredError="Product Name Required" />
                 </MudItem>
 
                 <!-- Description -->
                 <MudItem xs="12" sm="12">
-                    <MudTextField @bind-Value="UpdatedProduct.Description"
+                    <MudTextField @bind-Value="UpdatedProduct.MasterProduct.Description"
                                   Label="Description"
                                   Margin="Margin.Dense"
                                   Lines="3"
-                                  FullWidth="true" />
+                                  FullWidth="true" 
+                                  ReadOnly="true"/>
                 </MudItem>
 
                 <!-- Size -->
-                <MudItem xs="12" sm="6">
-                    <MudTextField @bind-Value="UpdatedProduct.Size"
-                                  Label="Size"
-                                  Margin="Margin.Dense"
-                                  FullWidth="true"
-                                  Required=true
-                                  Format="F2"
-                                  RequiredError="Input Size" />
-                </MudItem>
+             
                 <MudItem xs="12" sm="6" lg="6">
                     <MudSelect T="ProductMesurementOption?"
                                Label="Unit"
@@ -60,6 +55,7 @@ else
                                Margin="Margin.Dense"
                                FullWidth="true"
                                Required=true
+                               
                                RequiredError="Select Unit Option">
 
                         <MudSelectItem T="ProductMesurementOption?" Value="null" Disabled="true">
@@ -77,33 +73,16 @@ else
 
 
                 </MudItem>
-                <!-- Category Dropdown -->
-                <MudItem xs="12" sm="6">
-                    <MudSelect T="int?"
-                               Label="Category"
-                               @bind-Value="UpdatedProduct.ProductCategoryId">
-                        <MudSelectItem T="int?" Value="null">None</MudSelectItem>
-                        @foreach (var category in Categories)
-                        {
-                            <MudSelectItem T="int?" Value="@category.Id">@category.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-
-                </MudItem>
-                <MudItem xs="12" sm="6" lg="6">
-                    <MudTextField @bind-Value="UpdatedProduct.Color"
-                                  Label="Color"
-                                  Margin="Margin.Dense"
-                                  FullWidth="true" />
-                </MudItem>
+              
                 <MudItem xs="12" lg="6" sm="6">
                     <MudNumericField @bind-Value="UpdatedProduct.ActualQuantity"
                                      Label="Quantity"
                                      Margin="Margin.Dense"
                                      FullWidth="true" />
                 </MudItem>
+                <AuthorizeView Roles="Admin">
                 <MudItem xs="12" sm="6" lg="6">
-                    <MudNumericField T="decimal"
+                    <MudNumericField T="decimal?"
                                      @bind-Value="@UpdatedProduct.CostPrice"
                                      Label="Cost Price"
                                      Adornment="Adornment.Start"
@@ -131,7 +110,7 @@ else
 
                 <MudItem xs="12" sm="6" lg="6">
                     <MudNumericField T="decimal?"
-                                     @bind-Value="@UpdatedProduct.WholesalePrice"
+                                     @bind-Value="@UpdatedProduct.WholeSalePrice"
                                      Label="Wholesale Price"
                                      Adornment="Adornment.Start"
                                      AdornmentText="₱"
@@ -141,9 +120,23 @@ else
                                      Margin="Margin.Dense"
                                      FullWidth="true" />
                 </MudItem>
-
+                <MudItem xs="12" sm="6" lg="6">
+                    <MudNumericField T="decimal?"
+                                     @bind-Value="@UpdatedProduct.WholeSaleCostPrice"
+                                     Label="Landed Cost 2"
+                                     Adornment="Adornment.Start"
+                                     AdornmentText="₱"
+                                     HideSpinButtons="true"
+                                     Format="N2"
+                                     Culture="@_en"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+                </MudItem>
                 <MudItem xs="12" lg="6">
-                    <MudTextField @bind-Value="UpdatedProduct.Packaging" Label="Packaging" Margin=Margin.Dense Lines="1" Placeholder="e.g (1x12)" />
+                    <MudTextField @bind-Value="UpdatedProduct.MasterProduct.Packaging" Label="Packaging" Margin=Margin.Dense Lines="1" Placeholder="e.g (1x12)" />
+                </MudItem>
+                <MudItem xs="12" lg="6">
+                    <MudNumericField  @bind-Value="UpdatedProduct.TiedUpProductId" HideSpinButtons="true" Label="Tied Up Product" Placeholder="Product Id" />
                 </MudItem>
                 <MudItem xs="12" sm="6" lg="6">
                     <MudSelect T="BranchOption" @bind-Value="UpdatedProduct.Branch" Label="Branch" ReadOnly=true>
@@ -164,6 +157,7 @@ else
                                      Placeholder="Enter items needed to maintain"
                                      Required="true" />
                 </MudItem>
+                </AuthorizeView>
             </MudGrid>
         </DialogContent>
         <DialogActions>
