@@ -434,4 +434,11 @@ public partial class CreateSaleItem
         SaleItemDto.HasDiscount = SaleItemDto.TotalPrice - paintsTotal <= 0;
     }
 
+    private decimal GetMaxQuantity()
+    {
+        if (SaleItemDto.PaintCategory == PaintCategory.Mix)
+            return decimal.MaxValue;
+
+        return SelectedProductFromList?.ActualQuantity ?? decimal.MaxValue;
+    }
 }
