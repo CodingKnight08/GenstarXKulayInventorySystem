@@ -61,7 +61,20 @@ public partial class LoginPage
                 return;
             }
 
-            var result = await response.Content.ReadFromJsonAsync<LoginResponseDto>(
+            //var result = await response.Content.ReadFromJsonAsync<LoginResponseDto>(
+            //    new JsonSerializerOptions
+            //    {
+            //        PropertyNameCaseInsensitive = true
+            //    });
+            var json = await response.Content.ReadAsStringAsync();
+
+            Logger.LogInformation("Login Response: {Json}", json);
+
+            // Temporarily inspect it in the browser console as well
+            Console.WriteLine(json);
+
+            var result = JsonSerializer.Deserialize<LoginResponseDto>(
+                json,
                 new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
