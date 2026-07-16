@@ -14,6 +14,10 @@ public class User: IdentityUser
     public DateTime? DeletedAt { get; set; }
     public UserRole Role { get; set; } = UserRole.User;
     public BranchOption  Branch { get;set; }
+    public bool IsClient { get; set; } = false;
+    public int? ClientId { get; set; }
+    public Client? Client { get; set; }
+    public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }
 
 

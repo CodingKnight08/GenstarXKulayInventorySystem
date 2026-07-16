@@ -31,6 +31,11 @@
         <InputFile OnChange="UploadBranchProductActualQuantityFile" />
         <MudText Typo="Typo.body1">@BranchProductActualQtyStatusMessage</MudText>
     </div>
+    <div class="mb-4">
+        <h5>Update Global Product Names (CSV)</h5>
+        <InputFile OnChange="UploadGlobalProductNameFile" />
+        <MudText Typo="Typo.body1">@GlobalProductNameStatusMessage</MudText>
+    </div>
 </MudMainContent>
 
 @code {
@@ -38,7 +43,7 @@
     private string BrandStatusMessage = "";
     private string BranchProductStatusMessage = "";
     private string BranchProductActualQtyStatusMessage = "";
-
+    private string GlobalProductNameStatusMessage = "";
     // ---------------- Upload Products ----------------
     private async Task UploadProductFile(InputFileChangeEventArgs e)
     {
@@ -158,5 +163,37 @@
             BranchProductActualQtyStatusMessage = $"❌ Error: {ex.Message}";
         }
     }
+    private async Task UploadGlobalProductNameFile(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+            if (file == null)
+            {
+                GlobalProductNameStatusMessage = "❌ No file selected.";
+                return;
+            }
 
+            var content = new MultipartFormDataContent();
+
+            content.Add(
+                new StreamContent(file.OpenReadStream(50 * 1024 * 1024)),
+                "file",
+                file.Name);
+
+            var response = await Http.PostAsync(
+                "api/productimport/update-global-products",
+                content);
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            GlobalProductNameStatusMessage = response.IsSuccessStatusCode
+                ? $"✅ Success: {result}"
+                : $"❌ Failed: {result}";
+        }
+        catch (Exception ex)
+        {
+            GlobalProductNameStatusMessage = $"❌ Error: {ex.Message}";
+        }
+    }
 }

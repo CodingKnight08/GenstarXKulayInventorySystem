@@ -105,6 +105,9 @@
                               HorizontalScrollbar="true">
 
                         <HeaderContent>
+                        <AuthorizeView Roles="Admin" Context="role">
+                            <MudTh>Id</MudTh>
+                            </AuthorizeView>
                             <MudTh Style="position:sticky; left:0; z-index:2; background:white;">
                                 Product Name
                             </MudTh>
@@ -120,6 +123,9 @@
                         </HeaderContent>
 
                         <RowTemplate>
+                            <AuthorizeView Roles="Admin" Context="role">
+                            <MudTd>@context.Id</MudTd>
+                            </AuthorizeView>
                             <MudTd Style="position:sticky; left:0; z-index:1; background:white;"
                                    DataLabel="Product Name">
                             @(context.MasterProduct?.ProductName ?? "--")
@@ -139,14 +145,19 @@
                         <MudTd DataLabel="Wholesale"> ₱@context.WholeSalePrice</MudTd>
                         <MudTd DataLabel="CostPrice2">₱@context.WholeSaleCostPrice</MudTd>
                         <MudTd DataLabel="Action">
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Color="Color.Success"
-                                           Variant="Variant.Text"
-                                           OnClick="()=>UpdateProduct(context.Id)" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                           Color="Color.Error"
-                                           Variant="Variant.Text"
-                                           OnClick="() => DeleteProduct(context.Id)" />
+                            <AuthorizeView Roles="Admin,Secretary" Context="auth"> 
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Success"
+                                               Variant="Variant.Text"
+                                               OnClick="()=>UpdateProduct(context.Id)" />
+                            </AuthorizeView>
+                            <AuthorizeView Roles="Admin" Context="auth">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Variant="Variant.Text"
+                                               OnClick="() => DeleteProduct(context.Id)" />
+                            </AuthorizeView>
+                           
                         </MudTd>
                     </RowTemplate>
 

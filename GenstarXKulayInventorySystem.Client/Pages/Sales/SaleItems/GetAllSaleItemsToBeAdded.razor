@@ -11,6 +11,7 @@
                 <MudTh>Quantity</MudTh>
                 <MudTh>Paint Category</MudTh>
                 <MudTh>Price</MudTh>
+                <MudTh>Net</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -22,6 +23,7 @@
                 <MudTd>@context.Quantity</MudTd>
                 <MudTd>@context.PaintCategory</MudTd>
                 <MudTd>@context.ItemPrice</MudTd>
+                <MudTd>@(context.ItemPrice - context.CostPrice)</MudTd>
                 <MudTd>
                     <MudIconButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(() => RemoveSaleItem(context))" />
                 </MudTd>

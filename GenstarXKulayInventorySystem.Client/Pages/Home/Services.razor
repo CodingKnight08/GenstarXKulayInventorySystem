@@ -1,0 +1,104 @@
+﻿@page "/products-services"
+@layout HomeLayout
+
+<MudMainContent Style="
+    min-height:100vh;
+    background:
+    linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),
+    url('/servicesbackground.png');
+    background-size:cover;
+    background-position:center;">
+
+    <div class="container py-5">
+
+        <MudText Typo="Typo.h3"
+                 Align="Align.Center"
+                 Class="text-white mb-5">
+            Products & Services
+        </MudText>
+
+        <div class="row g-4">
+
+            <div class="col-12 col-md-6">
+                <MudCard Class="glass-card h-100 p-4">
+                    <MudText Typo="Typo.h5">
+                        Paint Mixing
+                    </MudText>
+
+                    <MudText>
+                        We mix any color for any application while our clients wait.
+                        Aside from manual mixing, we also offer automated mixing.
+                    </MudText>
+                </MudCard>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <MudCard Class="glass-card h-100 p-4">
+                    <MudText Typo="Typo.h5">
+                        Painting Materials
+                    </MudText>
+
+                    <MudText>
+                        We offer a wide array of quality painting materials suitable for any painting job.
+                    </MudText>
+                </MudCard>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <MudCard Class="glass-card h-100 p-4">
+                    <MudText Typo="Typo.h5">
+                        Wholesale / Bulk Pricing
+                    </MudText>
+
+                    <MudText>
+                        For bulk orders or big projects, we provide competitive pricing across all product lines.
+                    </MudText>
+                </MudCard>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <MudCard Class="glass-card h-100 p-4">
+                    <MudText Typo="Typo.h5">
+                        Technical Assistance
+                    </MudText>
+
+                    <MudText>
+                        We provide onsite troubleshooting and assistance to clients.
+                        We also refer complex issues to trained professionals.
+                    </MudText>
+                </MudCard>
+            </div>
+
+            <div class="col-12">
+                <MudCard Class="glass-card p-4">
+                    <MudText Typo="Typo.h5">
+                        Conducting Seminars
+                    </MudText>
+
+                    <MudText>
+                        We help increase market knowledge by providing up-to-date training on product usage and application techniques.
+                    </MudText>
+                </MudCard>
+            </div>
+
+        </div>
+
+    </div>
+
+</MudMainContent>
+<style>
+    .glass-card {
+        background: rgba(255,255,255,.12) !important;
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 20px;
+        color: white;
+    }
+
+        .glass-card h5,
+        .glass-card p,
+        .glass-card .mud-typography {
+            color: white;
+        }
+</style>

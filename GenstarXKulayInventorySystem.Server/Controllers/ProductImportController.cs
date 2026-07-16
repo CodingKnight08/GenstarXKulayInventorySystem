@@ -125,7 +125,76 @@ public class ProductImportController : ControllerBase
 
         return Ok("✅ Import completed successfully.");
     }
+    [HttpPost("update-global-products")]
+    public async Task<IActionResult> UpdateGlobalProducts(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
 
+        var connectionString = _config.GetConnectionString("DefaultConnection");
+
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HeaderValidated = null,
+            MissingFieldFound = null
+        };
+
+        using var stream = file.OpenReadStream();
+        using var reader = new StreamReader(stream);
+        using var csv = new CsvReader(reader, config);
+
+        var records = csv.GetRecords<dynamic>();
+
+        await using var conn = new SqlConnection(connectionString);
+        await conn.OpenAsync();
+
+        int rowNum = 2;
+        int updatedCount = 0;
+
+        foreach (var record in records)
+        {
+            try
+            {
+                var d = (IDictionary<string, object>)record;
+
+                // Read Id
+                if (!d.TryGetValue("Id", out var idRaw) ||
+                    !int.TryParse(idRaw?.ToString(), out var productId))
+                {
+                    throw new Exception("CSV must contain a valid Id column.");
+                }
+
+                // Read ProductName
+                var productName = d.TryGetValue("ProductName", out var name)
+                    ? name?.ToString()?.Trim()
+                    : null;
+
+                if (string.IsNullOrWhiteSpace(productName))
+                {
+                    throw new Exception("ProductName is required.");
+                }
+
+                await using var cmd = new SqlCommand(@"
+                UPDATE GlobalProducts
+                SET ProductName = @ProductName
+                WHERE Id = @Id
+            ", conn);
+
+                cmd.Parameters.AddWithValue("@Id", productId);
+                cmd.Parameters.AddWithValue("@ProductName", productName);
+
+                updatedCount += await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error in CSV row {rowNum}: {ex.Message}");
+            }
+
+            rowNum++;
+        }
+
+        return Ok($"{updatedCount} GlobalProducts updated successfully.");
+    }
     // ======================
     // 📘 Excel Import Method
     // ======================

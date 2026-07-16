@@ -174,4 +174,8 @@ public partial class AddPaintsIncluded
         AddedPaint.ProductCost = (AddedPaint.Size ?? 0) * (SelectedProduct.CostPrice ?? 0) * (AddedPaint.Quantity);
         StateHasChanged();
     }
+    private decimal GetMaxQuantity()
+    {
+        return SelectedProduct.ActualQuantity;
+    }
 }

@@ -44,8 +44,8 @@ public class SalesItemController : ControllerBase
     [HttpGet("all/undeducted")]
     public async Task<ActionResult<List<SaleItemDto>>> GetAllUndeductedItems()
     {
-        BranchOption branch = BranchOption.Polomolok;
-        var saleItems = await _saleItemService.GetAllUndeductedItemsAsync(branch);
+        //BranchOption branch = BranchOption.Polomolok;
+        var saleItems = await _saleItemService.GetAllUndeductedItemsAsync();
         if(saleItems == null || saleItems.Count == 0)
         {
             return NotFound("No sale items to be processed found");

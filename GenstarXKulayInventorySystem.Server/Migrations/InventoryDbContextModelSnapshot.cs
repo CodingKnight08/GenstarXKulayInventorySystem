@@ -164,7 +164,7 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("WholeSaleCostPrice")
+                    b.Property<decimal?>("WholeSaleCostPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("WholeSalePrice")
@@ -960,6 +960,36 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.ToTable("PurchaseOrderItems");
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Revoked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Registration", b =>
                 {
                     b.Property<int>("Id")
@@ -1182,6 +1212,9 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int>("BranchPurchased")
                         .HasColumnType("int");
 
+                    b.Property<bool>("Catalyst")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("CostPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -1311,6 +1344,9 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<int>("Branch")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ClientId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -1320,7 +1356,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
@@ -1331,6 +1368,11 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<bool>("IsClient")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -1371,13 +1413,16 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -1818,6 +1863,17 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Navigation("PurchaseOrder");
                 });
 
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.RefreshToken", b =>
+                {
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.RequestProductItem", b =>
                 {
                     b.HasOne("GenstarXKulayInventorySystem.Server.Model.GlobalProduct", "MasterProduct")
@@ -1886,6 +1942,16 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Navigation("BranchProduct");
 
                     b.Navigation("DailySale");
+                });
+
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.User", b =>
+                {
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Client");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.WayBill", b =>
@@ -2045,6 +2111,11 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.Supplier", b =>
                 {
                     b.Navigation("PurchaseOrders");
+                });
+
+            modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.User", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.WayBill", b =>

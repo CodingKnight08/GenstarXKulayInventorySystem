@@ -46,7 +46,7 @@
                 <MudNumericField T="decimal?" Label="Size" Value="AddedPaint.Size" Variant="Variant.Text" Placeholder="Enter Size eg. 1000 (ml)" ValueChanged="OnSizeChanged" HideSpinButtons=true />
             </MudItem>
             <MudItem xs="12" xl="4" lg="4">
-                <MudNumericField T="decimal" Label="Quantity" Value="AddedPaint.Quantity" Variant="Variant.Text" Placeholder="Enter Quantity" ValueChanged="OnQuantityChanged" HideSpinButtons=true />
+                <MudNumericField T="decimal" Label="Quantity" Value="AddedPaint.Quantity" Variant="Variant.Text" Placeholder="Enter Quantity" ValueChanged="OnQuantityChanged" Max="GetMaxQuantity()" HideSpinButtons=true />
             </MudItem>
             <MudItem xl="4">
                 <MudNumericField T="decimal" Label="Total Cost" Value="AddedPaint.ProductCost" Variant="Variant.Text" ReadOnly="true" Format="F2" HideSpinButtons=true />

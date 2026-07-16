@@ -47,15 +47,7 @@ else
                 </MudItem>
 
                 <!-- Size -->
-                <MudItem xs="12" sm="6">
-                    <MudTextField @bind-Value="UpdatedProduct.Size"
-                                  Label="Size"
-                                  Margin="Margin.Dense"
-                                  FullWidth="true"
-                                  Required=true
-                                  Format="F2"
-                                  RequiredError="Input Size" />
-                </MudItem>
+             
                 <MudItem xs="12" sm="6" lg="6">
                     <MudSelect T="ProductMesurementOption?"
                                Label="Unit"
@@ -142,6 +134,9 @@ else
                 </MudItem>
                 <MudItem xs="12" lg="6">
                     <MudTextField @bind-Value="UpdatedProduct.MasterProduct.Packaging" Label="Packaging" Margin=Margin.Dense Lines="1" Placeholder="e.g (1x12)" />
+                </MudItem>
+                <MudItem xs="12" lg="6">
+                    <MudNumericField  @bind-Value="UpdatedProduct.TiedUpProductId" HideSpinButtons="true" Label="Tied Up Product" Placeholder="Product Id" />
                 </MudItem>
                 <MudItem xs="12" sm="6" lg="6">
                     <MudSelect T="BranchOption" @bind-Value="UpdatedProduct.Branch" Label="Branch" ReadOnly=true>

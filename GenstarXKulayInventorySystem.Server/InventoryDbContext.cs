@@ -419,7 +419,53 @@ public class InventoryDbContext: IdentityDbContext<User>
                 .HasForeignKey(e => e.WayBillItemId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(u => u.CreatedAt)
+                  .IsRequired();
 
+            entity.Property(u => u.CreatedBy)
+                  .HasMaxLength(100);
+
+            entity.Property(u => u.UpdatedBy)
+                  .HasMaxLength(100);
+
+            entity.Property(u => u.Role)
+                  .HasConversion<int>();
+
+            entity.Property(u => u.Branch)
+                  .HasConversion<int>();
+
+            entity.Property(u => u.IsClient)
+                  .HasDefaultValue(false);
+
+            entity.HasOne(u => u.Client)
+                  .WithMany()
+                  .HasForeignKey(u => u.ClientId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(rt => rt.Id);
+
+            entity.Property(rt => rt.Token)
+                  .IsRequired()
+                  .HasMaxLength(500);
+
+            entity.Property(rt => rt.UserId)
+                  .IsRequired();
+
+            entity.Property(rt => rt.ExpiryDate)
+                  .IsRequired();
+
+            entity.Property(rt => rt.Revoked)
+                  .HasDefaultValue(false);
+
+            entity.HasOne(rt => rt.User)
+                  .WithMany(u => u.RefreshTokens)
+                  .HasForeignKey(rt => rt.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
 
         base.OnModelCreating(modelBuilder);
     }
@@ -451,6 +497,7 @@ public class InventoryDbContext: IdentityDbContext<User>
     public DbSet<WayBill> WayBills { get; set; }
     public DbSet<WayBillItems> WayBillItems { get; set; }
     public DbSet<WayBillDamageItem> WayBillDamageItems { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }  
 
     public static async Task SeedUserAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
     {

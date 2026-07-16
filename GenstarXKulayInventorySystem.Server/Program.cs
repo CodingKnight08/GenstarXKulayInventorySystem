@@ -37,7 +37,8 @@ builder.Services.AddCors(options =>
                 "https://localhost:7035",                     // Local dev client
                 "http://genstar-kulay-inventory.runasp.net",
                 "http://twodragon88.premiumasp.net",
-                "http://twodragon88-corp.premiumasp.net"
+                "http://twodragon88-corp.premiumasp.net",
+                "https://twodragon88.shop"
             )
             .AllowAnyMethod()    // Allow GET, POST, PUT, DELETE, etc.
             .AllowAnyHeader()    // Allow any headers
@@ -143,7 +144,6 @@ builder.Services.AddScoped<IRequestItemsService, RequestItemsService>();
 builder.Services.AddScoped<IStatementReportService, StatementReportService>();
 builder.Services.AddScoped<IWayBillService, WayBillService>();
 builder.Services.AddScoped<JwtService>();
-builder.Services.AddHostedService<SalesHostedService>();
 builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]) });
 
@@ -182,7 +182,7 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseBlazorFrameworkFiles();
 
@@ -192,8 +192,8 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();              
-app.MapFallbackToFile("index.html"); 
+app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 app.Run();
 

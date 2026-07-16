@@ -42,13 +42,13 @@ public class SalesHostedService : IHostedService, IDisposable
             var salesItemService = scope.ServiceProvider.GetRequiredService<ISaleItemService>();
             var productService = scope.ServiceProvider.GetRequiredService<IProductService>();
 
-            BranchOption branch = BranchOption.Polomolok;
+            //BranchOption branch = BranchOption.Polomolok;
 
-            var sales = await salesItemService.GetAllUndeductedItemsAsync(branch);
+            var sales = await salesItemService.GetAllUndeductedItemsAsync();
 
             if (sales.Count == 0)
             {
-                _logger.LogInformation("No undeducted sales items found for branch {Branch}.", branch);
+                _logger.LogInformation("No undeducted sales items found.");
                 return;
             }
 

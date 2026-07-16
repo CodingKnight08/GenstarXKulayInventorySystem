@@ -21,4 +21,5 @@ public class SaleItem:BaseEntity
     public string DataList { get; set; } = string.Empty;
     public bool IsDeducted { get; set; } 
     public decimal CostPrice { get; set; }
-    }
+    public bool Catalyst { get; set; } = false;
+}
