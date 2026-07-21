@@ -145,6 +145,7 @@
                         <MudTd DataLabel="Wholesale"> ₱@context.WholeSalePrice</MudTd>
                         <MudTd DataLabel="CostPrice2">₱@context.WholeSaleCostPrice</MudTd>
                         <MudTd DataLabel="Action">
+
                             <AuthorizeView Roles="Admin,Secretary" Context="auth"> 
                                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Success"
@@ -152,6 +153,10 @@
                                                OnClick="()=>UpdateProduct(context.Id)" />
                             </AuthorizeView>
                             <AuthorizeView Roles="Admin" Context="auth">
+                                <MudIconButton Icon="@Icons.Material.Filled.PersonAddAlt"
+                                                Color="Color.Warning" 
+                                                Variant="Variant.Text"
+                                                OnClick="() => AssignStaff(context.Id)" />
                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                                Color="Color.Error"
                                                Variant="Variant.Text"
