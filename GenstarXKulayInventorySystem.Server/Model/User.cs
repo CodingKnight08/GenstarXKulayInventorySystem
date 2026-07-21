@@ -18,6 +18,7 @@ public class User: IdentityUser
     public int? ClientId { get; set; }
     public Client? Client { get; set; }
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+    public virtual ICollection<BranchProduct> BranchProducts { get; set; } = new List<BranchProduct>();
 }
 
 
