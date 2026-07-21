@@ -11,19 +11,35 @@ public class SalesHostedService : IHostedService, IDisposable
     private readonly IServiceScopeFactory _scopeFactory;
     private Timer? _timer = null;
     private bool _isProcessing = false;
+    private readonly IConfiguration _configuration;
 
-    public SalesHostedService(ILogger<SalesHostedService> logger, IServiceScopeFactory scopeFactory)
+    public SalesHostedService(ILogger<SalesHostedService> logger, IServiceScopeFactory scopeFactory, IConfiguration configuration)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
+        _configuration = configuration;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        var isEnabled = _configuration.GetValue<bool>(
+            "BackgroundServices:EnableSalesHostedService");
+
+
+        if (!isEnabled)
+        {
+            _logger.LogInformation("SalesHostedService is disabled by configuration.");
+            return Task.CompletedTask;
+        }
+
+
         _logger.LogInformation("SalesHostedService started.");
 
-        // Run every 1 minute (delay: 0 sec, period: 60 sec)
-        _timer = new Timer(ProcessInventory, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
+        _timer = new Timer(
+            ProcessInventory,
+            null,
+            TimeSpan.Zero,
+            TimeSpan.FromMinutes(2));
 
         return Task.CompletedTask;
     }
