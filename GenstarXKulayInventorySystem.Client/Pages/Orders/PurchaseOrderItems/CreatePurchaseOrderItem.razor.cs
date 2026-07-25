@@ -58,7 +58,7 @@ public partial class CreatePurchaseOrderItem
 
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/products/by/{brandId}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/purchase-order/by/{brandId}/{Branch}");
             if (!response.IsSuccessStatusCode)
             {
                 Products.Clear();
@@ -97,15 +97,21 @@ public partial class CreatePurchaseOrderItem
         return Task.FromResult(result);
     }
 
-    protected async Task OnBrandSelect(ProductBrandDto brand)
+    protected async Task OnBrandSelect(ProductBrandDto? brand)
     {
         SelectedBrand = brand;
 
         PurchaseOrderItemDto.ProductBrandId = brand?.Id;
         PurchaseOrderItemDto.ProductBrand = brand;
+
         PurchaseOrderItemDto.BranchProductId = null;
         PurchaseOrderItemDto.BranchProduct = null;
+
         SelectedProduct = null;
+        Products.Clear();
+
+        if (brand == null)
+            return;
 
         await LoadProductsByBrand(brand.Id);
     }
