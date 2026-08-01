@@ -150,6 +150,26 @@ public class ProductService:IProductService
 
         return _mapper.Map<List<BranchProductDto>>(products);
     }
+    public async Task<List<BranchProductDto>> GetProductPurchaseOrderItems(int brandId, BranchOption branch)
+    {
+        var products = await _context.BranchProducts
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(p => p.MasterProduct!)
+                 .ThenInclude(mp => mp.ProductBrand!)
+            .Include(p => p.TiedUpProduct)
+             .ThenInclude(tb => tb.MasterProduct)
+            .Where(p =>
+                p.Branch == branch &&
+                !p.IsDeleted &&
+                p.MasterProduct != null &&
+                p.MasterProduct.BrandId == brandId
+            )
+            .OrderBy(p => p.MasterProduct!.ProductName)
+            .ToListAsync();
+
+        return _mapper.Map<List<BranchProductDto>>(products);
+    }
     public async Task<BranchProductPageResultDto<BranchProductDto>> GetPagedProductsByBrandAndBranchAsync(
         int brandId,
         BranchOption branch,
@@ -633,6 +653,7 @@ public interface IProductService
     Task<List<ProductDto>> GetAllAsync(int brandId);
     Task<List<GlobalProductDto>> GetAllGlobalProductsByBrand(int brandId);
     Task<List<BranchProductDto>> GetAllProductByBrandAndBranch(int brandId, BranchOption branch);
+    Task<List<BranchProductDto>> GetProductPurchaseOrderItems(int brandId, BranchOption branch);
     Task<BranchProductPageResultDto<BranchProductDto>> GetPagedProductsByBrandAndBranchAsync(
         int brandId,
         BranchOption branch,
