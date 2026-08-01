@@ -8,6 +8,8 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Dashboard;
 public partial class MonthlyTopSaleItem
 {
     [Parameter] public BranchOption Branch { get; set; }
+    [Parameter]
+    public DateTime SelectedMonth { get; set; }
     [Inject]
     private HttpClient Http { get; set; } = default!;
 
@@ -29,10 +31,12 @@ public partial class MonthlyTopSaleItem
 
     private async Task LoadProducts()
     {
+        IsLoading = true;
+
         try
         {
             Products = await Http.GetFromJsonAsync<List<TopSaleItemDto>>(
-                $"api/dashboard/monthly-top-products/{Branch}")
+                $"api/dashboard/monthly-top-products/{Branch}?date={SelectedMonth:yyyy-MM-dd}")
                 ?? new();
         }
         finally

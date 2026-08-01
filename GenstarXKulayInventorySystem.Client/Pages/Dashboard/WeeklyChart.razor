@@ -5,7 +5,23 @@
         <MudText Typo="Typo.h6" Class="mb-3">
             Weekly Performance
         </MudText>
+        <MudItem xs="12" sm="6" md="3" Class="ml-auto">
+            <MudSelect T="DateTime"
+                       Label="Select Week"
+                       Value="SelectedWeek"
+                       ValueChanged="OnWeekChanged"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense">
 
+                @foreach (var week in WeekOptions)
+                {
+                    <MudSelectItem T="DateTime" Value="@week.StartDate">
+                        @week.Label
+                    </MudSelectItem>
+                }
+
+            </MudSelect>
+        </MudItem>
         @if (IsLoading)
         {
             <MudSkeleton Height="450px" Animation="Animation.Wave" />
@@ -17,7 +33,10 @@
                       XAxisLabels="@Labels"
                       Height="450px" />
         }
-
+        <MudItem xs="12" lg="12">
+            <WeeklyTopSaleItems Branch="Branch" SelectedWeek="SelectedWeek" />
+        </MudItem>
     </MudCardContent>
+
 
 </MudCard>

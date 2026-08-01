@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Dashboard;
 
@@ -14,7 +15,9 @@ public partial class WeeklyChart
 
     [Inject]
     private ILogger<WeeklyChart> Logger { get; set; } = default!;
+    private List<WeekOptionDto> WeekOptions { get; set; } = new();
 
+    private DateTime SelectedWeek { get; set; }
 
     private bool IsLoading = true;
 
@@ -25,6 +28,9 @@ public partial class WeeklyChart
 
     protected override async Task OnParametersSetAsync()
     {
+        CreateWeekOptions();
+
+        SelectedWeek = WeekOptions.First().StartDate;
         await LoadChart();
     }
 
@@ -34,7 +40,7 @@ public partial class WeeklyChart
         try
         {
             var result = await Http.GetFromJsonAsync<List<DashboardChartDto>>(
-                $"api/dashboard/weekly-chart/{Branch}");
+                 $"api/dashboard/weekly-chart/{Branch}?date={SelectedWeek:yyyy-MM-dd}");
 
 
             if (result != null)
@@ -86,5 +92,36 @@ public partial class WeeklyChart
                 Data=data.Select(x=>(double)x.NetProfit).ToArray()
             }
         };
+    }
+    private void CreateWeekOptions()
+    {
+        var today = PhilippineTime.Now.Date;
+
+        // Get current week start (Monday)
+        var currentWeekStart = today.AddDays(
+            -(int)today.DayOfWeek +
+            (today.DayOfWeek == DayOfWeek.Sunday ? -6 : 1));
+
+        for (int i = 0; i < 4; i++)
+        {
+            var start = currentWeekStart.AddDays(-7 * i);
+            var end = start.AddDays(6);
+
+            WeekOptions.Add(new WeekOptionDto
+            {
+                StartDate = start,
+                Label = i == 0
+                    ? "This Week"
+                    : $"{start:dd MMM} - {end:dd MMM}"
+            });
+        }
+    }
+    private async Task OnWeekChanged(DateTime date)
+    {
+        SelectedWeek = date;
+
+        IsLoading = true;
+
+        await LoadChart();
     }
 }

@@ -3,48 +3,83 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Dashboard;
 
 public partial class MonthlyChart
 {
-    [Parameter] public BranchOption Branch { get; set; }
+    [Parameter]
+    public BranchOption Branch { get; set; }
 
     [Inject]
-    HttpClient Http { get; set; } = default!;
+    private HttpClient Http { get; set; } = default!;
 
     [Inject]
     private ILogger<MonthlyChart> Logger { get; set; } = default!;
 
 
     private bool IsLoading = true;
+    private List<MonthOption> MonthOptions { get; set; } = new();
 
-    private bool ShowSales = true;
-    private bool ShowLandedCost = true;
-    private bool ShowExpenses = false;
-    private bool ShowNetProfit = true;
+    private DateTime SelectedMonth { get; set; }
 
 
-    private List<ChartSeries> Series = new();
+    private List<ChartSeries> SalesSeries { get; set; } = new();
 
-    private string[] Labels = Array.Empty<string>();
+    private List<ChartSeries> LandedCostSeries { get; set; } = new();
+
+    private List<ChartSeries> ExpenseSeries { get; set; } = new();
+
+    private List<ChartSeries> NetProfitSeries { get; set; } = new();
 
 
-    private List<ChartSeries> VisibleSeries =>
-        Series.Where(x =>
-            (x.Name == "Sales" && ShowSales) ||
-            (x.Name == "Landed Cost" && ShowLandedCost) ||
-            (x.Name == "Expenses" && ShowExpenses) ||
-            (x.Name == "Net Profit" && ShowNetProfit)
-        ).ToList();
+    private string[] Labels { get; set; } = Array.Empty<string>();
 
+
+    private ChartOptions SalesOptions = new()
+    {
+        ChartPalette = new[]
+        {
+            "#2196F3"
+        }
+    };
+
+
+    private ChartOptions LandedCostOptions = new()
+    {
+        ChartPalette = new[]
+        {
+            "#FF9800"
+        }
+    };
+
+
+    private ChartOptions ExpenseOptions = new()
+    {
+        ChartPalette = new[]
+        {
+            "#F44336"
+        }
+    };
+
+
+    private ChartOptions NetProfitOptions = new()
+    {
+        ChartPalette = new[]
+        {
+            "#4CAF50"
+        }
+    };
 
 
     protected override async Task OnParametersSetAsync()
     {
+        CreateMonthOptions();
+
+        SelectedMonth = MonthOptions.First().Date;
         await LoadChart();
     }
-
 
 
     private async Task LoadChart()
@@ -54,14 +89,15 @@ public partial class MonthlyChart
         try
         {
             var data = await Http.GetFromJsonAsync<List<DashboardChartDto>>(
-                $"api/dashboard/monthly-chart/{Branch}");
-
+                    $"api/dashboard/monthly-chart/{Branch}?date={SelectedMonth:yyyy-MM-dd}");
 
             if (data != null)
             {
-                Labels = data.Select(x => x.Label).ToArray();
+                Labels = data
+                    .Select(x => x.Label)
+                    .ToArray();
 
-                Series = CreateSeries(data);
+                CreateSeries(data);
             }
         }
         catch (Exception ex)
@@ -75,41 +111,69 @@ public partial class MonthlyChart
     }
 
 
-
-    private void UpdateChart()
+    private void CreateSeries(List<DashboardChartDto> data)
     {
-        StateHasChanged();
+        SalesSeries = CreateChartSeries(
+            "Sales",
+            data.Select(x => x.NetSales));
+
+
+        LandedCostSeries = CreateChartSeries(
+            "Landed Cost",
+            data.Select(x => x.LandedCost));
+
+
+        ExpenseSeries = CreateChartSeries(
+            "Expenses",
+            data.Select(x => x.Expenses));
+
+
+        NetProfitSeries = CreateChartSeries(
+            "Net Profit",
+            data.Select(x => x.NetProfit));
     }
 
 
-
-    private List<ChartSeries> CreateSeries(List<DashboardChartDto> data)
+    private List<ChartSeries> CreateChartSeries(
+        string name,
+        IEnumerable<decimal> values)
     {
         return new()
         {
-            new()
+            new ChartSeries
             {
-                Name = "Sales",
-                Data = data.Select(x => (double)x.NetSales).ToArray()
-            },
-
-            new()
-            {
-                Name = "Landed Cost",
-                Data = data.Select(x => (double)x.LandedCost).ToArray()
-            },
-
-            new()
-            {
-                Name = "Expenses",
-                Data = data.Select(x => (double)x.Expenses).ToArray()
-            },
-
-            new()
-            {
-                Name = "Net Profit",
-                Data = data.Select(x => (double)x.NetProfit).ToArray()
+                Name = name,
+                Data = values
+                    .Select(x => (double)x)
+                    .ToArray()
             }
         };
+    }
+    private void CreateMonthOptions()
+    {
+        var current = PhilippineTime.Now.Date;
+
+        for (int i = 0; i < 6; i++)
+        {
+            var month = new DateTime(
+                current.Year,
+                current.Month,
+                1)
+                .AddMonths(-i);
+
+            MonthOptions.Add(new MonthOption
+            {
+                Date = month,
+                Label = i == 0
+                    ? "This Month"
+                    : month.ToString("MMMM yyyy")
+            });
+        }
+    }
+    private async Task OnMonthChanged(DateTime month)
+    {
+        SelectedMonth = month;
+
+        await LoadChart();
     }
 }

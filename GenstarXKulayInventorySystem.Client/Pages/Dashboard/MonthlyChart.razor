@@ -7,44 +7,106 @@
         </MudText>
 
 
-            <MudStack Row="true" Spacing="3">
-
-                <MudCheckBox T="bool"
-                             Value="@ShowSales"
-                             Label="Sales"
-                             ValueChanged="@(value => { ShowSales = value; UpdateChart(); })" />
-
-                <MudCheckBox T="bool"
-                             Value="@ShowLandedCost"
-                             Label="Landed Cost"
-                             ValueChanged="@(value => { ShowLandedCost = value; UpdateChart(); })" />
-
-                <MudCheckBox T="bool"
-                             Value="@ShowExpenses"
-                             Label="Expenses"
-                             ValueChanged="@(value => { ShowExpenses = value; UpdateChart(); })" />
-
-                <MudCheckBox T="bool"
-                             Value="@ShowNetProfit"
-                             Label="Net Profit"
-                             ValueChanged="@(value => { ShowNetProfit = value; UpdateChart(); })" />
-
-            </MudStack>
-
-
         @if (IsLoading)
         {
-            <MudSkeleton Height="450px" Animation="Animation.Wave" />
+            <MudSkeleton Height="300px" Animation="Animation.Wave" />
+            <MudSkeleton Height="300px" Animation="Animation.Wave" Class="mt-4" />
         }
         else
         {
-            <div style="width:100%;">
-                <MudChart ChartType="ChartType.Line"
-                          ChartSeries="@VisibleSeries"
-                          XAxisLabels="@Labels"
-                          Height="450px" />
-            </div>
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="12">
+                    <MudSelect T="DateTime"
+                               Label="Select Month"
+                               Value="SelectedMonth"
+                               ValueChanged="OnMonthChanged"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Style="max-width:250px;">
+
+                        @foreach (var month in MonthOptions)
+                        {
+                            <MudSelectItem T="DateTime" Value="@month.Date">
+                                @month.Label
+                            </MudSelectItem>
+                        }
+
+                    </MudSelect>
+                </MudItem>
+                
+                <MudItem xs="12" lg="6">
+                    <MudCard Elevation="1">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1">
+                                Sales
+                            </MudText>
+
+                            <MudChart ChartType="ChartType.Line"
+                                      ChartSeries="@SalesSeries"
+                                      XAxisLabels="@Labels"
+                                      ChartOptions="@SalesOptions"
+                                      Height="300px" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+
+                <MudItem xs="12" lg="6">
+                    <MudCard Elevation="1">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1">
+                                Landed Cost
+                            </MudText>
+
+                            <MudChart ChartType="ChartType.Line"
+                                      ChartSeries="@LandedCostSeries"
+                                      XAxisLabels="@Labels"
+                                      ChartOptions="@LandedCostOptions"
+                                      Height="300px" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+
+                <MudItem xs="12" lg="6">
+                    <MudCard Elevation="1">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1">
+                                Expenses
+                            </MudText>
+
+                            <MudChart ChartType="ChartType.Line"
+                                      ChartSeries="@ExpenseSeries"
+                                      XAxisLabels="@Labels"
+                                      ChartOptions="@ExpenseOptions"
+                                      Height="300px" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+
+                <MudItem xs="12" lg="6">
+                    <MudCard Elevation="1">
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1">
+                                Net Profit
+                            </MudText>
+
+                            <MudChart ChartType="ChartType.Line"
+                                      ChartSeries="@NetProfitSeries"
+                                      XAxisLabels="@Labels"
+                                      ChartOptions="@NetProfitOptions"
+                                      Height="300px" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+            </MudGrid>
         }
+                    
+        <MudItem xs="12" lg="12">
+            <MonthlyTopSaleItem Branch="Branch" SelectedMonth="SelectedMonth" />
+        </MudItem>
 
     </MudCardContent>
 

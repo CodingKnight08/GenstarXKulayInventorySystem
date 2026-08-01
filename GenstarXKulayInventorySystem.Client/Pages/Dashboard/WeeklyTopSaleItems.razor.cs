@@ -8,6 +8,7 @@ namespace GenstarXKulayInventorySystem.Client.Pages.Dashboard;
 public partial class WeeklyTopSaleItems
 {
     [Parameter] public BranchOption Branch { get; set; }
+    [Parameter] public DateTime SelectedWeek { get; set; }
     [Inject]
     private HttpClient Http { get; set; } = default!;
 
@@ -31,8 +32,10 @@ public partial class WeeklyTopSaleItems
     {
         try
         {
+            IsLoading = true;
+
             Products = await Http.GetFromJsonAsync<List<TopSaleItemDto>>(
-                $"api/dashboard/weekly-top-products/{Branch}")
+                $"api/dashboard/weekly-top-products/{Branch}?date={SelectedWeek:yyyy-MM-dd}")
                 ?? new();
         }
         finally

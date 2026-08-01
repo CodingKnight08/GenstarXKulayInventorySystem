@@ -15,7 +15,7 @@ public partial class DashBoard
     [Inject] private UserState User { get; set; } = default!;
 
     protected DashBoardDto DashBoardData { get; set; } = new DashBoardDto();
-
+    protected DateTime SelectedDate { get; set; } = DateTime.UtcNow.Date;
     private bool IsLoading { get; set; } = true;
     private bool IsDailyLoading = true;
   
@@ -24,11 +24,7 @@ public partial class DashBoard
     {
        
         await Task.Delay(1000);
-        await Task.WhenAll(
-            LoadNetAndCogs(),
-            LoadExpenses()
-            
-        );
+        await ReloadDashboard();
     }
 
 
@@ -41,7 +37,7 @@ public partial class DashBoard
             var branch = User.Branch;
 
             var response = await Http.GetFromJsonAsync<DashBoardDto>(
-                $"api/dashboard/daily/{branch}");
+                $"api/dashboard/daily/{branch}?date={SelectedDate:yyyy-MM-dd}");
 
             if (response != null)
             {
@@ -65,9 +61,10 @@ public partial class DashBoard
         {
             var branch = User.Branch;
 
-            var response = await Http.GetFromJsonAsync<decimal>(
-                $"api/dashboard/daily-expenses/{branch}");
+            var utcDate = DateTime.SpecifyKind(SelectedDate, DateTimeKind.Utc);
 
+            var response = await Http.GetFromJsonAsync<decimal>(
+                $"api/dashboard/daily-expenses/{branch}?date={utcDate:O}");
             DashBoardData.Expenses = response;
         }
         catch (Exception ex)
@@ -80,6 +77,20 @@ public partial class DashBoard
         }
     }
 
+    private async Task OnDateChanged(DateTime? date)
+    {
+        if (date.HasValue)
+        {
+            SelectedDate = date.Value.Date;
+            await ReloadDashboard();
+        }
+    }
+    private async Task ReloadDashboard()
+    {
+        await Task.WhenAll(
+            LoadNetAndCogs(),
+            LoadExpenses()
+        );
+    }
 
-    
 }
