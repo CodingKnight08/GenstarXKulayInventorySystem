@@ -17,13 +17,17 @@ public class DashboardController : ControllerBase
         _dashboardService = dashboardService;
         _logger = logger;
     }
-
     [HttpGet("daily/{branch}")]
-    public async Task<ActionResult<DashBoardDto>> GetDailyDashboardData( BranchOption branch)
+    public async Task<ActionResult<DashBoardDto>> GetDailyDashboardData(
+        BranchOption branch,
+        [FromQuery] DateTime? date)
     {
         try
         {
-            var dashboardData = await _dashboardService.GetDailySalesNetAndCOGS(branch);
+            var dashboardData = await _dashboardService.GetDailySalesNetAndCOGS(
+                branch,
+                date ?? DateTime.Today);
+
             return Ok(dashboardData);
         }
         catch (Exception ex)
@@ -32,12 +36,17 @@ public class DashboardController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
+
     [HttpGet("daily-expenses/{branch}")]
-    public async Task<ActionResult<decimal>> GetDailyExpenses(BranchOption branch)
+    public async Task<ActionResult<decimal>> GetDailyExpenses(
+        BranchOption branch,
+        [FromQuery] DateTime? date)
     {
         try
         {
-            var result = await _dashboardService.GetDailyExpenses(branch);
+            var result = await _dashboardService.GetDailyExpenses(
+                branch,
+                date ?? DateTime.Today);
 
             return Ok(result);
         }
@@ -47,15 +56,20 @@ public class DashboardController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error while getting daily expenses");
             return StatusCode(500, ex.Message);
         }
     }
     [HttpGet("weekly-chart/{branch}")]
-    public async Task<ActionResult<List<DashboardChartDto>>> GetWeeklyChart(BranchOption branch)
+    public async Task<ActionResult<List<DashboardChartDto>>> GetWeeklyChart(
+     BranchOption branch,
+     [FromQuery] DateTime? date)
     {
         try
         {
-            var result = await _dashboardService.GetWeeklyExpenseProfitChart(branch);
+            var result = await _dashboardService.GetWeeklyExpenseProfitChart(
+                branch,
+                date ?? DateTime.UtcNow);
 
             return Ok(result);
         }
@@ -65,15 +79,20 @@ public class DashboardController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error while getting weekly chart data");
             return StatusCode(500, ex.Message);
         }
     }
     [HttpGet("monthly-chart/{branch}")]
-    public async Task<ActionResult<List<DashboardChartDto>>> GetMonthlyChart(BranchOption branch)
+    public async Task<ActionResult<List<DashboardChartDto>>> GetMonthlyChart(
+     BranchOption branch,
+     [FromQuery] DateTime? date)
     {
         try
         {
-            var result = await _dashboardService.GetMonthlyExpenseProfitChart(branch);
+            var result = await _dashboardService.GetMonthlyExpenseProfitChart(
+                branch,
+                date ?? DateTime.UtcNow);
 
             return Ok(result);
         }
@@ -109,11 +128,14 @@ public class DashboardController : ControllerBase
     }
     [HttpGet("weekly-top-products/{branch}")]
     public async Task<ActionResult<List<TopSaleItemDto>>> GetWeeklyTopProducts(
-    BranchOption branch)
+    BranchOption branch,
+    [FromQuery] DateTime? date)
     {
         try
         {
-            var result = await _dashboardService.GetWeeklyTopProducts(branch);
+            var result = await _dashboardService.GetWeeklyTopProducts(
+                branch,
+                date ?? DateTime.UtcNow);
 
             return Ok(result);
         }
@@ -125,17 +147,20 @@ public class DashboardController : ControllerBase
     }
     [HttpGet("monthly-top-products/{branch}")]
     public async Task<ActionResult<List<TopSaleItemDto>>> GetMonthlyTopProducts(
-    BranchOption branch)
+    BranchOption branch,
+    [FromQuery] DateTime? date)
     {
         try
         {
-            var result = await _dashboardService.GetMonthlyTopProducts(branch);
+            var result = await _dashboardService.GetMonthlyTopProducts(
+                branch,
+                date ?? DateTime.UtcNow);
 
             return Ok(result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed loading top products");
+            _logger.LogError(ex, "Failed loading monthly top products");
             return StatusCode(500, ex.Message);
         }
     }
