@@ -36,29 +36,35 @@ public class DashboardService : IDashboardService
 
 
 
-    public async Task<DashBoardDto> GetDailySalesNetAndCOGS(BranchOption branch)
+    public async Task<DashBoardDto> GetDailySalesNetAndCOGS(
+    BranchOption branch,
+    DateTime date)
     {
-        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(PhilippineTime.Now);
+        var philippineDate = PhilippineTime.ToPhilippineTime(date);
+
+        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(philippineDate);
+
 
         var dailySales = await _dbContext.DailySales
             .AsNoTracking()
             .AsSplitQuery()
             .Include(x => x.SaleItems)
-            .Where(x => !x.IsDeleted
-                     && x.Branch == branch
-                     && x.DateOfSales >= startOfDay
-                     && x.DateOfSales < endOfDay)
+            .Where(x =>
+                !x.IsDeleted &&
+                x.Branch == branch &&
+                x.DateOfSales >= startOfDay &&
+                x.DateOfSales < endOfDay)
             .ToListAsync();
 
         var sales = _mapper.Map<List<DailySaleDto>>(dailySales);
 
-        decimal totalNetSales = 0;
-        decimal totalProductCosts = 0;
+        decimal totalNetSales = 0m;
+        decimal totalProductCosts = 0m;
 
         foreach (var sale in sales)
         {
             // Add commission once per sale
-            totalNetSales += sale.Commission ?? 0;
+            totalNetSales += sale.Commission ?? 0m;
 
             foreach (var item in sale.SaleItems)
             {
@@ -67,13 +73,13 @@ public class DashboardService : IDashboardService
 
                 if (item.DataList != null && item.DataList.Any())
                 {
-                    // MIX
+                    // MIX items
                     totalProductCosts += item.DataList.Sum(x =>
                         x.Quantity * x.CostPrice);
                 }
                 else
                 {
-                    // NON-MIX
+                    // NON-MIX items
                     totalProductCosts += item.CostPrice * item.Quantity;
                 }
             }
@@ -85,11 +91,12 @@ public class DashboardService : IDashboardService
             TotalProductCosts = totalProductCosts,
             TotalProfit = totalNetSales - totalProductCosts,
             TotalDailySale = sales.Count,
-            TotalItemsSold = sales.SelectMany(x => x.SaleItems).Count()
-
+            TotalItemsSold = sales.Sum(x => x.SaleItems.Count)
         };
     }
-    public async Task<decimal> GetDailyExpenses(BranchOption branch)
+    public async Task<decimal> GetDailyExpenses(
+    BranchOption branch,
+    DateTime utcDate)
     {
         BillingBranch billingBranch = branch switch
         {
@@ -99,7 +106,7 @@ public class DashboardService : IDashboardService
             _ => throw new ArgumentOutOfRangeException(nameof(branch), branch, null)
         };
 
-        var purchaseShipTo = branch switch
+        PurchaseShipToOption purchaseShipTo = branch switch
         {
             BranchOption.GeneralSantosCity => PurchaseShipToOption.GeneralSantosCity,
             BranchOption.Polomolok => PurchaseShipToOption.Polomolok,
@@ -107,7 +114,10 @@ public class DashboardService : IDashboardService
             _ => throw new ArgumentOutOfRangeException(nameof(branch), branch, null)
         };
 
-        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(PhilippineTime.Now);
+        // Convert UTC date from UI to Philippine time
+        var philippineDate = PhilippineTime.ToPhilippineTime(utcDate);
+
+        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(philippineDate);
 
         var billingTotal = await _dbContext.Billings
             .AsNoTracking()
@@ -117,7 +127,6 @@ public class DashboardService : IDashboardService
                 b.DateOfBilling >= startOfDay &&
                 b.DateOfBilling < endOfDay)
             .SumAsync(b => b.Amount);
-
 
         var purchaseTotal = await _dbContext.PurchaseOrderItems
             .AsNoTracking()
@@ -129,14 +138,20 @@ public class DashboardService : IDashboardService
                 item.PurchaseOrder.PurchaseOrderDate < endOfDay)
             .SumAsync(item => item.ItemAmount * item.ItemQuantity);
 
-
         return billingTotal + purchaseTotal;
     }
-    public async Task<List<DashboardChartDto>> GetWeeklyExpenseProfitChart(BranchOption branch)
+    public async Task<List<DashboardChartDto>> GetWeeklyExpenseProfitChart(
+    BranchOption branch,
+    DateTime date)
     {
-        var today = PhilippineTime.Now.Date;
+        // Convert UTC date from UI/API to Philippine time
+        var philippineDate = PhilippineTime.ToPhilippineTime(date).Date;
 
-        var start = today.AddDays(-(int)today.DayOfWeek + (today.DayOfWeek == DayOfWeek.Sunday ? -6 : 1));
+        // Get Monday as start of week
+        var start = philippineDate.AddDays(
+            -(int)philippineDate.DayOfWeek +
+            (philippineDate.DayOfWeek == DayOfWeek.Sunday ? -6 : 1));
+
         var end = start.AddDays(7);
 
         return await GetExpenseProfitChart(
@@ -146,11 +161,18 @@ public class DashboardService : IDashboardService
             d => d.ToString("ddd"),
             d => d.Date);
     }
-    public async Task<List<DashboardChartDto>> GetMonthlyExpenseProfitChart(BranchOption branch)
+    public async Task<List<DashboardChartDto>> GetMonthlyExpenseProfitChart(
+     BranchOption branch,
+     DateTime date)
     {
-        var today = PhilippineTime.Now.Date;
+        // Convert date received from UI/API to Philippine time
+        var philippineDate = PhilippineTime.ToPhilippineTime(date).Date;
 
-        var start = new DateTime(today.Year, today.Month, 1);
+        var start = new DateTime(
+            philippineDate.Year,
+            philippineDate.Month,
+            1);
+
         var end = start.AddMonths(1);
 
         return await GetExpenseProfitChart(
@@ -327,13 +349,16 @@ public class DashboardService : IDashboardService
 
         return result;
     }
-    public async Task<List<TopSaleItemDto>> GetWeeklyTopProducts(BranchOption branch)
+    public async Task<List<TopSaleItemDto>> GetWeeklyTopProducts(
+     BranchOption branch,
+     DateTime date)
     {
-        var today = PhilippineTime.Now.Date;
+        // Convert selected UTC date from UI to Philippine time
+        var philippineDate = PhilippineTime.ToPhilippineTime(date).Date;
 
-        var startOfWeek = today.AddDays(
-            -(int)today.DayOfWeek +
-            (today.DayOfWeek == DayOfWeek.Sunday ? -6 : 1));
+        var startOfWeek = philippineDate.AddDays(
+            -(int)philippineDate.DayOfWeek +
+            (philippineDate.DayOfWeek == DayOfWeek.Sunday ? -6 : 1));
 
         var endOfWeek = startOfWeek.AddDays(7);
 
@@ -358,15 +383,16 @@ public class DashboardService : IDashboardService
         // Normal products
         products.AddRange(
             sales
-            .SelectMany(x => x.SaleItems)
-            .Where(x => x.BranchProduct?.MasterProduct != null)
-            .Select(x => new TopSaleItemDto
-            {
-                BrandName = x.BranchProduct?.MasterProduct?.ProductBrand?.BrandName ?? "Unknown Brand",
-                ProductName = x.BranchProduct?.MasterProduct?.ProductName,
-                QuantitySold = x.Quantity,
-                TotalSales = x.ItemPrice * x.Quantity
-            })
+                .SelectMany(x => x.SaleItems)
+                .Where(x => x.BranchProduct?.MasterProduct != null)
+                .Select(x => new TopSaleItemDto
+                {
+                    BrandName = x.BranchProduct.MasterProduct.ProductBrand?.BrandName
+                                ?? "Unknown Brand",
+                    ProductName = x.BranchProduct.MasterProduct.ProductName,
+                    QuantitySold = x.Quantity,
+                    TotalSales = x.ItemPrice * x.Quantity
+                })
         );
 
 
@@ -402,29 +428,36 @@ public class DashboardService : IDashboardService
 
 
         return products
-     .GroupBy(x => new
-     {
-         x.BrandName,
-         x.ProductName
-     })
-     .Select(g => new TopSaleItemDto
-     {
-         BrandName = g.Key.BrandName,
-         ProductName = g.Key.ProductName,
-         QuantitySold = g.Sum(x => x.QuantitySold),
-         TotalSales = g.Sum(x => x.TotalSales)
-     })
-     .GroupBy(x => x.BrandName)
-     .SelectMany(brandGroup => brandGroup
-         .OrderByDescending(x => x.QuantitySold)
-         .Take(10))
-     .ToList();
+            .GroupBy(x => new
+            {
+                x.BrandName,
+                x.ProductName
+            })
+            .Select(g => new TopSaleItemDto
+            {
+                BrandName = g.Key.BrandName,
+                ProductName = g.Key.ProductName,
+                QuantitySold = g.Sum(x => x.QuantitySold),
+                TotalSales = g.Sum(x => x.TotalSales)
+            })
+            .GroupBy(x => x.BrandName)
+            .SelectMany(brandGroup => brandGroup
+                .OrderByDescending(x => x.QuantitySold)
+                .Take(10))
+            .ToList();
     }
-    public async Task<List<TopSaleItemDto>> GetMonthlyTopProducts(BranchOption branch)
+    public async Task<List<TopSaleItemDto>> GetMonthlyTopProducts(
+    BranchOption branch,
+    DateTime date)
     {
-        var today = PhilippineTime.Now.Date;
+        // Convert the selected UTC date from the UI/API to Philippine time
+        var philippineDate = PhilippineTime.ToPhilippineTime(date).Date;
 
-        var startOfMonth = new DateTime(today.Year, today.Month, 1);
+        var startOfMonth = new DateTime(
+            philippineDate.Year,
+            philippineDate.Month,
+            1);
+
         var endOfMonth = startOfMonth.AddMonths(1);
 
         var sales = await _dbContext.DailySales
@@ -445,15 +478,15 @@ public class DashboardService : IDashboardService
         // Normal products
         products.AddRange(
             sales
-            .SelectMany(x => x.SaleItems)
-            .Where(x => x.BranchProduct?.MasterProduct != null)
-            .Select(x => new TopSaleItemDto
-            {
-                BrandName = x.BranchProduct?.MasterProduct?.ProductBrand?.BrandName ?? "Unknown Brand",
-                ProductName = x.BranchProduct?.MasterProduct?.ProductName,
-                QuantitySold = x.Quantity,
-                TotalSales = x.ItemPrice * x.Quantity
-            }));
+                .SelectMany(x => x.SaleItems)
+                .Where(x => x.BranchProduct?.MasterProduct != null)
+                .Select(x => new TopSaleItemDto
+                {
+                    BrandName = x.BranchProduct!.MasterProduct!.ProductBrand?.BrandName ?? "Unknown Brand",
+                    ProductName = x.BranchProduct.MasterProduct.ProductName,
+                    QuantitySold = x.Quantity,
+                    TotalSales = x.ItemPrice * x.Quantity
+                }));
 
         // Mixed products
         foreach (var sale in sales)
@@ -506,11 +539,21 @@ public class DashboardService : IDashboardService
 
 public interface IDashboardService
 {
-    Task<DashBoardDto> GetDailySalesNetAndCOGS(BranchOption branch);
-    Task<decimal> GetDailyExpenses(BranchOption branch);
-    Task<List<DashboardChartDto>> GetWeeklyExpenseProfitChart(BranchOption branch);
-    Task<List<DashboardChartDto>> GetMonthlyExpenseProfitChart(BranchOption branch);
+    Task<DashBoardDto> GetDailySalesNetAndCOGS(BranchOption branch,DateTime date);
+    Task<decimal> GetDailyExpenses(
+    BranchOption branch,
+    DateTime utcDate);
+    Task<List<DashboardChartDto>> GetWeeklyExpenseProfitChart(
+    BranchOption branch,
+    DateTime date);
+    Task<List<DashboardChartDto>> GetMonthlyExpenseProfitChart(
+     BranchOption branch,
+     DateTime date);
     Task<List<DashboardChartDto>> GetYearlyExpenseProfitChart(BranchOption branch);
-    Task<List<TopSaleItemDto>> GetWeeklyTopProducts(BranchOption branch);
-    Task<List<TopSaleItemDto>> GetMonthlyTopProducts(BranchOption branch);
+    Task<List<TopSaleItemDto>> GetWeeklyTopProducts(
+     BranchOption branch,
+     DateTime date);
+    Task<List<TopSaleItemDto>> GetMonthlyTopProducts(
+    BranchOption branch,
+    DateTime date);
 }
