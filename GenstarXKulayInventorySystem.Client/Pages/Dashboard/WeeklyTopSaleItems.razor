@@ -1,0 +1,59 @@
+﻿<MudCard Elevation="2">
+
+    <MudCardContent>
+
+        <MudText Typo="Typo.h6">
+            Top Products This Week
+        </MudText>
+
+
+        @if (IsLoading)
+        {
+            <MudSkeleton Height="250px" Animation="Animation.Wave" />
+        }
+        else
+        {
+            <MudTable Items="@Products"
+                      Hover="true"
+                      Dense="true"
+                      Bordered="true"
+                      Class="w-100"
+                      RowsPerPage="10">
+
+                <HeaderContent>
+                    <MudTh>Brand</MudTh>
+                    <MudTh>Product</MudTh>
+                    <MudTh>Qty</MudTh>
+                    <MudTh>Sales</MudTh>
+                </HeaderContent>
+
+
+                <RowTemplate>
+                    <MudTd>
+                        @context.BrandName
+                    </MudTd>
+
+                    <MudTd>
+                        @context.ProductName
+                    </MudTd>
+
+                    <MudTd>
+                        @context.QuantitySold.ToString("N2")
+                    </MudTd>
+
+                    <MudTd>
+                        ₱ @context.TotalSales.ToString("N2")
+                    </MudTd>
+                </RowTemplate>
+
+
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] { 5, 10, 25, 50 }" />
+                </PagerContent>
+
+            </MudTable>
+        }
+
+    </MudCardContent>
+
+</MudCard>

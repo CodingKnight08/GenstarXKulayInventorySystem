@@ -1,0 +1,51 @@
+﻿<MudCard Elevation="2" Class="w-100">
+
+    <MudCardContent>
+
+        <MudText Typo="Typo.h6" Class="mb-3">
+            Monthly Performance
+        </MudText>
+
+
+            <MudStack Row="true" Spacing="3">
+
+                <MudCheckBox T="bool"
+                             Value="@ShowSales"
+                             Label="Sales"
+                             ValueChanged="@(value => { ShowSales = value; UpdateChart(); })" />
+
+                <MudCheckBox T="bool"
+                             Value="@ShowLandedCost"
+                             Label="Landed Cost"
+                             ValueChanged="@(value => { ShowLandedCost = value; UpdateChart(); })" />
+
+                <MudCheckBox T="bool"
+                             Value="@ShowExpenses"
+                             Label="Expenses"
+                             ValueChanged="@(value => { ShowExpenses = value; UpdateChart(); })" />
+
+                <MudCheckBox T="bool"
+                             Value="@ShowNetProfit"
+                             Label="Net Profit"
+                             ValueChanged="@(value => { ShowNetProfit = value; UpdateChart(); })" />
+
+            </MudStack>
+
+
+        @if (IsLoading)
+        {
+            <MudSkeleton Height="450px" Animation="Animation.Wave" />
+        }
+        else
+        {
+            <div style="width:100%;">
+                <MudChart ChartType="ChartType.Line"
+                          ChartSeries="@VisibleSeries"
+                          XAxisLabels="@Labels"
+                          Height="450px" />
+            </div>
+        }
+
+    </MudCardContent>
+
+</MudCard>

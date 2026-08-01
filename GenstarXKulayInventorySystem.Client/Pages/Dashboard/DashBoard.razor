@@ -1,0 +1,138 @@
+﻿@page "/dashboard"
+@layout MainLayout
+<MudMainContent Class="pa-2 pa-sm-4">
+    <MudPaper Class="p-4 mt-5" Elevation="1">
+        <MudGrid Spacing="3" Class="mt-5">
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="h-100">
+                    <MudCardContent>
+
+                        @if (IsDailyLoading)
+                        {
+                            <MudSkeleton Width="120px" Height="20px" />
+                            <MudSkeleton Width="180px" Height="42px" Class="mt-3" />
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.subtitle2">
+                                Today's Sales
+                            </MudText>
+
+                            <MudText Typo="Typo.h4" Color="Color.Primary">
+                                ₱ @DashBoardData.TotalNetSales.ToString("N2")
+                            </MudText>
+                        }
+
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="h-100">
+                    <MudCardContent>
+
+                        @if (IsDailyLoading)
+                        {
+                            <MudSkeleton Width="120px" Height="20px" />
+                            <MudSkeleton Width="180px" Height="42px" Class="mt-3" />
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.subtitle2">
+                                Landed Cost
+                            </MudText>
+
+                            <MudText Typo="Typo.h4" Color="Color.Warning">
+                                ₱ @DashBoardData.TotalProductCosts.ToString("N2")
+                            </MudText>
+                        }
+
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+
+            <MudItem xs="12" sm="6" md=4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.subtitle2">
+                            Net Profit
+                        </MudText>
+
+                        <MudText Typo="Typo.h4" Color="Color.Success">
+                            ₱ @DashBoardData.TotalProfit.ToString("N2")
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.subtitle2">
+                            Expenses
+                        </MudText>
+
+                        <MudText Typo="Typo.h4" Color="Color.Warning">
+                            @DashBoardData.Expenses.ToString("N2")
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.subtitle2">
+                            Total Sold Items
+                        </MudText>
+
+                        <MudText Typo="Typo.h4" Color="Color.Info">
+                            @DashBoardData.TotalItemsSold
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.subtitle2">
+                            Total Sales Today
+                        </MudText>
+
+                        <MudText Typo="Typo.h4" Color="Color.Info">
+                            @DashBoardData.TotalDailySale
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            
+
+        </MudGrid>
+        @if (User.Branch.HasValue)
+        {
+            <MudItem xs="12">
+                <WeeklyChart Branch="User.Branch.Value" />
+            </MudItem>
+
+            <MudItem xs="12" lg="12">
+                <WeeklyTopSaleItems Branch="User.Branch.Value" />
+            </MudItem>
+
+            <MudItem xs="12">
+                <MonthlyChart Branch="User.Branch.Value" />
+            </MudItem>
+            <MudItem xs="12" lg="12">
+                <MonthlyTopSaleItem Branch="User.Branch.Value" />
+            </MudItem>
+            <MudItem xs="12">
+                <YearlyChart Branch="User.Branch.Value" />
+            </MudItem>
+        }
+
+        
+    </MudPaper>
+</MudMainContent>
