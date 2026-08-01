@@ -6,4 +6,6 @@ public class DashBoardDto
     public decimal TotalNetSales { get; set; }
     public decimal Expenses { get; set; }
     public decimal TotalProfit { get; set; } = 0;
+    public decimal TotalItemsSold { get; set; }
+    public int TotalDailySale { get; set; }
 }
