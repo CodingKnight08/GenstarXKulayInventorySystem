@@ -9,3 +9,14 @@ public class DashBoardDto
     public decimal TotalItemsSold { get; set; }
     public int TotalDailySale { get; set; }
 }
+
+public class WeekOptionDto
+{
+    public string Label { get; set; } = "";
+    public DateTime StartDate { get; set; }
+}
+public class MonthOption
+{
+    public string Label { get; set; } = "";
+    public DateTime Date { get; set; }
+}

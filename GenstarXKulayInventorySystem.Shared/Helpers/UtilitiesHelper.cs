@@ -30,6 +30,14 @@ public static class UtilitiesHelper
             var end = start.AddDays(1);
             return (start, end);
         }
+        public static DateTime ToPhilippineTime(DateTime utcDate)
+        {
+            if (utcDate.Kind == DateTimeKind.Unspecified)
+                utcDate = DateTime.SpecifyKind(utcDate, DateTimeKind.Utc);
+
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDate, PhilippineTimeZone);
+        }
+
     }
 
 
