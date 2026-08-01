@@ -119,6 +119,23 @@ public class ProductController : ControllerBase
             return StatusCode(500, $"Error in retrieving products: {ex.Message}");
         }
     }
+    [HttpGet("all/purchase-order/by/{brandId:int}/{branch}")]
+    public async Task<ActionResult<List<BranchProductDto>>> GetProductForPO(int brandId, BranchOption branch)
+    {
+        try
+        {
+            var products = await _productService.GetProductPurchaseOrderItems(brandId, branch);
+
+            if (products == null || !products.Any())
+                return Ok(new List<BranchProductDto>());
+
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error in retrieving products: {ex.Message}");
+        }
+    }
 
     [HttpGet("by/{brandId:int}/{branch}")]
     public async Task<ActionResult<BranchProductPageResultDto<BranchProductDto>>> GetPagedProductsByBrandAndBranch(
