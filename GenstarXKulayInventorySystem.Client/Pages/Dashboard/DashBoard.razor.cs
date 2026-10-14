@@ -16,6 +16,7 @@ public partial class DashBoard
 
     protected DashBoardDto DashBoardData { get; set; } = new DashBoardDto();
     protected DateTime SelectedDate { get; set; } = DateTime.UtcNow.Date;
+    protected decimal TotalNetProfit { get; set; }
     private bool IsLoading { get; set; } = true;
     private bool IsDailyLoading = true;
   
@@ -61,11 +62,12 @@ public partial class DashBoard
         {
             var branch = User.Branch;
 
-            var utcDate = DateTime.SpecifyKind(SelectedDate, DateTimeKind.Utc);
 
             var response = await Http.GetFromJsonAsync<decimal>(
-                $"api/dashboard/daily-expenses/{branch}?date={utcDate:O}");
+                $"api/dashboard/daily-expenses/{branch}?date={SelectedDate:yyyy-MM-dd}");
             DashBoardData.Expenses = response;
+            TotalNetProfit = DashBoardData.TotalProfit - DashBoardData.Expenses;
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -87,10 +89,10 @@ public partial class DashBoard
     }
     private async Task ReloadDashboard()
     {
-        await Task.WhenAll(
-            LoadNetAndCogs(),
-            LoadExpenses()
-        );
+
+        await LoadNetAndCogs();
+        await LoadExpenses();
+        
     }
 
 }
