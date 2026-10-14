@@ -22,8 +22,8 @@
                 <MudTd>@context.UnitMeasurement</MudTd>
                 <MudTd>@context.Quantity</MudTd>
                 <MudTd>@context.PaintCategory</MudTd>
-                <MudTd>@context.ItemPrice</MudTd>
-                <MudTd>@(context.ItemPrice - context.CostPrice)</MudTd>
+                <MudTd>₱@context.ItemPrice.ToString("N2")</MudTd>
+                <MudTd>₱@((context.ItemPrice - context.CostPrice).ToString("N2"))</MudTd>
                 <MudTd>
                     <MudIconButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(() => RemoveSaleItem(context))" />
                 </MudTd>
