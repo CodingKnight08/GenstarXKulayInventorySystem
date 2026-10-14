@@ -61,7 +61,7 @@ public class DashboardController : ControllerBase
         }
     }
     [HttpGet("weekly-chart/{branch}")]
-    public async Task<ActionResult<List<DashboardChartDto>>> GetWeeklyChart(
+    public async Task<ActionResult<List<SalesDto>>> GetWeeklyChart(
      BranchOption branch,
      [FromQuery] DateTime? date)
     {
@@ -83,8 +83,39 @@ public class DashboardController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
+    ///Expenses
+    [HttpGet("weekly-expense/{branch}")]
+    public async Task<ActionResult<List<ExpensesDto>>> GetWeeklyExpenses(BranchOption branch, [FromQuery] DateTime? date)
+    {
+        try
+        {
+            var result = await _dashboardService.GetWeeklyExpenseProfitChartForReport(branch, date ?? DateTime.UtcNow);
+            return result;
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Error while getting weekly expenses");
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpGet("monthly-expense/{branch}")]
+    public async Task<ActionResult<List<ExpensesDto>>> GetMonthlyExpenses(BranchOption branch, [FromQuery] DateTime? date)
+    {
+        try
+        {
+            var result = await _dashboardService.GetMonthlyExpenseProfitChartForReport(branch, date ?? DateTime.UtcNow);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while getting monthly expenses");
+            return StatusCode(500, ex.Message);
+        }
+    }
+
     [HttpGet("monthly-chart/{branch}")]
-    public async Task<ActionResult<List<DashboardChartDto>>> GetMonthlyChart(
+    public async Task<ActionResult<List<SalesDto>>> GetMonthlyChart(
      BranchOption branch,
      [FromQuery] DateTime? date)
     {
@@ -108,7 +139,7 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("yearly-chart/{branch}")]
-    public async Task<ActionResult<List<DashboardChartDto>>> GetYearlyChart(BranchOption branch)
+    public async Task<ActionResult<List<SalesDto>>> GetYearlyChart(BranchOption branch)
     {
         try
         {

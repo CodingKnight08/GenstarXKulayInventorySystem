@@ -96,7 +96,7 @@ public class DashboardService : IDashboardService
     }
     public async Task<decimal> GetDailyExpenses(
     BranchOption branch,
-    DateTime utcDate)
+    DateTime selectedDate)
     {
         BillingBranch billingBranch = branch switch
         {
@@ -114,10 +114,8 @@ public class DashboardService : IDashboardService
             _ => throw new ArgumentOutOfRangeException(nameof(branch), branch, null)
         };
 
-        // Convert UTC date from UI to Philippine time
-        var philippineDate = PhilippineTime.ToPhilippineTime(utcDate);
-
-        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(philippineDate);
+        // Treat the selected date as a Philippine calendar date
+        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(selectedDate.Date);
 
         var billingTotal = await _dbContext.Billings
             .AsNoTracking()
@@ -126,7 +124,7 @@ public class DashboardService : IDashboardService
                 b.Branch == billingBranch &&
                 b.DateOfBilling >= startOfDay &&
                 b.DateOfBilling < endOfDay)
-            .SumAsync(b => b.Amount);
+            .SumAsync(b => (decimal?)b.Amount) ?? 0m;
 
         var purchaseTotal = await _dbContext.PurchaseOrderItems
             .AsNoTracking()
@@ -136,11 +134,11 @@ public class DashboardService : IDashboardService
                 item.PurchaseOrder.PurchaseShipToOption == purchaseShipTo &&
                 item.PurchaseOrder.PurchaseOrderDate >= startOfDay &&
                 item.PurchaseOrder.PurchaseOrderDate < endOfDay)
-            .SumAsync(item => item.ItemAmount * item.ItemQuantity);
+            .SumAsync(item => (decimal?)(item.ItemAmount * item.ItemQuantity)) ?? 0m;
 
         return billingTotal + purchaseTotal;
     }
-    public async Task<List<DashboardChartDto>> GetWeeklyExpenseProfitChart(
+    public async Task<List<SalesDto>> GetWeeklyExpenseProfitChart(
     BranchOption branch,
     DateTime date)
     {
@@ -154,14 +152,194 @@ public class DashboardService : IDashboardService
 
         var end = start.AddDays(7);
 
-        return await GetExpenseProfitChart(
+        return await GetSalesProfiChart(
             branch,
             start,
             end,
             d => d.ToString("ddd"),
             d => d.Date);
     }
-    public async Task<List<DashboardChartDto>> GetMonthlyExpenseProfitChart(
+
+    public async Task<List<ExpensesDto>> GetWeeklyExpenseProfitChartForReport(
+     BranchOption branch,
+     DateTime date)
+    {
+        var phDate = PhilippineTime.ToPH(date).Date;
+
+        // Monday start of week
+        var startOfWeek = phDate.AddDays(
+            phDate.DayOfWeek == DayOfWeek.Sunday
+                ? -6
+                : DayOfWeek.Monday - phDate.DayOfWeek
+        );
+
+        var endOfWeek = startOfWeek.AddDays(7);
+
+
+        var billingBranch = branch switch
+        {
+            BranchOption.Polomolok => BillingBranch.Kulay,
+            BranchOption.GeneralSantosCity => BillingBranch.GenStar,
+            BranchOption.Warehouse => BillingBranch.Warehouse,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        var purchaseBranch = branch switch
+        {
+            BranchOption.Polomolok => PurchaseShipToOption.Polomolok,
+            BranchOption.GeneralSantosCity => PurchaseShipToOption.GeneralSantosCity,
+            BranchOption.Warehouse => PurchaseShipToOption.Warehouse,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+
+        // Billing expenses
+        var billingExpenses = await _dbContext.Billings
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.Branch == billingBranch &&
+                x.DateOfBilling >= startOfWeek &&
+                x.DateOfBilling < endOfWeek)
+            .Select(x => new
+            {
+                Date = x.DateOfBilling.Date,
+                Total = x.Amount
+            })
+            .ToListAsync();
+
+
+        // Purchase order expenses
+        var purchaseExpenses = await _dbContext.PurchaseOrders
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.PurchaseShipToOption == purchaseBranch &&
+                x.PurchaseOrderDate >= startOfWeek &&
+                x.ExpectedDeliveryDate < endOfWeek)
+            .Select(x => new
+            {
+                Date = x.PurchaseOrderDate.Date,
+                Total = x.AssumeTotalAmount
+            })
+            .ToListAsync();
+
+
+        // Combine expenses
+        var allExpenses = billingExpenses
+            .Concat(purchaseExpenses)
+            .GroupBy(x => x.Date)
+            .Select(x => new
+            {
+                Date = x.Key,
+                Total = x.Sum(e => e.Total)
+            })
+            .ToList();
+
+
+        // Generate complete 7 days
+        var result = new List<ExpensesDto>();
+
+        for (int i = 0; i < 7; i++)
+        {
+            var currentDate = startOfWeek.AddDays(i);
+
+            result.Add(new ExpensesDto
+            {
+                Label = currentDate.ToString("ddd"),
+                StartDate = currentDate,
+                Total = allExpenses
+                    .Where(x => x.Date == currentDate)
+                    .Select(x => x.Total)
+                    .FirstOrDefault()
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<List<ExpensesDto>> GetMonthlyExpenseProfitChartForReport(
+     BranchOption branch,
+     DateTime date)
+    {
+        var phDate = PhilippineTime.ToPH(date).Date;
+        var startOfMonth = new DateTime(phDate.Year, phDate.Month, 1);
+        var endOfMonth = startOfMonth.AddMonths(1);
+        var billingBranch = branch switch
+        {
+            BranchOption.Polomolok => BillingBranch.Kulay,
+            BranchOption.GeneralSantosCity => BillingBranch.GenStar,
+            BranchOption.Warehouse => BillingBranch.Warehouse,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        var purchaseBranch = branch switch
+        {
+            BranchOption.Polomolok => PurchaseShipToOption.Polomolok,
+            BranchOption.GeneralSantosCity => PurchaseShipToOption.GeneralSantosCity,
+            BranchOption.Warehouse => PurchaseShipToOption.Warehouse,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        // Billing expenses
+        var billingExpenses = await _dbContext.Billings
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.Branch == billingBranch &&
+                x.DateOfBilling >= startOfMonth &&
+                x.DateOfBilling < endOfMonth)
+            .Select(x => new
+            {
+                Date = x.DateOfBilling.Date,
+                Total = x.Amount
+            })
+            .ToListAsync();
+        // Purchase order expenses
+        var purchaseExpenses = await _dbContext.PurchaseOrders
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                x.PurchaseShipToOption == purchaseBranch &&
+                x.PurchaseOrderDate >= startOfMonth &&
+                x.ExpectedDeliveryDate < endOfMonth)
+            .Select(x => new
+            {
+                Date = x.PurchaseOrderDate.Date,
+                Total = x.AssumeTotalAmount
+            })
+            .ToListAsync();
+        // Combine expenses
+        var allExpenses = billingExpenses
+            .Concat(purchaseExpenses)
+            .GroupBy(x => x.Date)
+            .Select(x => new
+            {
+                Date = x.Key,
+                Total = x.Sum(e => e.Total)
+            })
+            .ToList();
+        // Generate complete days of the month
+        var result = new List<ExpensesDto>();
+        int daysInMonth = DateTime.DaysInMonth(phDate.Year, phDate.Month);
+
+        for (int i = 1; i <= daysInMonth; i++)
+        {
+            var currentDate = new DateTime(phDate.Year, phDate.Month, i);
+
+            result.Add(new ExpensesDto
+            {
+                Label = currentDate.ToString("ddd"),
+                StartDate = currentDate,
+                Total = allExpenses
+                    .Where(x => x.Date == currentDate)
+                    .Select(x => x.Total)
+                    .FirstOrDefault()
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<List<SalesDto>> GetMonthlyExpenseProfitChart(
      BranchOption branch,
      DateTime date)
     {
@@ -175,50 +353,50 @@ public class DashboardService : IDashboardService
 
         var end = start.AddMonths(1);
 
-        return await GetExpenseProfitChart(
+        return await GetSalesProfiChart(
             branch,
             start,
             end,
             d => d.ToString("dd"),
             d => d.Date);
     }
-    public async Task<List<DashboardChartDto>> GetYearlyExpenseProfitChart(BranchOption branch)
+    public async Task<List<SalesDto>> GetYearlyExpenseProfitChart(BranchOption branch)
     {
         var today = PhilippineTime.Now.Date;
 
-        var result = new List<DashboardChartDto>();
+        var result = new List<SalesDto>();
 
         for (int month = 1; month <= 12; month++)
         {
             var start = new DateTime(today.Year, month, 1);
             var end = start.AddMonths(1);
 
-            var data = await GetExpenseProfitChart(
+            var data = await GetSalesProfiChart(
                 branch,
                 start,
                 end,
                 _ => start.ToString("MMM"),
                 d => d.Date);
 
-            result.Add(new DashboardChartDto
+            result.Add(new SalesDto
             {
-                Date = start,
                 Label = start.ToString("MMM"),
-                NetSales = data.Sum(x => x.NetSales),
-                LandedCost = data.Sum(x => x.LandedCost),
-                Expenses = data.Sum(x => x.Expenses),
-                NetProfit = data.Sum(x => x.NetProfit)
+                StartDate = start,
+
+                TotalSales = data.Sum(x => x.TotalSales),
+
+                TotalProductCosts = data.Sum(x => x.TotalProductCosts)
             });
         }
 
         return result;
     }
-    private async Task<List<DashboardChartDto>> GetExpenseProfitChart(
-      BranchOption branch,
-      DateTime startDate,
-      DateTime endDate,
-      Func<DateTime, string> labelSelector,
-      Func<DateTime, DateTime> groupSelector)
+    private async Task<List<SalesDto>> GetSalesProfiChart(
+        BranchOption branch,
+        DateTime startDate,
+        DateTime endDate,
+        Func<DateTime, string> labelSelector,
+        Func<DateTime, DateTime> groupSelector)
     {
         var dailySales = await _dbContext.DailySales
             .AsNoTracking()
@@ -232,83 +410,55 @@ public class DashboardService : IDashboardService
             .ToListAsync();
 
 
-        BillingBranch billingBranch = branch switch
-        {
-            BranchOption.Polomolok => BillingBranch.Kulay,
-            BranchOption.GeneralSantosCity => BillingBranch.GenStar,
-            BranchOption.Warehouse => BillingBranch.Warehouse,
-            _ => throw new ArgumentOutOfRangeException(nameof(branch))
-        };
+        var result = new List<SalesDto>();
 
 
-        var purchaseShipTo = branch switch
-        {
-            BranchOption.GeneralSantosCity => PurchaseShipToOption.GeneralSantosCity,
-            BranchOption.Polomolok => PurchaseShipToOption.Polomolok,
-            BranchOption.Warehouse => PurchaseShipToOption.Warehouse,
-            _ => throw new ArgumentOutOfRangeException(nameof(branch))
-        };
-
-
-        var billings = await _dbContext.Billings
-            .AsNoTracking()
-            .Where(x =>
-                !x.IsDeleted &&
-                x.Branch == billingBranch &&
-                x.DateOfBilling >= startDate &&
-                x.DateOfBilling < endDate)
-            .ToListAsync();
-
-
-        var purchaseItems = await _dbContext.PurchaseOrderItems
-            .AsNoTracking()
-            .Include(x => x.PurchaseOrder)
-            .Where(x =>
-                x.PurchaseOrder != null &&
-                !x.PurchaseOrder.IsDeleted &&
-                x.PurchaseOrder.PurchaseShipToOption == purchaseShipTo &&
-                x.PurchaseOrder.PurchaseOrderDate >= startDate &&
-                x.PurchaseOrder.PurchaseOrderDate < endDate)
-            .ToListAsync();
-
-
-        var result = new List<DashboardChartDto>();
-
-
-        for (var current = startDate; current < endDate; current = groupSelector(current).AddDays(1))
+        for (var current = startDate.Date; current < endDate.Date; current = current.AddDays(1))
         {
             var periodStart = groupSelector(current);
             var periodEnd = periodStart.AddDays(1);
 
 
             var sales = dailySales
-                .Where(x => x.DateOfSales >= periodStart &&
-                            x.DateOfSales < periodEnd)
+                .Where(x =>
+                    x.DateOfSales >= periodStart &&
+                    x.DateOfSales < periodEnd)
                 .ToList();
 
 
-            decimal netSales = 0;
+            decimal totalSales = 0;
             decimal landedCost = 0;
 
 
             foreach (var sale in sales)
             {
-                netSales += sale.Commission ?? 0;
+                // Commission included once per sale
+                totalSales += sale.Commission ?? 0;
 
 
                 foreach (var item in sale.SaleItems)
                 {
-                    netSales += item.ItemPrice * item.Quantity;
+                    // Sales amount
+                    totalSales += item.ItemPrice * item.Quantity;
 
 
+                    // Cost calculation
                     if (!string.IsNullOrWhiteSpace(item.DataList))
                     {
-                        var mixItems = JsonSerializer.Deserialize<List<InvolvePaintsDto>>(item.DataList);
-
-                        if (mixItems != null)
+                        try
                         {
-                            landedCost += mixItems.Sum(x =>
-                                x.Quantity * x.CostPrice);
+                            var mixItems = JsonSerializer.Deserialize<List<InvolvePaintsDto>>(item.DataList);
+
+                            if (mixItems != null)
+                            {
+                                landedCost += mixItems.Sum(x =>
+                                    x.Quantity * x.CostPrice);
+                            }
+                        }
+                        catch
+                        {
+                            // fallback if invalid JSON
+                            landedCost += item.CostPrice * item.Quantity;
                         }
                     }
                     else
@@ -319,30 +469,12 @@ public class DashboardService : IDashboardService
             }
 
 
-            var billingExpense = billings
-                .Where(x => x.DateOfBilling >= periodStart &&
-                            x.DateOfBilling < periodEnd)
-                .Sum(x => x.Amount);
-
-
-            var purchaseExpense = purchaseItems
-                .Where(x => x.PurchaseOrder != null &&
-                            x.PurchaseOrder.PurchaseOrderDate >= periodStart &&
-                            x.PurchaseOrder.PurchaseOrderDate < periodEnd)
-                .Sum(x => x.ItemAmount * x.ItemQuantity);
-
-
-            var expenses = billingExpense + purchaseExpense;
-
-
-            result.Add(new DashboardChartDto
+            result.Add(new SalesDto
             {
-                Date = periodStart,
                 Label = labelSelector(periodStart),
-                NetSales = netSales,
-                LandedCost = landedCost,
-                Expenses = expenses,
-                NetProfit = netSales - (landedCost + expenses)
+                StartDate = periodStart,
+                TotalSales = totalSales,
+                TotalProductCosts = landedCost
             });
         }
 
@@ -543,13 +675,20 @@ public interface IDashboardService
     Task<decimal> GetDailyExpenses(
     BranchOption branch,
     DateTime utcDate);
-    Task<List<DashboardChartDto>> GetWeeklyExpenseProfitChart(
-    BranchOption branch,
-    DateTime date);
-    Task<List<DashboardChartDto>> GetMonthlyExpenseProfitChart(
+
+    Task<List<ExpensesDto>> GetWeeklyExpenseProfitChartForReport(
      BranchOption branch,
      DateTime date);
-    Task<List<DashboardChartDto>> GetYearlyExpenseProfitChart(BranchOption branch);
+    Task<List<ExpensesDto>> GetMonthlyExpenseProfitChartForReport(
+     BranchOption branch,
+     DateTime date);
+    Task<List<SalesDto>> GetWeeklyExpenseProfitChart(
+    BranchOption branch,
+    DateTime date);
+    Task<List<SalesDto>> GetMonthlyExpenseProfitChart(
+     BranchOption branch,
+     DateTime date);
+    Task<List<SalesDto>> GetYearlyExpenseProfitChart(BranchOption branch);
     Task<List<TopSaleItemDto>> GetWeeklyTopProducts(
      BranchOption branch,
      DateTime date);

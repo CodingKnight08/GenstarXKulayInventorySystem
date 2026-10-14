@@ -10,6 +10,20 @@ public class DashBoardDto
     public int TotalDailySale { get; set; }
 }
 
+public class ExpensesDto
+{
+    public string Label { get; set; } = string.Empty;
+    public DateTime StartDate { get; set; }
+    public decimal Total { get; set; }
+}
+
+public class SalesDto
+{
+    public string Label { get; set; } = string.Empty;
+    public DateTime StartDate { get; set; }
+    public decimal TotalSales { get; set; }
+    public decimal TotalProductCosts { get; set; }
+}
 public class WeekOptionDto
 {
     public string Label { get; set; } = "";
