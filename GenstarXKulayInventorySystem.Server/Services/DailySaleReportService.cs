@@ -5,6 +5,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
+using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper;
 
 namespace GenstarXKulayInventorySystem.Server.Services;
 
@@ -22,14 +23,14 @@ public class DailySaleReportService : IDailySaleReportService
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
     }
-
+    
     public async Task<List<DailySaleReportDto>> GetAllDailyReportAsync(BranchOption branch)
     {
         List<DailySaleReport> reports = await _context.DailySaleReports
             .AsNoTracking()
             .AsSplitQuery()
             .Where(dr => !dr.IsDeleted && dr.Branch == branch)
-            .OrderBy(dr => dr.Date)
+            .OrderByDescending(dr => dr.Date)
             .ToListAsync();
 
         if (reports == null || !reports.Any())
@@ -64,24 +65,27 @@ public class DailySaleReportService : IDailySaleReportService
     {
         try
         {
+            // Always use PH time instead of UTC
+            var phZone = UtilitiesHelper.PhilippineTime.Now;
+            var todayPH = phZone.Date;
+
+            // Check for existing report on the same PH date
             var existingReport = await _context.DailySaleReports
                 .AsNoTracking()
                 .FirstOrDefaultAsync(dr => !dr.IsDeleted &&
-                                           dr.Date.Date == DateTime.UtcNow.Date &&
-                                           dr.Branch == reportDto.Branch);
+                                           dr.Branch == reportDto.Branch &&
+                                           dr.Date.Date == todayPH);
 
             if (existingReport != null)
-            {
                 return false;
-            }
 
             var report = _mapper.Map<DailySaleReport>(reportDto);
 
-            report.Date = DateTime.UtcNow;
-            report.CreatedAt = DateTime.UtcNow;
+            report.Date = reportDto.Date?? phZone;
+            report.CreatedAt = phZone;
             report.CreatedBy = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
 
-            // Detach related entities to avoid re-inserts
+            // Detach related entities to avoid EF re-insert issues
             var billingIds = report.Billings?.Select(b => b.Id).ToList() ?? new List<int>();
             var dailySaleIds = report.DailySales?.Select(ds => ds.Id).ToList() ?? new List<int>();
 
@@ -91,7 +95,7 @@ public class DailySaleReportService : IDailySaleReportService
             await _context.DailySaleReports.AddAsync(report);
             await _context.SaveChangesAsync();
 
-            // Update Billings
+            // --- Update Billings ---
             if (billingIds.Any())
             {
                 var billings = await _context.Billings
@@ -100,13 +104,13 @@ public class DailySaleReportService : IDailySaleReportService
 
                 foreach (var billing in billings)
                 {
-                    billing.DailySaleId = report.Id; // correct FK for Billing -> Report
+                    billing.DailySaleId = report.Id; // Link Billing → Report
                 }
 
                 _context.Billings.UpdateRange(billings);
             }
 
-            // Update DailySales
+            // --- Update Daily Sales ---
             if (dailySaleIds.Any())
             {
                 var dailySales = await _context.DailySales
@@ -115,7 +119,7 @@ public class DailySaleReportService : IDailySaleReportService
 
                 foreach (var dailySale in dailySales)
                 {
-                    dailySale.DailySaleReportId = report.Id; // set FK for DailySale -> Report
+                    dailySale.DailySaleReportId = report.Id; // Link DailySale → Report
                 }
 
                 _context.DailySales.UpdateRange(dailySales);
@@ -142,16 +146,19 @@ public class DailySaleReportService : IDailySaleReportService
     {
         try
         {
-            var existingReport = await _context.DailySaleReports.FirstOrDefaultAsync(dr => dr.Id == reportDto.Id && !dr.IsDeleted);
+            var existingReport = await _context.DailySaleReports
+                .FirstOrDefaultAsync(dr => dr.Id == reportDto.Id && !dr.IsDeleted);
+
             if (existingReport == null)
-            {
-                return false; // Report not found
-            }
-            // Map updated fields from DTO to entity
+                return false; 
+
             _mapper.Map(reportDto, existingReport);
-            existingReport.UpdatedAt = DateTime.UtcNow;
+
+            existingReport.UpdatedAt = PhilippineTime.Now;
             existingReport.UpdatedBy = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "Unknown";
+
             _context.DailySaleReports.Update(existingReport);
+
             int result = await _context.SaveChangesAsync();
             return result > 0;
         }
@@ -162,20 +169,39 @@ public class DailySaleReportService : IDailySaleReportService
         }
     }
 
+
     public async Task<bool> DeleteReportAsync(int id)
     {
         try
         {
-            var existingReport = await _context.DailySaleReports.FirstOrDefaultAsync(dr => dr.Id == id && !dr.IsDeleted);
+            var existingReport = await _context.DailySaleReports
+                .Include(x => x.DailySales)
+                .Include(x => x.Billings)
+                .FirstOrDefaultAsync(dr => dr.Id == id && !dr.IsDeleted);
+
             if (existingReport == null)
             {
-                return false; // Report not found
+                return false;
             }
+
+            // unlink daily sales
+            foreach (var sale in existingReport.DailySales)
+            {
+                sale.DailySaleReportId = null;
+            }
+
+            // unlink billings
+            foreach (var billing in existingReport.Billings)
+            {
+                billing.DailySaleId = null;
+            }
+
             existingReport.IsDeleted = true;
-            existingReport.DeletedAt = DateTime.UtcNow;
-            _context.DailySaleReports.Update(existingReport);
-            int result = await _context.SaveChangesAsync();
-            return result > 0;
+            existingReport.DeletedAt = PhilippineTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
         catch (Exception ex)
         {
@@ -183,11 +209,9 @@ public class DailySaleReportService : IDailySaleReportService
             return false;
         }
     }
-
     public async Task<List<DailySaleDto>> GetAllDailySaleInvoice(DateTime date, BranchOption branch)
     {
-        var start = date.Date.ToUniversalTime();
-        var end = start.AddDays(1);
+        var (start, end) = PhilippineTime.GetDayRange(date);
 
         var paidDailySales = await _context.DailySales
             .AsNoTracking()
@@ -206,10 +230,10 @@ public class DailySaleReportService : IDailySaleReportService
 
         return _mapper.Map<List<DailySaleDto>>(paidDailySales);
     }
+
     public async Task<List<DailySaleDto>> GetAllDailySaleNonInvoice(DateTime date, BranchOption branch)
     {
-        var start = date.Date.ToUniversalTime();
-        var end = start.AddDays(1);
+        var (start, end) = PhilippineTime.GetDayRange(date);
 
         var paidDailySales = await _context.DailySales
             .AsNoTracking()
@@ -228,6 +252,7 @@ public class DailySaleReportService : IDailySaleReportService
 
         return _mapper.Map<List<DailySaleDto>>(paidDailySales);
     }
+
 }
 
 public interface IDailySaleReportService

@@ -1,0 +1,193 @@
+﻿@page "/view-waybill/{WayBillId:int}"
+@using GenstarXKulayInventorySystem.Shared.Helpers
+@using static GenstarXKulayInventorySystem.Shared.Helpers.WalBillHelper
+
+@layout MainLayout
+
+<MudMainContent Class="w-auto h-100">
+    <MudCard Elevation="0">
+        <MudBreadcrumbs Items="_items" />
+        <MudText Typo="Typo.h4" Align="Align.Center">Way Bill Details</MudText>
+    </MudCard>
+
+    @if (IsLoading)
+    {
+        <MudCard Elevation="5" Class="d-flex flex-column align-items-center justify-content-center gap-2">
+            <MudProgressCircular Indeterminate="true" Rounded="true" Size="Size.Medium" Color="Color.Info" />
+            <MudText Typo="Typo.subtitle1" Align="Align.Center">Loading</MudText>
+        </MudCard>
+    }
+    else
+    {
+
+        <MudCard Elevation="0" Class="w-auto pa-3">
+            <MudGrid Spacing="6">
+                <MudItem xs="12" Class="d-flex flex-row justify-content-end gap-3 px-4">
+                    @if (!IsEdit)
+                    {
+                        @if (!IsSync)
+                        {
+                            <MudButton 
+                                StartIcon="@Icons.Material.Filled.Sync" 
+                                Color="Color.Secondary" 
+                                Size="Size.Small" 
+                                Variant="Variant.Filled" OnClick="SyncWayBillItemsAsync">Sync to Inventory</MudButton>
+                        }
+                       
+                        <MudIconButton 
+                        Icon="@Icons.Material.Filled.Edit"
+                        Variant="Variant.Text"
+                        Color="Color.Success"
+                        Size="Size.Small"
+                        Onclick="() => IsEdit = true"
+
+                        />
+                        <MudIconButton 
+                        Icon="@Icons.Material.Filled.Delete"
+                        Color="Color.Error"
+                        Variant="Variant.Text" 
+                        OnClick="DeleteWayBill"
+                        Size="Size.Small" />    
+                    }
+                    else
+                    {
+                        <MudButton 
+                            Color="Color.Default"
+                            Variant="Variant.Filled"
+                            Size="Size.Small"
+                            StartIcon="@Icons.Material.Filled.Cancel" OnClick="CancelUpdate">Cancel</MudButton>
+                        <MudButton 
+                            StartIcon="@Icons.Material.Filled.Save" 
+                            Color="Color.Success"
+                            Variant="Variant.Filled" 
+                            Size="Size.Small" OnClick="UpdateWayBillAsync">Update WayBill</MudButton>
+                    }
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Supplier" Value="WayBill.Supplier?.SupplierName " ReadOnly="true"/>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Way Bill No." Value="WayBill.WayBillNumber" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Courier" @bind-Value="WayBill.Courier" ReadOnly="!IsEdit"/>
+                </MudItem>
+                <MudItem>
+                    <MudDatePicker
+                        Date="WayBill.DateReceived" 
+                        ReadOnly="!IsEdit"
+                        DateChanged="OnDateReceiveChange"
+                        DateFormat="MMMM dd, yyyy"
+                        Label="Date Recieved"
+                        Variant="Variant.Text"/>
+                </MudItem>
+                <MudItem xs="6" md="4" lg="3" Class="d-flex align-items-center">
+                    <label class="fw-bold text-muted">Status:</label>
+                    <MudChip T="string"
+                             Color="@(IsSync ? Color.Success : Color.Warning)"
+                             Size="Size.Small">
+                        @(IsSync ? "Sync" : "UnSync")
+                    </MudChip>
+
+
+                </MudItem>
+                <MudItem xs="6" md="4">
+                    <MudSelect T="WayBillTermsOption"
+                               Label="Way Bill Terms"
+                               Value="WayBill.WayBillTerms"
+                               ValueChanged="OnTermsChange"
+                               ReadOnly="!IsEdit">
+
+                        @foreach (WayBillTermsOption option in Enum.GetValues(typeof(WayBillTermsOption)))
+                        {
+                            <MudSelectItem Value="option">
+                                @WalBillHelper.GetWayBillTermsText(option)
+                            </MudSelectItem>
+                        }
+
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" class="d-flex flex-column gap-1">
+                    <label>Notes <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Default" Size="Size.Small" /></label>
+                    <MudTextField @bind-Value="WayBill.Notes" Lines="2" MaxLines="5" Variant="Variant.Outlined" ReadOnly="!IsEdit" />
+                </MudItem>
+                <MudItem xs="12" Class="d-flex flex-row justify-content-end">
+                    <MudButton 
+                        StartIcon="@Icons.Material.Filled.Add" 
+                        Disabled="!HasItems"
+                        Color="Color.Info" 
+                        Size="Size.Small"
+                        OnClick="AddDamageItems"
+                        Variant="Variant.Filled">Add Damage Items</MudButton>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTable Items="WayBillItems"
+                        Bordered="true"
+                        Dense="true"
+                        RowsPerPage="5"
+                        Striped="true"
+                    >
+                    <HeaderContent>
+                        <MudTh>Item Name</MudTh>
+                        <MudTh>Unit</MudTh>
+                        <MudTh>Quantity</MudTh>
+                        <MudTh>Item Price</MudTh>
+                        <MudTh>Total Price</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.BranchProduct?.MasterProduct?.ProductName</MudTd>
+                        <MudTd>@context.BranchProduct?.ProductMesurementOption.ToString()</MudTd>
+                        <MudTd>@context.ActualQuantity</MudTd>
+                        <MudTd>₱@context.ItemPrice.ToString("N2")</MudTd>
+                        <MudTd>₱@context.TotalPrice.ToString("N2")</MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Typo="Typo.body2" Align="Align.Center">No records</MudText>
+                    </NoRecordsContent>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] {5,10,15}" HorizontalAlignment="HorizontalAlignment.End"/>
+                    </PagerContent>
+                </MudTable>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudNumericField 
+                        Label="Total Amount"
+                        Value="TotalAmount" 
+                        Adornment="Adornment.Start" 
+                        AdornmentText="₱"
+                        HideSpinButtons="true"
+                        ReadOnly="true" 
+                        FullWidth="false"
+                        Format="N2"
+                        Class="w-25 float-end"
+                        Variant="Variant.Text"/>
+                </MudItem>
+
+                @if (HasDamageItems)
+                {
+                    <MudItem xs="12" Class="bg-warning py-5 bg-opacity-10">
+                        <MudTable Items="DamageItems" Dense="true" Hover="true" Striped="true" Bordered="true" >
+                            <HeaderContent>
+                                <MudTh>ItemName</MudTh>
+                                <MudTh>Quantity</MudTh>
+                                <MudTh>Damage Cost per Item</MudTh>
+                                <MudTh>Damage Amount</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.WayBillItem?.BranchProduct?.MasterProduct?.ProductName</MudTd>
+                                <MudTd>@context.DamageQuantity</MudTd>
+                                <MudTd>@context.DamageAmount.ToString("N2")</MudTd>
+                                <MudTd>@context.TotalDamageCost.ToString("N2")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudItem>
+                    <MudItem xs="12" Class="bg-warning py-5 bg-opacity-10">
+                        <MudNumericField HideSpinButtons=true Value="TotalDamageAmount" Adornment="Adornment.Start" AdornmentText="P" Label="Total Damage Amount" Class="w-25 float-end"/>
+                     </MudItem>
+                }
+            </MudGrid>
+        </MudCard>
+    }
+    </MudMainContent>

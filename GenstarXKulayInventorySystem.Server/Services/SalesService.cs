@@ -5,6 +5,7 @@ using GenstarXKulayInventorySystem.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Extensions;
 using System.Security.Claims;
+using System.Text.Json;
 using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
 using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
@@ -44,7 +45,7 @@ public class SalesService:ISalesService
         List<DailySale> dailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
-            .Where(e => !e.IsDeleted && e.DateOfSales.Date == DateTime.UtcNow.Date)
+            .Where(e => !e.IsDeleted && e.DateOfSales.Date == DateTime.Now.Date)
             .OrderByDescending(e => e.DateOfSales)
             .ToListAsync();
         if(dailySales == null || dailySales.Count == 0)
@@ -58,40 +59,34 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySaleByBranch(BranchOption branch, DateTime dateTime)
     {
-        DateTime startUtc = dateTime.Date.ToUniversalTime();
-        DateTime endUtc = startUtc.AddDays(1);
+        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(dateTime);
 
-        List<DailySale> dailySales = await _context.DailySales
+        var dailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
             .Where(e => !e.IsDeleted
-                && e.Branch == branch
-                && e.DateOfSales >= startUtc
-                && e.DateOfSales < endUtc)
+                     && e.Branch == branch
+                     && e.DateOfSales >= startOfDay
+                     && e.DateOfSales < endOfDay)
             .OrderByDescending(e => e.DateOfSales)
             .ToListAsync();
 
         if (dailySales == null || dailySales.Count == 0)
-        {
             return new List<DailySaleDto>();
-        }
 
-        return _mapper.Map<List<DailySaleDto>>(dailySales)
-                  .Select(dto =>
-                  {
-                      dto.DateOfSales = ConvertUtcToPhilippineTime(dto.DateOfSales);
-                      return dto;
-                  })
-                  .ToList();
+        return _mapper.Map<List<DailySaleDto>>(dailySales);
     }
+
+
+
 
     public async Task<List<DailySaleDto>> GetAllDailySalesByDaySetAsync(DateTime date)
     {
         var chosenDateLocal = date.Date;
 
         // assume the chosenDate is local, so convert to UTC
-        var startOfDay = chosenDateLocal.ToUniversalTime();
-        var endOfDay = chosenDateLocal.AddDays(1).ToUniversalTime();
+        var startOfDay = chosenDateLocal.Date;
+        var endOfDay = chosenDateLocal.AddDays(1);
 
         var dailySales = await _context.DailySales
             .AsNoTracking()
@@ -108,12 +103,12 @@ public class SalesService:ISalesService
     {
         DateTime startDate = range switch
         {
-            DateRangeOption.OneWeek => DateTime.UtcNow.AddDays(-7),
-            DateRangeOption.OneMonth => DateTime.UtcNow.AddMonths(-1),
-            DateRangeOption.TwoMonths => DateTime.UtcNow.AddMonths(-2),
-            DateRangeOption.ThreeMonths => DateTime.UtcNow.AddMonths(-3),
-            DateRangeOption.OneYear => DateTime.UtcNow.AddYears(-1),
-            _ => DateTime.UtcNow 
+            DateRangeOption.OneWeek => DateTime.Now.AddDays(-7),
+            DateRangeOption.OneMonth => DateTime.Now.AddMonths(-1),
+            DateRangeOption.TwoMonths => DateTime.Now.AddMonths(-2),
+            DateRangeOption.ThreeMonths => DateTime.Now.AddMonths(-3),
+            DateRangeOption.OneYear => DateTime.Now.AddYears(-1),
+            _ => DateTime.Now 
         };
 
         var dailySales = await _context.DailySales
@@ -131,18 +126,20 @@ public class SalesService:ISalesService
 
     public async Task<List<DailySaleDto>> GetAllDailySalesPaidAsync(DateTime date, BranchOption branch)
     {
-        var start = date.Date.ToUniversalTime();
-        var end = start.AddDays(1);
+        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(date);
 
         var paidDailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(ds => ds.SaleItems)
+            .Include(ri => ri.ReturnItems)
+            .ThenInclude(bp => bp.BranchProduct)
             .Where(ds => !ds.IsDeleted
+                      && ds.IsApproved
                       && ds.Branch == branch
-                      && ds.UpdatedAt == null
                       && ds.PaymentType != null
-                      && ds.DateOfSales >= start
-                      && ds.DateOfSales < end)
+                      && ds.DateOfSales >= startOfDay
+                      && ds.DateOfSales < endOfDay)
             .ToListAsync();
 
         if (paidDailySales.Count == 0)
@@ -151,85 +148,98 @@ public class SalesService:ISalesService
         return _mapper.Map<List<DailySaleDto>>(paidDailySales);
     }
 
+
+
     public async Task<decimal> GetAllDailyInvoiceAsync(DateTime date)
     {
-        var start = date.Date;
-        var end = start.AddDays(1);
+        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(date);
+
         decimal invoices = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
                       && ds.SalesOption == PurchaseRecieptOption.BIR
-                      && ds.DateOfSales >= start
-                      && ds.DateOfSales < end)
+                      && ds.DateOfSales >= startOfDay
+                      && ds.DateOfSales < endOfDay)
             .SumAsync(ds => (decimal?)ds.TotalAmount) ?? 0;
-
 
         return invoices;
     }
 
     public async Task<decimal> GetAllDailyNonVoiceAsync(DateTime date)
     {
-        var start = date.Date;
-        var end = start.AddDays(1);
+        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(date);
+
         decimal nonVoices = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
                       && ds.SalesOption == PurchaseRecieptOption.NonBIR
-                      && ds.DateOfSales >= start
-                      && ds.DateOfSales < end)
+                      && ds.DateOfSales >= startOfDay
+                      && ds.DateOfSales < endOfDay)
             .SumAsync(ds => (decimal?)ds.TotalAmount) ?? 0;
-
 
         return nonVoices;
     }
 
     public async Task<List<DailySaleDto>> GetAllDailySalesUnpaidAsync(DateTime date, BranchOption branch)
     {
-        var start = date.Date.ToUniversalTime();
-        var end = start.AddDays(1);
+        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(date);
 
         var unpaidDailySales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(ri => ri.ReturnItems)
+            .Include(s => s.SaleItems)
+                .ThenInclude(bp => bp.BranchProduct)
             .Where(ds => !ds.IsDeleted
+                      && !ds.IsPaid
+                      && ds.IsApproved
                       && ds.Branch == branch
                       && ds.UpdatedAt == null
                       && ds.PaymentType == null
-                      && ds.DateOfSales >= start
-                      && ds.DateOfSales < end)
+                      && ds.IsChargedSales
+                      && ds.PaymentTermsOption != PaymentTermsOption.Today
+                      && ds.CreatedAt >= startOfDay      
+                      && ds.CreatedAt < endOfDay)
+                    
+            // ✅ date filter end
             .ToListAsync();
 
-        if (unpaidDailySales.Count == 0)
+        if (!unpaidDailySales.Any())
             return new List<DailySaleDto>();
 
         return _mapper.Map<List<DailySaleDto>>(unpaidDailySales);
     }
 
+
     public async Task<List<DailySaleDto>> GetAllCollectionAsync(DateTime date, BranchOption branch)
     {
+        var (startOfDay, endOfDay) = PhilippineTime.GetDayRange(date);
+
         var collectedSales = await _context.DailySales
             .AsNoTracking()
             .AsSplitQuery()
             .Where(ds => !ds.IsDeleted
+                      && ds.IsPaid
+                      && ds.IsApproved
                       && ds.Branch == branch
                       && ds.UpdatedAt.HasValue
-                      && ds.UpdatedAt.GetValueOrDefault().Date == date.ToUniversalTime().Date 
-                     )
+                      && ds.UpdatedAt.Value >= startOfDay
+                      && ds.UpdatedAt.Value < endOfDay)
             .ToListAsync();
 
-        if(collectedSales == null)
-        {
+        if (collectedSales == null || collectedSales.Count == 0)
             return new List<DailySaleDto>();
-        }
+
         return _mapper.Map<List<DailySaleDto>>(collectedSales);
     }
 
 
+
     public async Task<DailySaleDto?> GetDailySaleByIdAsync(int id)
     {
-        var dailySale = await _context.DailySales.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
+        var dailySale = await _context.DailySales.AsNoTracking().Include(e => e.ReturnItems).FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         return dailySale == null ? null : _mapper.Map<DailySaleDto>(dailySale);
     }
 
@@ -237,28 +247,55 @@ public class SalesService:ISalesService
     {
         try
         {
-            var existingSale = await _context.DailySales.AsNoTracking().FirstOrDefaultAsync(e => e.Branch == saleDto.Branch && e.Id == saleDto.Id);
-            if (existingSale != null) {
+            var existingSale = await _context.DailySales
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Branch == saleDto.Branch && e.Id == saleDto.Id);
+
+            if (existingSale != null)
                 return false;
-            }
+
             var sale = _mapper.Map<DailySale>(saleDto);
-            sale.DateOfSales = DateTime.UtcNow;
-            sale.CreatedAt = DateTime.UtcNow;
+
+            var phNow = PhilippineTime.Now;
+
+            sale.DateOfSales = saleDto.DateOfSales;
+            sale.CreatedAt = phNow;
             sale.CreatedBy = GetCurrentUsername();
-            sale.TotalAmount = saleDto.SaleItems.Sum(x => (x.ItemPrice) * (x.Quantity));
+            
+            sale.TotalAmount = Math.Round(
+                (saleDto.SaleItems?.Sum(x =>
+                    (x.ItemPrice * x.Quantity * (x.Size ?? 1))
+                ) ?? 0)
+                + (saleDto.Commission ?? 0),
+                2);
+
             sale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
-                DateTime.UtcNow,
+                phNow,
                 saleDto.CustomPaymentTermsOption ?? 0);
-            _ = await _context.DailySales.AddAsync(sale);
-            _ = await _context.SaveChangesAsync();
-            sale.SalesNumber = $"DS-{sale.Id:D10}-{DateTime.Now.Year.ToString()}";
+            if(sale.PaymentTermsOption == PaymentTermsOption.Today)
+            {
+                sale.IsPaid = true;
+            }
+           
+            await _context.DailySales.AddAsync(sale);
+            await _context.SaveChangesAsync();
+
+            sale.SalesNumber = $"DS-{sale.Id:D10}-{phNow.Year}";
             int result = await _context.SaveChangesAsync();
+
+            if(result > 0)
+            {
+
+            }
+            {
+                _logger.LogInformation("Added new sale with ID {SaleId} and Sales Number {SalesNumber}", sale.Id, sale.SalesNumber);
+            }
             return result > 0;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            _logger.LogError(ex.Message, "Error adding Sale");
+            _logger.LogError(ex, "Error adding Sale");
             return false;
         }
     }
@@ -273,15 +310,40 @@ public class SalesService:ISalesService
 
         try
         {
-            // Map top-level props
+            // Map basic fields from DTO (ignoring SaleItems)
             _mapper.Map(saleDto, existingSale);
 
-            existingSale.UpdatedAt = DateTime.UtcNow;
             existingSale.UpdatedBy = GetCurrentUsername();
+
+            // Recompute total strictly from DTO SaleItems
+            decimal itemsTotal = 0;
+            if (saleDto.SaleItems != null && saleDto.SaleItems.Any())
+            {
+                itemsTotal = saleDto.SaleItems.Sum(x => x.ItemPrice * x.Quantity);
+            }
+
+            // Add commission (from DTO if available, otherwise existing value)
+            decimal commission = saleDto.Commission ?? existingSale.Commission ?? 0;
+            existingSale.PONumber = saleDto.PONumber;
+            existingSale.TotalAmount = Math.Round(itemsTotal + commission, 2);
+
+            // Recalculate expected payment date
             existingSale.ExpectedPaymentDate = CalculateExpectedPaymentDate(
                 saleDto.PaymentTermsOption ?? PaymentTermsOption.Today,
                 existingSale.DateOfSales,
                 saleDto.CustomPaymentTermsOption ?? 0);
+
+            // Update payment status only if PaymentType changed
+            if (existingSale.PaymentType == null && saleDto.PaymentType != null)
+            {
+                existingSale.IsPaid = true;
+                existingSale.UpdatedAt = PhilippineTime.Now;
+            }
+            else
+            {
+                existingSale.IsPaid = false;
+            }
+
             int result = await _context.SaveChangesAsync();
             return result > 0;
         }
@@ -293,43 +355,229 @@ public class SalesService:ISalesService
     }
 
 
-    public async Task<bool> DeleteSaleASync(int id)
+    public async Task<bool> DeleteSaleAsync(int id)
     {
-        var existingSale = await _context.DailySales.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-        if (existingSale == null)
+        var strategy = _context.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var existingSale = await _context.DailySales
+                    .Include(x => x.SaleItems)
+                    .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+
+                if (existingSale == null)
+                    return false;
+
+                foreach (var saleItem in existingSale.SaleItems)
+                {
+                    // skip if already restored
+                    if (!saleItem.IsDeducted)
+                        continue;
+
+                    // MIX PRODUCTS
+                    if (saleItem.PaintCategory == PaintCategory.Mix)
+                    {
+                        if (!string.IsNullOrWhiteSpace(saleItem.DataList))
+                        {
+                            var involvePaints = JsonSerializer.Deserialize<List<InvolvePaintsDto>>(
+                                saleItem.DataList,
+                                new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+
+                            if (involvePaints != null)
+                            {
+                                foreach (var paint in involvePaints)
+                                {
+                                    var branchProduct = await _context.BranchProducts
+                                        .FirstOrDefaultAsync(x =>
+                                            x.Id == paint.ProductId &&
+                                            !x.IsDeleted);
+
+                                    if (branchProduct != null)
+                                    {
+                                        branchProduct.ActualQuantity += paint.Quantity;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // NORMAL PRODUCTS
+                    else
+                    {
+                        if (saleItem.BranchProductId.HasValue)
+                        {
+                            var branchProduct = await _context.BranchProducts
+                                .FirstOrDefaultAsync(x =>
+                                    x.Id == saleItem.BranchProductId &&
+                                    !x.IsDeleted);
+
+                            if (branchProduct != null)
+                            {
+                                branchProduct.ActualQuantity += saleItem.Quantity;
+                            }
+                        }
+                    }
+
+                    // prevent double restore
+                    saleItem.IsDeducted = false;
+                }
+
+                existingSale.IsDeleted = true;
+                existingSale.DeletedAt = PhilippineTime.Now;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                _logger.LogError(ex, "Failed to delete sale");
+
+                return false;
+            }
+        });
+    }
+
+    private DateTime CalculateExpectedPaymentDate(
+        PaymentTermsOption terms,
+        DateTime dateSales,
+        int customDate = 0)
+    {
+        var phDateSales = PhilippineTime.ToPH(dateSales);
+
+        return terms switch
+        {
+            PaymentTermsOption.Today => phDateSales,
+            PaymentTermsOption.SevenDays => phDateSales.AddDays(7),
+            PaymentTermsOption.ThirtyDays => phDateSales.AddDays(30),
+            PaymentTermsOption.SixtyDays => phDateSales.AddDays(60),
+            PaymentTermsOption.NinetyDays => phDateSales.AddDays(90),
+            PaymentTermsOption.Custom => phDateSales.AddDays(customDate),
+            _ => phDateSales
+        };
+    }
+
+    public async Task<bool> AddReturnSales(List<ReturnItemDto> returnItems, int dailySaleId)
+    {
+        if (returnItems == null || !returnItems.Any())
             return false;
-        }
+
         try
         {
-            existingSale.IsDeleted = true;
-            existingSale.DeletedAt = DateTime.UtcNow;
-            _ = _context.DailySales.Update(existingSale);
-            int result = await _context.SaveChangesAsync();
-            return result > 0;
+            var now = PhilippineTime.Now;
+            var username = GetCurrentUsername();
 
+            // 1️⃣ Map return items
+            var entities = returnItems.Select(dto =>
+            {
+                var entity = _mapper.Map<ReturnItem>(dto);
+                entity.CreatedAt = now;
+                entity.CreatedBy = username;
+                entity.DailySaleId = dailySaleId;
+                return entity;
+            }).ToList();
+
+            // 2️⃣ Add all return items at once
+            await _context.ReturnItems.AddRangeAsync(entities);
+
+            // 3️⃣ Get affected BranchProducts in ONE query
+            var productIds = returnItems
+                .Select(x => x.BranchProductId!.Value)
+                .Distinct()
+                .ToList();
+
+            var branchProducts = await _context.BranchProducts
+                .Where(bp => productIds.Contains(bp.Id))
+                .ToListAsync();
+
+            // 4️⃣ Update stock using grouping (no repeated updates)
+            var quantityByProduct = returnItems
+                .GroupBy(x => x.BranchProductId!.Value)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Sum(x => x.Quantity)
+                );
+
+            foreach (var bp in branchProducts)
+            {
+                if (quantityByProduct.TryGetValue(bp.Id, out var qty))
+                {
+                    bp.ActualQuantity += qty;
+                }
+            }
+
+            // 5️⃣ Save once
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"{ex.Message}");
+            _logger.LogError(ex, "Error adding Return Sales");
             return false;
-
         }
     }
 
-    private DateTime CalculateExpectedPaymentDate(PaymentTermsOption terms, DateTime dateSales, int customDate = 0)
+    public async Task<bool> UpdateSalesTotal(int id, decimal returnTotal)
     {
-        return terms switch
+        if (returnTotal <= 0)
+            return false;
+
+        try
         {
-            PaymentTermsOption.Today => dateSales,
-            PaymentTermsOption.SevenDays => dateSales.AddDays(7),
-            PaymentTermsOption.ThirtyDays => dateSales.AddDays(30),
-            PaymentTermsOption.SixtyDays => dateSales.AddDays(60),
-            PaymentTermsOption.NinetyDays => dateSales.AddDays(90),
-            PaymentTermsOption.Custom => dateSales.AddDays(customDate),
-            _ => dateSales
-        };
+            var sale = await _context.DailySales
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (sale == null)
+                return false;
+
+            // Prevent negative total
+            sale.TotalAmount = Math.Max(0, (sale.TotalAmount ?? 0) - returnTotal);
+
+
+            sale.UpdatedAt = PhilippineTime.Now;
+            sale.UpdatedBy = GetCurrentUsername();
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error updating sales total for SaleId {id}");
+            return false;
+        }
     }
+
+    public async Task<bool> SetPaid(int dailySaleId)
+    {
+        var sale = await _context.DailySales
+            .FirstOrDefaultAsync(x => x.Id == dailySaleId && !x.IsDeleted);
+        if (sale == null)
+            return false;
+        try
+        {
+            sale.IsPaid = true;
+            sale.PaymentType = PaymentMethod.Cash;
+            sale.UpdatedAt = PhilippineTime.Now;
+            sale.UpdatedBy = GetCurrentUsername();
+            int result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set sale as paid");
+            return false;
+        }
+    }
+
 }
 public interface ISalesService
 {
@@ -348,5 +596,8 @@ public interface ISalesService
     Task<DailySaleDto?> GetDailySaleByIdAsync(int id);
     Task<bool> AddAsync(DailySaleDto saleDto);
     Task<bool> UpdateAsync(DailySaleDto saleDto);
-    Task<bool> DeleteSaleASync(int id);
+    Task<bool> DeleteSaleAsync(int id);
+    Task<bool> AddReturnSales(List<ReturnItemDto> returnItems, int dailySaleId);
+    Task<bool> UpdateSalesTotal(int id, decimal returnTotal);
+    Task<bool> SetPaid(int dailySaleId);
 }

@@ -1,0 +1,156 @@
+﻿@page "/search-items"
+@layout MainLayout
+
+<MudMainContent Class="pa-2 pa-sm-4">
+
+    <MudPaper Class="p-4 mt-5" Elevation="1">
+
+        <MudGrid Spacing="2" Class="my-3">
+
+            <!-- Search -->
+            <MudItem xs="12" md="6">
+                <MudTextField T="string"
+                              Label="Search Item"
+                              @bind-Value="SearchItem"
+                              Variant="Variant.Outlined"
+                              Clearable="true"
+                              Immediate="false"
+                              FullWidth="true"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              OnKeyDown="HandleKeyDown" />
+            </MudItem>
+
+            <!-- Brand Switch -->
+            <MudItem xs="12" sm="6" md="3"
+                     Class="d-flex align-center">
+                <MudSwitch T="bool"
+                           @bind-Value="IsBrand"
+                           Color="Color.Primary"
+                           Label="Search by Brand" />
+            </MudItem>
+
+            <!-- Search Button -->
+            <MudItem xs="12" sm="6" md="3">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Disabled="@IsLoading"
+                           OnClick="Search">
+                    Search
+                </MudButton>
+            </MudItem>
+
+        </MudGrid>
+
+    </MudPaper>
+
+    @if (IsLoading)
+    {
+        <MudPaper Class="pa-6 mt-4" Elevation="1">
+
+            <MudStack AlignItems="AlignItems.Center"
+                      Justify="Justify.Center"
+                      Spacing="2">
+
+                <MudProgressCircular Indeterminate="true"
+                                     Size="Size.Large"
+                                     Color="Color.Primary" />
+
+                <MudText Typo="Typo.body1">
+                    Loading products...
+                </MudText>
+
+            </MudStack>
+
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="mt-4" Elevation="2">
+
+            <div class="d-flex justify-end mb-2">
+                <MudIconButton Icon="@(ShowPrices ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                               Color="Color.Primary"
+                               Title="@(ShowPrices ? "Hide Prices" : "Show Prices")"
+                               OnClick="@(() => ShowPrices = !ShowPrices)" />
+            </div>
+
+            <MudTable Items="Results"
+                      Hover="true"
+                      Dense="true"
+                      Striped="true"
+                      Breakpoint="Breakpoint.Md"
+                      RowsPerPage="10">
+
+                <HeaderContent>
+                    <MudTh>Brand</MudTh>
+                    <MudTh>Product Name</MudTh>
+
+                    <MudTh>@Branch</MudTh>
+                    @if (!ShowPrices)
+                    {
+                        <MudTh>@GetOtherBranchName()</MudTh>
+                        <MudTh>Warehouse</MudTh>
+                    }
+                    @if (ShowPrices)
+                    {
+                        <MudTh>Selling</MudTh>
+                        <MudTh>Whole Sale</MudTh>
+                    }
+                </HeaderContent>
+
+                <RowTemplate>
+
+                    <MudTd DataLabel="Brand">
+                        @context.BrandName
+                    </MudTd>
+
+                    <MudTd DataLabel="Product Name">
+                        @context.ProductName
+                    </MudTd>
+                    
+                        
+                    
+                    <MudTd DataLabel="@Branch.ToString()">
+                        @context.BranchQuantity
+                    </MudTd>
+                    @if (!ShowPrices)
+                    {
+                        <MudTd DataLabel="@GetOtherBranchName()">
+                            @context.Branch2
+                        </MudTd>
+
+                        <MudTd DataLabel="Warehouse">
+                            @context.WarehouseQuantity
+                        </MudTd>
+                    }
+                    @if (ShowPrices)
+                    {
+                        <MudTd DataLabel="Selling">
+                            @(context.RetailPrice?.ToString("N2") ?? "0.00")
+                        </MudTd>
+
+                        <MudTd DataLabel="Whole Sale">
+                            @(context.WholeSalePrice?.ToString("N2") ?? "0.00")
+                        </MudTd>
+                    }
+
+                </RowTemplate>
+
+                <NoRecordsContent>
+                    <MudText Class="pa-4">
+                        No items found.
+                    </MudText>
+                </NoRecordsContent>
+
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+                </PagerContent>
+
+            </MudTable>
+
+        </MudPaper>
+    }
+
+</MudMainContent>

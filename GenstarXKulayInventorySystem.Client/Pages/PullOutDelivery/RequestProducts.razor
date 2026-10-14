@@ -1,0 +1,64 @@
+﻿@using GenstarXKulayInventorySystem.Shared.DTOS;
+<MudDialog>
+    <DialogContent>
+        <MudGrid Spacing="5">
+            <MudItem md="6" sm="12">
+                <MudAutocomplete T="ProductBrandDto"
+                                 Label="Select Brand"
+                                 Dense="true"
+                                 Placeholder="Select Brand"
+                                 SearchFunc="SearchBrands"
+                                 Value="SelectedBrand"
+                                 ValueChanged="OnBrandSelect"
+                                 ToStringFunc="b => b?.BrandName"
+                                 MaxItems="100"
+                                 Clearable="true"
+                                 CoerceText="false"
+                                 CoerceValue="false"
+                                 ResetValueOnEmptyText="false" />
+            </MudItem>
+
+            <MudItem  lg="6" md="6" sm="12">
+
+                <MudAutocomplete T="SourceAndRequesteeProductDto"
+                                 Label="Item Name"
+                                 Dense="true"
+                                 Placeholder="Select Item"
+                                 SearchFunc="SearchProductsDto"
+                                 Value="SelectedBranchProduct"
+                                 ValueChanged="OnProductSelectDto"
+                                 ToStringFunc="p => p?.MasterProduct?.ProductName ?? string.Empty"
+                                 Clearable="true"
+                                 CoerceText="false"
+                                 CoerceValue="false"
+                                 ResetValueOnEmptyText="false"
+                                 MaxItems="500"
+                                 MinCharacters="0"
+                                 Immediate="true" />
+
+            </MudItem>
+            <MudItem md="6">
+                <MudNumericField
+                    T="decimal"
+                    Label="Available Quantity"
+                    Value="SelectedBranchProduct?.SourceProduct?.ActualQuantity ?? 0" 
+                    ReadOnly="true"
+                    HideSpinButtons="true" />
+            </MudItem>
+            <MudItem md="6" xs="12">
+                <MudNumericField 
+                    T="int"
+                    Label="Requested Quantity"
+                    @bind-Value="RequestedProduct.RequestedQuantity"
+                    HideSpinButtons="true"/>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="RequestedProduct.Remarks" Label="Remarks" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" Size="Size.Small" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="Save" Disabled="@(!CanSave)">Save</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -1,20 +1,24 @@
-﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 <MudCard Elevation="0" Class="w-100 d-flex flex-row align-items-center justify-between p-4 mb-4">
     <MudGrid Spacing="16">
-        <MudItem xl="2">
-            <MudSelect T="BranchOption"
-                       Value="SelectedBranch"
-                       Label="Branch"
-                       Class="me-4"
-                       ValueChanged="OnBranchChanged"
-                       FullWidth=false>
-                @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
-                {
-                    <MudSelectItem T="BranchOption" Value="@branch">@branch.ToString()</MudSelectItem>
-                }
-            </MudSelect>
-        </MudItem>
-        <MudItem xl="10" Class="d-flex flex-row justify-content-end">
+        <AuthorizeView Roles="Administrator">
+            <MudItem xl="2" lg="2" md="3" sm="6">
+                <MudSelect T="BranchOption"
+                           Value="SelectedBranch"
+                           Label="Branch"
+                           Class="me-4"
+                           ValueChanged="OnBranchChanged"
+                           FullWidth=false>
+                    @foreach (var branch in Enum.GetValues(typeof(BranchOption)).Cast<BranchOption>())
+                    {
+                        <MudSelectItem T="BranchOption" Value="@branch">@branch.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </AuthorizeView>
+        
+        <MudItem xl="10" lg="10" md="9" sm="6" Class="d-flex flex-row justify-content-end">
             <MudButton StartIcon="@Icons.Material.Filled.InsertDriveFile"
                        Variant="Variant.Filled"
                        Size="Size.Small"
@@ -37,7 +41,13 @@
     {
         
 
-        <MudTable Items="DailySaleReports" Bordered="true" Dense=true Hover=true Class="mx-2 mt-4 bg-transparent">
+        <MudTable
+            Items="DailySaleReports"
+            Bordered="true"
+            Dense=true 
+            Hover=true
+            Striped="true"
+            Class="mx-2 mt-4 bg-transparent">
         
             <HeaderContent>
             <MudTh>Date</MudTh>
@@ -61,5 +71,8 @@
         <NoRecordsContent>
             <MudText Typo="Typo.subtitle1" Class="m-2 text-danger">No records to display.</MudText>
         </NoRecordsContent>
+       <PagerContent>
+           <MudTablePager HorizontalAlignment="HorizontalAlignment.End" PageSizeOptions="new int[] {5,10,15,20}" />
+       </PagerContent>
     </MudTable>
     }

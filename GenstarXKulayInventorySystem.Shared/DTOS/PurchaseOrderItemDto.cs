@@ -9,8 +9,8 @@ public class PurchaseOrderItemDto:BaseEntityDto
     public int? PurchaseOrderId { get; set; }
     public PurchaseOrderDto? PurchaseOrder { get; set; }
 
-    public int? ProductId { get; set; }
-    public ProductDto? Product { get; set; }
+    public int? BranchProductId { get; set; }
+    public BranchProductDto? BranchProduct { get; set; }
 
     public int? ProductBrandId { get; set; }
     public ProductBrandDto? ProductBrand { get; set; }

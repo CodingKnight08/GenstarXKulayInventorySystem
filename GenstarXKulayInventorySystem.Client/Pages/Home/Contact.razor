@@ -1,0 +1,222 @@
+﻿@page "/contact"
+
+<style>
+    .contact-page {
+        background: #f6f7fb;
+        min-height: 100vh;
+    }
+
+    /* Hero */
+
+    .contact-hero {
+        height: 360px;
+        background: linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)), url('/contact.png') center/cover no-repeat;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-title {
+        color: white;
+        font-weight: 700;
+        font-size: 3rem;
+    }
+
+    .hero-subtitle {
+        color: rgba(255,255,255,.9);
+        margin-top: 12px;
+        max-width: 650px;
+        line-height: 1.7;
+    }
+
+    /* Cards */
+
+    .cards-section {
+        margin-top: -80px;
+        padding-bottom: 70px;
+    }
+
+    .contact-card {
+        height: 100%;
+        padding: 32px;
+        border-radius: 18px;
+        border-top: 6px solid var(--mud-palette-primary);
+        background: white;
+        transition: .25s;
+    }
+
+        .contact-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 35px rgba(0,0,0,.18);
+        }
+
+        .contact-card .mud-list-item {
+            padding: 16px 0;
+        }
+
+        .contact-card .mud-list-item-text {
+            line-height: 1.6;
+        }
+
+        .contact-card .mud-avatar {
+            width: 52px;
+            height: 52px;
+        }
+
+    
+</style>
+<div class="contact-page">
+
+    <!-- Hero -->
+    <div class="contact-hero">
+
+        <MudContainer MaxWidth="MaxWidth.Large">
+
+            <MudText Typo="Typo.h2" Class="hero-title">
+                Contact Us
+            </MudText>
+
+            <MudText Typo="Typo.h6" Class="hero-subtitle">
+                Visit our stores or get in touch with our team. We're always ready to help you find the perfect paint solution.
+            </MudText>
+
+        </MudContainer>
+
+    </div>
+
+    <!-- Contact Cards -->
+    <MudContainer MaxWidth="MaxWidth.Large" Class="cards-section">
+
+        <MudGrid Spacing="4">
+
+            <!-- Main Office -->
+            <MudItem xs="12" md="6">
+
+                <MudPaper Class="contact-card" Elevation="4">
+
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+
+                        <MudAvatar Color="Color.Primary">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" />
+                        </MudAvatar>
+
+                        <MudText Typo="Typo.h5" Class="fw-bold">
+                            Genstar Paint Trade Center
+                        </MudText>
+
+                    </MudStack>
+
+                    <MudDivider Class="mb-4" />
+
+                    <MudStack Spacing="4">
+
+                        <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn"
+                                     Color="Color.Primary"
+                                     Class="mt-1" />
+
+                            <MudText>
+                                <b>Address</b><br />
+                                Door 3, Napala Building<br />
+                                Magsaysay Avenue (Corner Quirino)<br />
+                                Barangay South<br />
+                                General Santos City
+                            </MudText>
+                        </MudStack>
+
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Phone"
+                                     Color="Color.Success" />
+
+                            <MudText>
+                                <b>Phone</b><br />
+                                (083) 553-20-26
+                            </MudText>
+                        </MudStack>
+
+                       
+                        <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule"
+                                     Color="Color.Warning"
+                                     Class="mt-1" />
+
+                            <MudText>
+                                <b>Business Hours</b><br />
+                                Monday - Saturday<br />
+                                8:00 AM – 5:00 PM
+                            </MudText>
+                        </MudStack>
+
+                    </MudStack>
+
+                </MudPaper>
+
+            </MudItem>
+
+            <!-- Branch -->
+            <MudItem xs="12" md="6">
+
+                <MudPaper Class="contact-card" Elevation="4">
+
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+
+                        <MudAvatar Color="Color.Secondary">
+                            <MudIcon Icon="@Icons.Material.Filled.Store" />
+                        </MudAvatar>
+
+                        <MudText Typo="Typo.h5" Class="fw-bold">
+                            Kulay Paint Supply
+                        </MudText>
+
+                    </MudStack>
+
+                    <MudDivider Class="mb-4" />
+
+                    <MudStack Spacing="4">
+
+                        <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn"
+                                     Color="Color.Primary"
+                                     Class="mt-1" />
+                            <MudText>
+                                <b>Address</b><br />
+                               Zenia Street<br />
+                                Poblacion Polomolok<br />
+                                South Cotabato
+                            </MudText>
+                        </MudStack>
+
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Phone"
+                                     Color="Color.Success" />
+
+                            <MudText>
+                                <b>Phone</b><br />
+                                (083) 306-79-96
+                            </MudText>
+                        </MudStack>
+
+                       
+
+                        <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule"
+                                     Color="Color.Warning"
+                                     Class="mt-1" />
+
+                            <MudText>
+                                <b>Business Hours</b><br />
+                                Monday - Saturday<br />
+                                8:00 AM – 4:30 PM
+                            </MudText>
+                        </MudStack>
+
+                    </MudStack>
+
+                </MudPaper>
+
+            </MudItem>
+
+        </MudGrid>
+
+    </MudContainer>
+
+</div>

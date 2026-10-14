@@ -18,7 +18,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd>@(context.ProductBrand?.BrandName ?? "None")</MudTd>
-        <MudTd>@(context.Product?.ProductName ?? "None")</MudTd>
+        <MudTd>@(context.BranchProduct?.MasterProduct?.ProductName ?? "None")</MudTd>
         <MudTd>@(context.PurchaseItemMeasurementOption?.ToString() ?? "None")</MudTd>
         <MudTd>@context.ItemQuantity</MudTd>
         <MudTd>@($"₱{context.ItemAmount?.ToString("N2")}")</MudTd>
@@ -26,8 +26,8 @@
             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                            Color="Color.Error"
                            Size="Size.Small"
-                           Disabled="@(context.ProductBrandId == null || context.ProductId == null)"
-                           OnClick="() => RemovePurchaseItem(context.ProductBrandId!.Value, context.ProductId!.Value)" />
+                           Disabled="@(context.ProductBrandId == null || context.BranchProductId == null)"
+                           OnClick="() => RemovePurchaseItem(context.ProductBrandId!.Value, context.BranchProductId!.Value)" />
 
         </MudTd>
 

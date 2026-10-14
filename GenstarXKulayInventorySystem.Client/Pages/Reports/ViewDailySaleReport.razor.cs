@@ -24,8 +24,8 @@ public partial class ViewDailySaleReport
     protected override async Task OnInitializedAsync()
     {
         await LoadReport();
-        Invoices = DailySaleReport.DailySales.Where(x => x.SalesOption == PurchaseRecieptOption.BIR && x.PaymentType != null && x.UpdatedAt == null).ToList();
-        NonVoice = DailySaleReport.DailySales.Where(x => x.SalesOption == PurchaseRecieptOption.NonBIR && x.PaymentType != null && x.UpdatedAt == null).ToList();
+        Invoices = DailySaleReport.DailySales.Where(x => x.SalesOption == PurchaseRecieptOption.BIR && x.PaymentType != null).ToList();
+        NonVoice = DailySaleReport.DailySales.Where(x => x.SalesOption == PurchaseRecieptOption.NonBIR && x.PaymentType != null).ToList();
         ChargeSales = DailySaleReport.DailySales.Where(x => x.SalesOption == null || x.UpdatedAt.HasValue).ToList();
     }
 

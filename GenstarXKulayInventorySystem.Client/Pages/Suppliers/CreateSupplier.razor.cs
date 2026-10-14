@@ -11,8 +11,14 @@ public partial class CreateSupplier
     [CascadingParameter] protected IMudDialogInstance DialogService { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected ISnackbar Snackbar { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
     protected SupplierDto NewSupplier { get; set; } = new();
     protected string? ErrorMessage { get; set; }
+
+    protected override void OnInitialized()
+    {
+        NewSupplier.Branch = UserState.Branch.GetValueOrDefault();
+    }
     protected async Task CreateSupplierAsync()
     {
         if (!string.IsNullOrWhiteSpace(NewSupplier.SupplierName))

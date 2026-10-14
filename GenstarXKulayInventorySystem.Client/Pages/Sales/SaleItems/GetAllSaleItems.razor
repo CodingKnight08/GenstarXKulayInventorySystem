@@ -12,24 +12,24 @@ else
     <MudCard Elevation="0" Class="w-100">
         <MudTable T="SaleItemDto" @ref="saleItemsTable" ServerData="ServerLoadData" Striped=true Bordered="true" Hover="true" Elevation="10">
             <HeaderContent>
+                <MudTh>Brand</MudTh>
                 <MudTh>Item Name</MudTh>
-                <MudTh>Size</MudTh>
                 <MudTh>Unit</MudTh>
                 <MudTh>Quantity</MudTh>
                 <MudTh>Paint Category</MudTh>
                 <MudTh>Price</MudTh>
-                <MudTh>Description</MudTh>
+                <MudTh>Net</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
 
             <RowTemplate>
+                <MudTd>@(context.BranchProduct?.MasterProduct?.ProductBrand?.BrandName ?? "N/A")</MudTd>
                 <MudTd>@context.ItemName</MudTd>
-                <MudTd>@context.Size</MudTd>
                 <MudTd>@context.UnitMeasurement</MudTd>
                 <MudTd>@context.Quantity</MudTd>
                 <MudTd>@context.PaintCategory</MudTd>
                 <MudTd>@context.ItemPrice</MudTd>
-                <MudTd>@context.Description</MudTd>
+                <MudTd>@(context.ItemPrice - context.CostPrice)</MudTd>
                 <MudTd>
                     <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Info" Disabled="@(context.PaintCategory != PaintCategory.Mix)" OnClick="()=>ViewSaleItemAsync(context.Id)"/>
                 </MudTd>

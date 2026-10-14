@@ -11,21 +11,20 @@ public partial class EditDailySale
     [Parameter] public EventCallback<DailySaleDto> OnSave { get; set; }
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected ILogger<EditDailySale> Logger { get; set; } = default!;
+    [Inject] protected UserState UserState { get; set; } = default!;
     protected bool IsLoading { get; set; } = false;
     protected List<SaleItemDto> SaleItems { get; set; } = new List<SaleItemDto>();
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         await LoadSaleItems();
-        
     }
-
     protected async Task LoadSaleItems()
     {
         IsLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync($"api/salesitem/all/{Sale.Id}");
+            var response = await HttpClient.GetAsync($"api/salesitem/items/{Sale.Id}");
             response.EnsureSuccessStatusCode();
             var saleItems = await response.Content.ReadFromJsonAsync<List<SaleItemDto>>();
             SaleItems = saleItems ?? new List<SaleItemDto>();
@@ -42,6 +41,7 @@ public partial class EditDailySale
     {
         try
         {
+            Sale.SaleItems = SaleItems;
             var response = await HttpClient.PutAsJsonAsync($"api/sales/{Sale.Id}", Sale);
 
             if (response.IsSuccessStatusCode)

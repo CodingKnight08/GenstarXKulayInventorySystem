@@ -47,7 +47,7 @@ public partial class GetAllToBeAddedPurchaseOrderItems
                     {
                         bool isDuplicate = PurchaseOrderItems.Any(p =>
                             p.ProductBrandId == purchaseOrderItem.ProductBrandId &&
-                            p.ProductId == purchaseOrderItem.ProductId);
+                            p.BranchProductId == purchaseOrderItem.BranchProductId);
 
                         if (!isDuplicate)
                         {
@@ -73,7 +73,7 @@ public partial class GetAllToBeAddedPurchaseOrderItems
 
     protected async Task RemovePurchaseItem(int brandId, int productId)
     {
-        var itemToRemove =PurchaseOrderItems.FirstOrDefault(item => item.ProductBrandId == brandId && item.ProductId == productId);
+        var itemToRemove =PurchaseOrderItems.FirstOrDefault(item => item.ProductBrandId == brandId && item.BranchProductId == productId);
         if (itemToRemove != null)
         {
             PurchaseOrderItems.Remove(itemToRemove);

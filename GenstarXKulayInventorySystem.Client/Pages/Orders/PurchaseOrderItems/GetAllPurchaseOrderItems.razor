@@ -17,7 +17,7 @@
     </HeaderContent>
     <RowTemplate>
        <MudTd Class="fw-normal">@(context.ProductBrand?.BrandName ?? "N/A")</MudTd>
-       <MudTd Class="fw-normal">@(context.Product?.ProductName ?? "N/A")</MudTd>
+       <MudTd Class="fw-normal">@(context.BranchProduct?.MasterProduct?.ProductName ?? "N/A")</MudTd>
 
        <MudTd Class="fw-normal">@context.PurchaseItemMeasurementOption</MudTd>
        <MudTd Class="fw-normal">@context.ItemQuantity</MudTd>

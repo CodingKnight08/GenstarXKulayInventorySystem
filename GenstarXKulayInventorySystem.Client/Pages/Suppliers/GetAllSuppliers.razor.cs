@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Net.Http.Json;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Client.Pages.Suppliers;
 
@@ -11,13 +12,15 @@ public partial class GetAllSuppliers
     [Inject] public ISnackbar Snackbar { get; set; } = default!;
     [Inject] protected ILogger<GetAllSuppliers> Logger { get; set; } = default!;
     [Inject] protected IDialogService DialogService { get; set; } = default!;
-
+    [Inject] protected UserState UserState { get; set; } = default!;
     protected List<SupplierDto> Suppliers { get; set; } = new();
+    protected BranchOption Branch { get; set; } 
     protected bool IsLoading { get; set; } = true;
 
 
     protected override async Task OnInitializedAsync()
     {
+        Branch = UserState.Branch.GetValueOrDefault();
         await LoadSuppliers();
     }
 
@@ -26,7 +29,7 @@ public partial class GetAllSuppliers
         IsLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync("api/supplier/all");
+            var response = await HttpClient.GetAsync($"api/supplier/all/{Branch}");
             response.EnsureSuccessStatusCode();
             var suppliers = await response.Content.ReadFromJsonAsync<List<SupplierDto>>();
             Suppliers = suppliers ?? new List<SupplierDto>();

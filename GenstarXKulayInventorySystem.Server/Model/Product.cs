@@ -7,8 +7,6 @@ namespace GenstarXKulayInventorySystem.Server.Model;
 public class Product:BaseEntity
 {
     public int Id { get; set; }
-    public int? BrandId { get; set; }
-    public ProductBrand ProductBrand { get; set; } = default!;
     public int? ProductCategoryId { get; set; }
 
     [ForeignKey(nameof(ProductCategoryId))]

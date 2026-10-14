@@ -8,6 +8,8 @@ namespace GenstarXKulayInventorySystem.Client.Pages;
 
 public partial class RegistrationPage
 {
+    [Parameter, SupplyParameterFromQuery (Name = "client")]
+    public bool IsStaff { get; set; }
     [Inject] protected HttpClient HttpClient { get; set; } = default!;
     [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
     [Inject] protected ILogger<RegistrationPage> Logger { get; set; } = default!;
@@ -113,6 +115,7 @@ public partial class RegistrationPage
         {
             try
             {
+                NewRegistrant.IsClient = IsStaff;
                 var response = await HttpClient.PostAsJsonAsync("api/authentication/register", NewRegistrant);
 
                 if (response.IsSuccessStatusCode)
