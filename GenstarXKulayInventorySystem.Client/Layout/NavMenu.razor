@@ -18,6 +18,7 @@
          <MudNavLink Href="/productbrands" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart" IconColor="@Color.Success">Brands</MudNavLink>
           <MudNavLink Href="/productcategory" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storage" IconColor="@Color.Error">Category</MudNavLink>
     </MudNavGroup>
+    </AuthorizeView>
    <AuthorizeView Roles="Admin,Secretary">
             <MudNavLink Href="/sales" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PointOfSale" IconColor="@Color.Primary">Sales</MudNavLink>
             <MudNavLink Href="/billings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AttachMoney" IconColor="@Color.Warning">Billings</MudNavLink>
@@ -47,7 +48,7 @@
             </MudNavGroup>
    </AuthorizeView>
    
-
+   <AuthorizeView roles="Admin">
     <MudNavGroup Icon="@Icons.Material.Filled.Settings" IconColor="@Color.Info" Title="Settings" >
         <AuthorizeView Roles="Admin" Context="AdminAuth">
             <MudNavLink Href="/users" Match="NavLinkMatch.Prefix">Users</MudNavLink>
