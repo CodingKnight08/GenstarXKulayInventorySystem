@@ -22,4 +22,6 @@ public class BranchProduct:BaseEntity
     public BranchProduct? BasisProduct { get; set; } //for future purpose
     public ProductMesurementOption? ProductMesurementOption { get; set; }
     public ICollection<SaleItem> SaleItems { get; set; } = new HashSet<SaleItem>();
+    public string? UserId { get; set; }
+    public User? User { get; set; }
 }

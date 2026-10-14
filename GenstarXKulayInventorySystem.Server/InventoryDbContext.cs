@@ -263,6 +263,10 @@ public class InventoryDbContext: IdentityDbContext<User>
             entity.HasOne(bp => bp.BasisProduct)
                   .WithMany()
                   .HasForeignKey(bp => bp.BasisProductId);
+            entity.HasOne(bp => bp.User)
+                  .WithMany(u => u.BranchProducts)
+                  .HasForeignKey(bp => bp.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
 

@@ -247,7 +247,28 @@ public partial class ViewBrand
         NavigationManager.NavigateTo($"/productbrands/update-stocks/{BrandId}");
 
     }
+    protected async Task AssignStaff(int id)
+    {
+        var dialogParameters = new DialogParameters
+        {
+            ["BranchProductId"] = id
+        };
+        var dialogOptions = new DialogOptions
+        {
+            FullWidth = true,
+            MaxWidth = MaxWidth.Medium,
+            BackdropClick = false
+        };
+        var dialog = await DialogService.ShowAsync<BranchProductStaff>("Assign Staff", dialogParameters, dialogOptions);
+        var result = await dialog.Result;
 
+        if (result is not null && !result.Canceled)
+        {
+            await LoadBranchProducts();            
+            await productTable!.ReloadServerData();
+            StateHasChanged();
+        }
+    }
     protected async Task CreateBranchProduct()
     {
         var dialogParameters = new DialogParameters

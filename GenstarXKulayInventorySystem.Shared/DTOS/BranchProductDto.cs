@@ -21,5 +21,7 @@ public class BranchProductDto:BaseEntityDto
     public int? BasisProductId { get; set; }
     public BranchProductDto? BasisProduct { get; set; } //for future purpose
     public ProductMesurementOption? ProductMesurementOption { get; set; }
+    public string? UserId { get; set; } 
+    public UserDto? User { get; set; }  
 }
 

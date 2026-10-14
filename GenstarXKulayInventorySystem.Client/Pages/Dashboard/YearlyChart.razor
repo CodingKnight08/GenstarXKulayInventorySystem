@@ -1,0 +1,24 @@
+﻿<MudCard Elevation="2">
+
+    <MudCardContent>
+
+        <MudText Typo="Typo.h6" Class="mb-3">
+            Yearly Performance
+        </MudText>
+
+
+        @if (IsLoading)
+        {
+            <MudSkeleton Height="450px" Animation="Animation.Wave" />
+        }
+        else
+        {
+            <MudChart ChartType="ChartType.Bar"
+                      ChartSeries="@Series"
+                      XAxisLabels="@Labels"
+                      Height="450px" />
+        }
+
+    </MudCardContent>
+
+</MudCard>

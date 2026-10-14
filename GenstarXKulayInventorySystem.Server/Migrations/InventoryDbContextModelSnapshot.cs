@@ -164,6 +164,9 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<decimal?>("WholeSaleCostPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -177,6 +180,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                     b.HasIndex("MasterProductId");
 
                     b.HasIndex("TiedUpProductId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("BranchProducts");
                 });
@@ -1775,11 +1780,18 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
                         .WithMany()
                         .HasForeignKey("TiedUpProductId");
 
+                    b.HasOne("GenstarXKulayInventorySystem.Server.Model.User", "User")
+                        .WithMany("BranchProducts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("BasisProduct");
 
                     b.Navigation("MasterProduct");
 
                     b.Navigation("TiedUpProduct");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.DailySale", b =>
@@ -2115,6 +2127,8 @@ namespace GenstarXKulayInventorySystem.Server.Migrations
 
             modelBuilder.Entity("GenstarXKulayInventorySystem.Server.Model.User", b =>
                 {
+                    b.Navigation("BranchProducts");
+
                     b.Navigation("RefreshTokens");
                 });
 

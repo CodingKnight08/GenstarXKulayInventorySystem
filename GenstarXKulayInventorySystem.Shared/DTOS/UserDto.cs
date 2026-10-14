@@ -12,6 +12,7 @@ public class UserDto:BaseEntityDto
     public UserRole Role { get; set; }
     public BranchOption Branch { get; set; }
     public bool IsClient { get; set; } = false;
+    public List<BranchProductDto> BranchProducts { get; set; } = new List<BranchProductDto>();
 }
 public enum UserRole
 {
