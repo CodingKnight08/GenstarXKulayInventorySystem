@@ -23,6 +23,13 @@ public class DailySale:BaseEntity
     public PaymentTermsOption? PaymentTermsOption { get; set; }
     public int? CustomPaymentTermsOption { get; set; }
     public DateTime? ExpectedPaymentDate { get; set; }
+    public decimal? Commission { get; set; }
     public bool IsPaid { get; set; }
+    public bool HasDiscount { get; set; }
+    public bool IsApproved { get; set; }
+    public bool IsChargedSales { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string? PONumber { get; set; }
     public virtual ICollection<SaleItem> SaleItems { get; set; } = new HashSet<SaleItem>();
+    public virtual ICollection<ReturnItem> ReturnItems { get; set; } = new HashSet<ReturnItem>();
 }

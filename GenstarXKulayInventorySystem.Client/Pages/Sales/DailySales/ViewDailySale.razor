@@ -13,10 +13,12 @@
     @if (!IsEdit)
     {
         <MudCard Elevation="0" Class="w-100 d-flex flex-row justify-content-end gap-3">
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Success" OnClick="UpdateSale" Disabled="@(!IsSameDate || UserState.Role == UserRole.User)"/>
-        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" Class="me-3" OnClick="DeleteSale" />
-    </MudCard>
-    
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Success" OnClick="UpdateSale" Disabled="@(UserState.Role == UserRole.User)"/>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" Class="me-3" OnClick="DeleteSale" />
+         </MudCard>
+        <MudCard Elevation="0" Class="w-100 d-flex flex-row justify-content-end px-3">
+            <MudButton StartIcon="@Icons.Material.Filled.AddCircle" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" OnClick="AddReturnSales">Add Return</MudButton>
+        </MudCard>
     <MudCard Elevation="0" Class="w-auto p-4">
         <MudGrid Spacing="6">
             
@@ -68,10 +70,35 @@
                 <MudItem xl="3">
                     <MudTextField @bind-Value="Sales.RecieptReference"
                                   T="string"
-                                  Placeholder="Enter Receipt No."
+                                  Placeholder="Receipt No."
                                   Label="Reciept No."
                                   ReadOnly=true
                                   />
+                </MudItem>
+                <MudItem xl="2" lg="3" md="4" sm="6">
+                   <MudNumericField T="decimal?"
+                                 Variant="Variant.Text"
+                                 Placeholder="Commission"
+                                 Label="Commission"
+                                 HideSpinButtons="true"
+                                 @bind-Value="Sales.Commission"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 AdornmentColor="Color.Default" />
+
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Placeholder="PO Number" @bind-Value="Sales.PONumber" Adornment="Adornment.Start" AdornmentText="PO-" ReadOnly="true" Label="PO No." Variant="Variant.Text" />
+                </MudItem>
+                <MudItem xl="2" md="4" sm="6">
+                    @if (Sales.IsApproved)
+                    {
+                        <MudChip T="string" Color="Color.Success">Approved</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Warning">Pending</MudChip>
+                    }
                 </MudItem>
                 @if (Sales.PaymentType == null)
                 {
@@ -99,7 +126,30 @@
                 {
                     <GetAllSaleItems DailySaleId="@Sales.Id"  />
                 }
-               
+                    @if (Sales.ReturnItems != null && Sales.ReturnItems.Any())
+                    {
+                        <MudCard Elevation="0" Class="w-100 p-4 mt-3">
+                            <MudText Typo="Typo.h6">Return Items</MudText>
+                            <MudTable T="ReturnItemDto" Items="Sales.ReturnItems" Hover="true" Bordered="true">
+                                <HeaderContent>
+                                    <MudTh>Item Name</MudTh>
+                                    <MudTh>Quantity</MudTh>
+                                    <MudTh>Unit Price</MudTh>
+                                    <MudTh>Total Price</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd>@context.ItemName</MudTd>
+                                    <MudTd>@context.Quantity</MudTd>
+                                    <MudTd>@context.ItemPrice.ToString("C", new System.Globalization.CultureInfo("en-PH"))</MudTd>
+                                    <MudTd>@context.TotalPrice.ToString("C", new System.Globalization.CultureInfo("en-PH"))</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+
+                            <MudText Typo="Typo.subtitle2" Class="mt-2">
+                                Total Returns: ₱@Sales.ReturnItems.Sum(x => x.TotalPrice).ToString("N2")
+                            </MudText>
+                        </MudCard>
+                    }
                 </MudItem>
                
         </MudGrid>

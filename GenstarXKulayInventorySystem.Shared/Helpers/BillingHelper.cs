@@ -6,15 +6,19 @@ public class BillingHelper
 {
     public enum BillingCategory
     {
-        Logistics,
+        Transportation,
         Electric,
         Internet,
         Telephone,
         Water,
         Cellphone,
-        SchoolSupplies,
+        OfficeSupplies,
         Other,
         Foods,
+        ProfessionalFees,
+        RepairsAndMaintenance,
+        SalaryAndAdvances,
+        Commissions
     }
 
     public enum BillingBranch

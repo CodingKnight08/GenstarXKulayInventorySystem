@@ -1,4 +1,5 @@
 ﻿@using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
+@using static GenstarXKulayInventorySystem.Shared.Helpers.UtilitiesHelper
 @using GenstarXKulayInventorySystem.Shared.DTOS;
 
     <MudCard Elevation="0" Class="d-flex w-100 flex-row align-items-center justify-content-end">
@@ -23,7 +24,7 @@ else
 
 <MudCard Elevation="0" Class="w-100 mx-2 mt-5 px-3">
     <MudGrid Spacing="4">
-        <MudItem  xl="2" xs="12" sm="12" lg="4" md="6">
+        <MudItem  xl="2" xs="12" sm="6" lg="4" md="6">
                 <MudDatePicker Label="Date of Sales"
                                Date="SelectedDate"
                                DateChanged="OnDateChanged"
@@ -31,10 +32,36 @@ else
                                PickerVariant="PickerVariant.Inline"
                                Class="mb-4" />
         </MudItem>
+        <MudItem md="6" lg="6" sm="6" xs="12">
+           <MudTextField T="string"
+              Value="SearchText"
+              ValueChanged="OnSearchChanged"
+              Placeholder="Enter Here"
+              Label="Search"
+              Adornment="Adornment.End"
+              AdornmentIcon="@Icons.Material.Filled.Search"
+              Variant="Variant.Text"
+              Immediate="true"
+              Clearable="true" />
+        
+        </MudItem>
+        <MudItem md="4" lg="3">
+               <MudSelect T="SaleSearchCategory"
+                       Label="Search By"
+                       Value="SelectedSearchCategory"
+                       ValueChanged="OnSearchCategoryChanged"
+                       Dense>
+                    <MudSelectItem Value="SaleSearchCategory.ReceiptNumber">Receipt Number</MudSelectItem>
+                    <MudSelectItem Value="SaleSearchCategory.ClientName">Client Name</MudSelectItem>
+                </MudSelect>
+        </MudItem>
         <MudItem xl="12" lg="12" md="12" sm="12">
                 <MudTable T="DailySaleDto" 
-                          @ref="dailySaleTable"
-                          ServerData="ServerLoadData"
+                          Items="FilteredSales"
+                          RowsPerPage="@PageTake"
+                          CurrentPage="@CurrentPageIndex"
+                          CurrentPageChanged="OnPageChanged"
+                          RowsPerPageChanged="OnRowsPerPageChanged"
                           Dense=true
                           Hover=true
                           Square=true
@@ -47,14 +74,24 @@ else
                         <MudTh>Receipt No.</MudTh>
                         <MudTh>Client</MudTh>
                         <MudTh>Type</MudTh>
+                        <MudTh>Status</MudTh>
                         <MudTh>Action</MudTh>
                     </HeaderContent>
                     <RowTemplate>
-                        <MudTd>@context.DateOfSales.ToString("hh:mm tt")</MudTd>
+                        <MudTd>
+                            @context.DateOfSales.ToString("hh:mm tt")
+                        </MudTd>
+
                         <MudTd>@context.SalesNumber</MudTd>
                         <MudTd>@context.RecieptReference</MudTd>
                         <MudTd>@context.NameOfClient</MudTd>
                         <MudTd>@(context.SalesOption == PurchaseRecieptOption.BIR ? "Invoice" : "Non-Voice")</MudTd>
+                        <MudTd>
+                            <MudText Color="@(context.IsApproved? Color.Success: Color.Warning)" Typo="Typo.subtitle2">
+                                @(context.IsApproved ? "Approved" : "Pending")
+                            </MudText>
+                        </MudTd>
+
                         <MudTd>
                             <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small" OnClick="() => ViewSaleAsync(context.Id)" />
                         </MudTd>

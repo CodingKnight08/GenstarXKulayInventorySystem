@@ -1,6 +1,7 @@
 ﻿using GenstarXKulayInventorySystem.Server.Services;
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
@@ -43,6 +44,7 @@ public class SalesItemController : ControllerBase
     [HttpGet("all/undeducted")]
     public async Task<ActionResult<List<SaleItemDto>>> GetAllUndeductedItems()
     {
+        //BranchOption branch = BranchOption.Polomolok;
         var saleItems = await _saleItemService.GetAllUndeductedItemsAsync();
         if(saleItems == null || saleItems.Count == 0)
         {

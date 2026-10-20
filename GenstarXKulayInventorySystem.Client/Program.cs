@@ -5,29 +5,31 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
-using System.Net.Http.Json;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress;
 
-builder.Services.AddTransient<AuthorizationMessageHandler>();
+// Local Storage
+builder.Services.AddBlazoredLocalStorage();
 
-var settingsFile = builder.HostEnvironment.IsDevelopment()
-    ? "appsettings.Development.json"
-    : "appsettings.json";
+// Authentication
+builder.Services.AddAuthorizationCore();
 
-using var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
-var config = await http.GetFromJsonAsync<Dictionary<string, string>>(settingsFile);
+builder.Services.AddScoped<UserState>();
 
-var apiBaseUrl = config?["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress;
+builder.Services.AddScoped<JwtAuthenticationStateProvider>();
 
-builder.Services.AddHttpClient("ServerAPI", client =>
-{
-    client.BaseAddress = new Uri(apiBaseUrl);
-}).AddHttpMessageHandler<AuthorizationMessageHandler>();
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ServerAPI"));
+builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
+    sp.GetRequiredService<JwtAuthenticationStateProvider>());
+
+// Refresh Token Handler
+builder.Services.AddTransient<RefreshTokenHandler>();
+
+// MudBlazor
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
@@ -36,14 +38,16 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.VisibleStateDuration = 3000;
     config.SnackbarConfiguration.ShowCloseIcon = true;
 });
-builder.Services.AddScoped<UserState>();
-builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<JwtAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthenticationStateProvider>());
 
+// HttpClient
+builder.Services.AddHttpClient("Api", client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+})
+.AddHttpMessageHandler<RefreshTokenHandler>();
 
-
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IHttpClientFactory>()
+      .CreateClient("Api"));
 
 await builder.Build().RunAsync();
-        

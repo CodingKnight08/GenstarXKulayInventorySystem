@@ -2,6 +2,8 @@
 using GenstarXKulayInventorySystem.Shared.DTOS;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper;
+using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers;
 
 namespace GenstarXKulayInventorySystem.Server.Controllers;
 [ApiController]
@@ -27,7 +29,12 @@ public class PurchaseOrderController : ControllerBase
         var purchaseOrders = await _service.GetAllReceiveAllPOAsync();
         return Ok(purchaseOrders);
     }
-
+    [HttpGet("all/{branch}/{date}")]
+    public async Task<ActionResult<List<PurchaseOrderDto>>> GetAllByBranchAndDate(PurchaseShipToOption branch, DateTime date)
+    {
+        var purchaseOrders = await _service.GetAllByBranchAndDateAsync(branch, date);
+        return Ok(purchaseOrders);
+    }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<PurchaseOrderDto?>> GetById(int id)
@@ -37,6 +44,7 @@ public class PurchaseOrderController : ControllerBase
             return NotFound();
         return Ok(purchaseOrder);
     }
+
 
     [HttpPost]
     public async Task<IActionResult> Create(PurchaseOrderDto dto)

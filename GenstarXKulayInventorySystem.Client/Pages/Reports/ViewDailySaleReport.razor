@@ -30,13 +30,27 @@
                     <MudText>Cash-In: <strong class="text-decoration-underline">₱ @DailySaleReport.CashIn</strong></MudText>
                 </MudItem>
                 <MudItem xl="3">
-                    <MudText>Beginning Balance: <strong class="text-decoration-underline">₱ @DailySaleReport.BeginningBalance</strong></MudText>
+                    <MudText>
+                        Beginning Balance:
+                        <strong class="text-decoration-underline">
+                            ₱ @(DailySaleReport.BeginningBalance.HasValue
+                                                    ? DailySaleReport.BeginningBalance.Value.ToString("N2")
+                                                : "0.00")
+                        </strong>
+                    </MudText>
+
                 </MudItem>
                 <MudItem xl="3">
-                    <MudText>Total Sales: <strong class="text-decoration-underline">₱ @DailySaleReport.TotalSales</strong></MudText>
+                    <MudText>Total Sales: <strong class="text-decoration-underline">₱ @DailySaleReport.TotalSales.ToString("N2")</strong></MudText>
                 </MudItem>
                 <MudItem xl="3">
-                    <MudText>Total Expenses: <strong class="text-decoration-underline">₱ @DailySaleReport.TotalExpenses</strong></MudText>
+                    <MudText>
+                        Total Expenses: <strong class="text-decoration-underline">
+                            ₱ @(DailySaleReport.TotalExpenses.HasValue
+                                                    ? DailySaleReport.TotalExpenses.Value.ToString("N2")
+                                                : "0.00")
+                        </strong>
+                    </MudText>
                 </MudItem>
                 <MudItem xl="6">
                     <MudText Typo="Typo.subtitle1">Prepared By: <strong class="text-decoration-underline">@DailySaleReport.PreparedBy</strong></MudText>

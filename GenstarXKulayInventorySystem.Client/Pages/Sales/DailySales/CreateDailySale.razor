@@ -1,5 +1,6 @@
 ﻿@using GenstarXKulayInventorySystem.Client.Pages.Sales.SaleItems
 @using GenstarXKulayInventorySystem.Shared.DTOS
+@using Microsoft.AspNetCore.Components.Authorization
 @using static GenstarXKulayInventorySystem.Shared.Helpers.BillingHelper
 @using static GenstarXKulayInventorySystem.Shared.Helpers.ProductsEnumHelpers
 @using static GenstarXKulayInventorySystem.Shared.Helpers.OrdersHelper
@@ -11,7 +12,7 @@
 
         <!-- Main content fills available space -->
         <MudGrid>
-            <MudItem xl="4">
+            <MudItem xl="4" lg="6">
                <MudAutocomplete
                    T="string"
                    Label="Client Name"
@@ -28,7 +29,7 @@
                    TextChanged="OnClientNameTyped"
                    />
             </MudItem>
-            <MudItem xl="2">
+            <MudItem xl="2" lg="3">
                 <MudSelect T="PaymentMethod?" @bind-Value="Sale.PaymentType" Label="Payment Method" Placeholder="Select PaymentMethod">
                     @foreach (var method in Enum.GetValues(typeof(PaymentMethod)).Cast<PaymentMethod>())
                     {
@@ -39,7 +40,7 @@
                     <MudSelectItem T="PaymentMethod?" Value="null">N/A</MudSelectItem>
                 </MudSelect>
             </MudItem>
-            <MudItem xl="2">
+            <MudItem xl="2" lg="3">
                 <MudSelect T="PurchaseRecieptOption?" @bind-Value="Sale.SalesOption" Label="Receipt Type" Placeholder="--Select Receipt Type--">
                     @foreach (var option in Enum.GetValues(typeof(PurchaseRecieptOption)).Cast<PurchaseRecieptOption>())
                     {
@@ -50,10 +51,11 @@
                 </MudSelect>
             </MudItem>
 
-            <MudItem xl="2">
+            <MudItem xl="2" lg="4">
                 <MudTextField T="string" Placeholder="Auto Generated" Label="Sale Number" Disabled=true />
             </MudItem>
-            <MudItem xl="2">
+            <AuthorizeView Roles="Administrator">
+            <MudItem xl="2" lg="3">
                 <MudSelect T="BranchOption"
                            Value="Sale.Branch"
                            ValueChanged="OnBranchChanged"
@@ -67,14 +69,27 @@
                         </MudSelectItem>
                     }
                 </MudSelect>
+         
             </MudItem>
-          
-                <MudItem xl="3">
+            </AuthorizeView>
+                <MudItem xl="3" lg="5">
                     <MudTextField @bind-Value="Sale.RecieptReference"
                                   T="string"
                                   Placeholder="Enter Receipt No."
                                   Label="Receipt No."
                                   />
+                </MudItem>
+                <MudItem xl="2" lg="3">
+                <MudNumericField T="decimal?"
+                                 Variant="Variant.Text"
+                                 Placeholder="Enter Commission"
+                                 Label="Commission"
+                                 HideSpinButtons="true"
+                                 @bind-Value="Sale.Commission"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 AdornmentColor="Color.Default" />
+
                 </MudItem>
             
 
@@ -82,7 +97,7 @@
             {
                 
             
-            <MudItem xl="3">
+            <MudItem xl="3" lg="4">
                 <MudSelect T="PaymentTermsOption?" @bind-Value="Sale.PaymentTermsOption" Label="Payment Term Option" Placeholder="--Select Term Option--">
                     @foreach(var option in Enum.GetValues(typeof(PaymentTermsOption)).Cast<PaymentTermsOption>())
                     {
@@ -95,13 +110,28 @@
             }
             @if(Sale.PaymentTermsOption == PaymentTermsOption.Custom)
             {
-                <MudItem xl="3">
+                <MudItem xl="3" lg="4">
                     <MudNumericField T="int?" @bind-Value="Sale.CustomPaymentTermsOption" HideSpinButtons=true Placeholder="Number of days to be paid" Label="Custom Payment Term" Adornment="Adornment.End" AdornmentText="day's" />
                 </MudItem>
             }
+            <MudItem xs="12" md="3">
+                <MudTextField Placeholder="PO Number" @bind-Value="Sale.PONumber" Adornment="Adornment.Start" AdornmentText="PO-" Label="PO. Number" Variant="Variant.Text"/>
+            </MudItem>
 
-            <MudItem xl="12">
+            <MudItem xl="12" lg="12" md="12" sm="12">
                 <GetAllSaleItemsToBeAdded OnSaleItemsChanged="HandleSaleItemsChanged" Branch="Sale.Branch" />
+            </MudItem>
+            <MudItem xs="12" lg="4" Class="d-flex flex-row align-items-center justify-content-end">
+                <MudNumericField T="decimal?"
+                                 Variant="Variant.Outlined"
+                                 Label="Total Amount"
+                                 ReadOnly
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="₱"
+                                 AdornmentColor="Color.Default"
+                                 HideSpinButtons=true
+                                 Format="N2"
+                                 @bind-Value="Sale.TotalAmount"  />
             </MudItem>
         </MudGrid>
 

@@ -1,0 +1,71 @@
+﻿@page "/waybills"
+@layout MainLayout
+<MudMainContent Class="w-auto h-100">
+    <MudText Align="Align.Center" Typo="Typo.h4" Class="mb-4">
+        Way Bills
+    </MudText>
+
+    <MudCard Elevation="0"
+        Class="w-100 d-flex flex-row align-items-center justify-content-end px-4">
+        <MudButton 
+            Class="float-end" 
+            StartIcon="@Icons.Material.Filled.AddCircle"
+            Color="Color.Info" Size="Size.Small" 
+            Variant="Variant.Filled"
+            OnClick="AddWayBill">Add Way Bill</MudButton>
+        </MudCard>
+    
+    @if (IsLoading)
+    {
+        <MudCard Elevation="10" Class="w-100 d-flex flex-column align-items-center justify-content-center gap-3">
+            <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Medium" Rounded="true" />
+            <MudText Align="Align.Center">Loading</MudText>
+        </MudCard>
+    }
+    else
+    {
+        
+    
+    <MudCard Elevation="0" Class="w-100 mb-4 pa-3">
+        <MudTable Class="w-100"
+                  Items="WayBills"
+                  Dense="true"
+                  Elevation="5"
+                  Bordered="true"
+                  HorizontalScrollbar="true">
+
+            <HeaderContent>
+                <MudTh>Supplier</MudTh>
+                <MudTh>Waybill No.</MudTh>
+                <MudTh>Total Amount</MudTh>
+                <MudTh>Date Received</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd>@context.Supplier?.SupplierName</MudTd>
+                <MudTd>@context.WayBillNumber</MudTd>
+                <MudTd>@context.TotalAmount.ToString("N2")</MudTd>
+                <MudTd>@context.DateReceived.ToString("MMMM dd, yyyy")</MudTd>
+                <MudTd>
+                    <MudIconButton 
+                        Icon="@Icons.Material.Filled.Visibility" 
+                        Color="Color.Info" 
+                        Variant="Variant.Text" 
+                        OnClick="() => ViewWayBill(context.Id)"
+                        Size="Size.Small" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Typo="Typo.subtitle1">No data</MudText>
+            </NoRecordsContent>
+
+           <PagerContent>
+                <MudTablePager
+                    HorizontalAlignment="HorizontalAlignment.End"
+                    PageSizeOptions="new int[] { 5, 10, 20, 50 }" />
+           </PagerContent>
+        </MudTable>
+    </MudCard>
+    }
+</MudMainContent>

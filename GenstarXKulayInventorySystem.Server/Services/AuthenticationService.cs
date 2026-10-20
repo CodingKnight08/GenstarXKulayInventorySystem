@@ -88,25 +88,93 @@ public class AuthenticationService: IAuthenticationService
         }
     }
 
-    public async Task<string?> LoginAsync(LoginDto loginDto)
+    public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
     {
-        // 1️⃣ Find the user by username
+        // Find user
         var user = await _userManager.FindByNameAsync(loginDto.Username);
-        if (user == null) return null;
+        if (user == null)
+            return null;
 
-        // 2️⃣ Verify password
+        // Verify password
         var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
-        if (!result.Succeeded) return null;
+        if (!result.Succeeded)
+            return null;
 
-        // 3️⃣ Get user roles
-        var roles = await _userManager.GetRolesAsync(user);
+        // Generate access token
+        var accessToken = _jwtService.GenerateToken(user);
 
-        // 4️⃣ Generate JWT with proper role claims
-        var token = _jwtService.GenerateToken(user);
+        // Revoke/remove old refresh tokens (optional but recommended)
+        var oldTokens = await _context.RefreshTokens
+            .Where(x => x.UserId == user.Id)
+            .ToListAsync();
 
-        return token;
+        if (oldTokens.Any())
+            _context.RefreshTokens.RemoveRange(oldTokens);
+
+        // Create new refresh token
+        var refreshToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            Token = Guid.NewGuid().ToString("N"),
+            UserId = user.Id,
+            ExpiryDate = DateTime.UtcNow.AddDays(30),
+            Revoked = false
+        };
+
+        _context.RefreshTokens.Add(refreshToken);
+
+        await _context.SaveChangesAsync();
+
+        return new LoginResponseDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken.Token
+        };
     }
 
+    public async Task<LoginResponseDto?> RefreshTokenAsync(RefreshTokenDto dto)
+    {
+        var storedToken = await _context.RefreshTokens
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x =>
+                x.Token == dto.RefreshToken &&
+                !x.Revoked);
+
+        if (storedToken == null)
+            return null;
+
+        if (storedToken.ExpiryDate <= DateTime.UtcNow)
+            return null;
+
+        var user = storedToken.User;
+
+        if (user == null || user.IsDeleted)
+            return null;
+
+        // Rotate refresh token
+        storedToken.Revoked = true;
+
+        var newRefreshToken = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            Token = Guid.NewGuid().ToString("N"),
+            UserId = user.Id,
+            ExpiryDate = DateTime.UtcNow.AddDays(30),
+            Revoked = false
+        };
+
+        _context.RefreshTokens.Add(newRefreshToken);
+
+        var accessToken = _jwtService.GenerateToken(user);
+
+        await _context.SaveChangesAsync();
+
+        return new LoginResponseDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = newRefreshToken.Token
+        };
+    }
 
     public async Task<List<RegistrationDto>> GetAllRegistrationsAsync()
     {
@@ -253,7 +321,8 @@ public interface IAuthenticationService
     Task<List<UserDto>> GetAllUsersAsync();
     Task<bool> RegisterUser(RegistrationDto registration);
     Task<bool> RegisterAsync(RegistrationDto registerDto);
-    Task<string?> LoginAsync(LoginDto loginDto);
+    Task<LoginResponseDto?> LoginAsync(LoginDto loginDto);
+    Task<LoginResponseDto?> RefreshTokenAsync(RefreshTokenDto dto);
     Task<bool> UpdateUser(UserDto userDto);
 
     Task<List<RegistrationDto>> GetAllRegistrationsAsync();

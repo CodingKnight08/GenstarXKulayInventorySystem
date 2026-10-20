@@ -1,0 +1,68 @@
+﻿@using GenstarXKulayInventorySystem.Shared.DTOS
+<MudDialog Class="p-2 overflow-hidden">
+    <DialogContent>
+        @if (IsLoading)
+        {
+            <MudItem xs="12" Class="d-flex align-items-center justify-content-center">
+                <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Medium" />
+            </MudItem>
+        }
+        else
+        {
+            <MudStack Spacing="3">
+
+
+                <MudText Typo="Typo.body2">
+                    Product: @UpdatedProduct.MasterProduct?.ProductName
+                </MudText>
+
+               <MudSelect T="UserDto"
+                       Label="Select Staff"
+                       Variant="Variant.Outlined"
+                       @bind-Value="SelectedStaff"
+                       ToStringFunc="@(x => x?.Username ?? string.Empty)"
+                       Disabled="@(IsLoading || IsSaving)">
+
+                @foreach (var staff in Staffs)
+                {
+                    <MudSelectItem T="UserDto" Value="@staff">
+                        @staff.Username
+                    </MudSelectItem>
+                }
+
+            </MudSelect>
+
+
+                <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
+
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Default"
+                               Disabled="@IsSaving"
+                               OnClick="Cancel">
+                        Cancel
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Disabled="@(IsSaving || SelectedStaff == null)"
+                               OnClick="AssignStaff">
+
+                        @if (IsSaving)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                        }
+                        else
+                        {
+                            <MudText>
+                                Assign
+                            </MudText>
+                        }
+
+                    </MudButton>
+
+                </MudStack>
+
+            </MudStack>
+        }
+    </DialogContent>
+</MudDialog>

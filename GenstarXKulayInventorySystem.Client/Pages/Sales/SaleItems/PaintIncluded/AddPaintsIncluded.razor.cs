@@ -16,14 +16,19 @@ public partial class AddPaintsIncluded
 
 
     protected List<ProductBrandDto> Brands { get; set; } = new List<ProductBrandDto>();
-    protected List<ProductDto> Products { get; set; } = new List<ProductDto>();
+    protected List<BranchProductDto> Products { get; set; } = new List<BranchProductDto>();
     protected ProductBrandDto SelectedBrand { get; set; } = new ProductBrandDto();
-    protected ProductDto SelectedProduct { get; set; } = new ProductDto();
+    protected BranchProductDto SelectedProduct { get; set; } = new BranchProductDto();
+    protected string BrandName { get; set; } = string.Empty;
     protected InvolvePaintsDto AddedPaint { get; set; } = new InvolvePaintsDto();
 
     protected bool IsLoading { get; set; } = false;
     protected bool IsProductLoading { get; set; } = false;
-    protected bool IsValid => AddedPaint.BrandId != 0 && AddedPaint.ProductId != 0 && AddedPaint.Size != null;
+    protected bool IsValid =>
+    AddedPaint.BrandId != 0 &&
+    AddedPaint.ProductId != 0 &&
+    (AddedPaint.Size ?? 0) > 0;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -52,10 +57,10 @@ public partial class AddPaintsIncluded
         IsProductLoading = true;
         try
         {
-            var response = await HttpClient.GetAsync($"api/product/all/by/{SelectedBrand.Id}/{Branch}");
+            var response = await HttpClient.GetAsync($"api/product/all/products/by/{SelectedBrand.Id}/{Branch}");
             response.EnsureSuccessStatusCode();
-            var products = await response.Content.ReadFromJsonAsync<List<ProductDto>>();
-            Products = products ?? new List<ProductDto>();
+            var products = await response.Content.ReadFromJsonAsync<List<BranchProductDto>>();
+            Products = products ?? new List<BranchProductDto>();
         }
         catch (Exception ex) { 
             Logger.LogError(ex.Message);
@@ -65,76 +70,78 @@ public partial class AddPaintsIncluded
             IsProductLoading = false;
         }
     }
-    protected Task<IEnumerable<string?>> SearchBrands(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<ProductBrandDto>> SearchBrands(string value, CancellationToken cancellationToken)
     {
-        if (Brands is null || !Brands.Any())
-            return Task.FromResult(Enumerable.Empty<string?>());
+        if (Brands == null || Brands.Count == 0)
+            return Task.FromResult(Enumerable.Empty<ProductBrandDto>());
+
+        var query = value?.Trim() ?? string.Empty;
 
         var result = Brands
-            .Where(b => !string.IsNullOrWhiteSpace(b.BrandName) &&
-                       (string.IsNullOrWhiteSpace(value) ||
-                        b.BrandName.Contains(value, StringComparison.OrdinalIgnoreCase)))
-            .Select(b => (string?)b.BrandName);
+            .Where(b => string.IsNullOrWhiteSpace(value) ||
+            b.BrandName.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(b => b.Id)
+            .Select(g => g.First());
+
 
         return Task.FromResult(result);
     }
 
-    protected Task<IEnumerable<ProductDto>> SearchProducts(string value, CancellationToken cancellationToken)
+    protected Task<IEnumerable<BranchProductDto>> SearchProducts(string value, CancellationToken cancellationToken)
     {
         if (Products is null || !Products.Any())
-            return Task.FromResult(Enumerable.Empty<ProductDto>());
+            return Task.FromResult(Enumerable.Empty<BranchProductDto>());
 
         var result = Products
             .Where(p => string.IsNullOrWhiteSpace(value) ||
-                        p.ProductNameAndUnit.Contains(value, StringComparison.OrdinalIgnoreCase))
+                        p.MasterProduct.ProductName.Contains(value, StringComparison.OrdinalIgnoreCase))
             .GroupBy(p => p.Id)
             .Select(g => g.First());
 
         return Task.FromResult(result);
     }
 
-    protected async Task OnBrandSelect(string brand)
+    protected async Task OnBrandSelect(ProductBrandDto brand)
     {
-        if (string.IsNullOrWhiteSpace(brand) || Brands is null || Brands.Count == 0)
-            return;
-
-        SelectedBrand = Brands.FirstOrDefault(b =>
-             !string.IsNullOrWhiteSpace(b.BrandName) &&
-             string.Equals(b.BrandName, brand, StringComparison.OrdinalIgnoreCase))
-             ?? new ProductBrandDto();
-
-        if (SelectedBrand is not null && SelectedBrand.Id != 0)
+        if (brand is null)
         {
-            await LoadProductsByBrand();
-            // reset product when brand changes
-            SelectedProduct = new ProductDto();
+            SelectedBrand = new ProductBrandDto();
+            Products.Clear();
+            SelectedProduct = new BranchProductDto();
             AddedPaint.ProductId = 0;
-            AddedPaint.ProductName = string.Empty;
-
-           
-
-            AddedPaint.BrandId = SelectedBrand.Id;
-            AddedPaint.BrandName = SelectedBrand.BrandName;
-
-            StateHasChanged();
+            return;
         }
+
+        SelectedBrand = brand;
+        BrandName = brand.BrandName;
+
+        // Clear old selections
+        SelectedProduct = new BranchProductDto();
+        AddedPaint.BrandId = brand.Id;
+        AddedPaint.ProductId = 0;
+        AddedPaint.BrandName = brand.BrandName;
+
+
+        await LoadProductsByBrand();
     }
 
 
-    protected void OnProductSelect(ProductDto product)
+    protected void OnProductSelect(BranchProductDto product)
     {
+
         if (product is null || Products is null)
             return;
 
-        SelectedProduct = Products.FirstOrDefault(p =>
-            !string.IsNullOrWhiteSpace(p.ProductName) &&
-            string.Equals(p.ProductNameAndUnit, product.ProductNameAndUnit, StringComparison.OrdinalIgnoreCase)
-        ) ?? new ProductDto();
+       SelectedProduct = product;
 
         if (SelectedProduct.Id != 0)
         {
             AddedPaint.ProductId = SelectedProduct.Id;
-            AddedPaint.ProductName = SelectedProduct.ProductName;
+            AddedPaint.ProductName = SelectedProduct.MasterProduct?.ProductName ?? string.Empty;
+            AddedPaint.ProductCost = SelectedProduct.CostPrice ?? 0;
+            AddedPaint.ProductUnit = SelectedProduct.ProductMesurementOption ?? ProductMesurementOption.Gallon;
+            AddedPaint.UnitMeasurement = SelectedProduct.ProductMesurementOption ?? ProductMesurementOption.Gallon;
+            AddedPaint.CostPrice = SelectedProduct.CostPrice ?? 0;
             StateHasChanged();
         }
     }
@@ -151,5 +158,24 @@ public partial class AddPaintsIncluded
     protected void Cancel()
     {
         Dialog.Cancel();
+    }
+    protected void OnSizeChanged(decimal? size)
+    {
+        AddedPaint.Size = size;
+        ComputeTotalPrice();
+    }
+    protected void OnQuantityChanged(decimal quantity)
+    {
+        AddedPaint.Quantity = quantity;
+        ComputeTotalPrice();
+    }
+    protected void ComputeTotalPrice()
+    {
+        AddedPaint.ProductCost = (AddedPaint.Size ?? 0) * (SelectedProduct.CostPrice ?? 0) * (AddedPaint.Quantity);
+        StateHasChanged();
+    }
+    private decimal GetMaxQuantity()
+    {
+        return SelectedProduct.ActualQuantity;
     }
 }

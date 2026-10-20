@@ -2,12 +2,12 @@
 
 namespace GenstarXKulayInventorySystem.Server.Model;
 
-public class ProductBrand:BaseEntity
+public class ProductBrand : BaseEntity
 {
     public int Id { get; set; }
 
     [Required]
     public string BrandName { get; set; } = string.Empty;
     public string? Description { get; set; } = string.Empty;
-    public ICollection<Product> Products { get; set; } = new List<Product>();
+    public ICollection<GlobalProduct> GlobalProducts { get; set; } = new HashSet<GlobalProduct>();
 }
