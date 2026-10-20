@@ -143,6 +143,7 @@ public partial class CreateSaleItem
         SaleItemDto.ItemName = product.MasterProduct?.ProductName ?? string.Empty;
         SaleItemDto.UnitMeasurement = product.ProductMesurementOption.GetValueOrDefault();
         SaleItemDto.BranchProduct = product;
+        InitializeQuantity();
         await OnWholeSaleChanged(IsWholeSale);
     }
 
@@ -441,4 +442,14 @@ public partial class CreateSaleItem
 
         return SelectedProductFromList?.ActualQuantity ?? decimal.MaxValue;
     }
+    private void InitializeQuantity()
+    {
+        var actualQuantity = SelectedProductFromList?.ActualQuantity ?? 0m;
+
+        SaleItemDto.Quantity = actualQuantity > 1m
+            ? 1m
+            : actualQuantity;
+
+        RecalculateTotalPrice();
+    } 
 }
