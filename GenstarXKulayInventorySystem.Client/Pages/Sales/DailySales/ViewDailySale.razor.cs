@@ -138,34 +138,49 @@ public partial class ViewDailySale
         StateHasChanged();
     }
 
+
     protected async Task DeleteSale()
     {
         try
         {
             var parameter = new DialogParameters
-            {
-                {"Sale",Sales }
-            };
+        {
+            { "Sale", Sales }
+        };
+
             var options = new DialogOptions
             {
                 MaxWidth = MaxWidth.Small,
                 FullWidth = true,
                 CloseButton = true,
-                BackdropClick = false,
+                BackdropClick = false
             };
-            var dialog = await DialogService.ShowAsync<DeleteDailySale>("", parameter, options);
-            if (dialog != null) { 
+
+            var dialog = await DialogService.ShowAsync<DeleteDailySale>(
+                "",
+                parameter,
+                options);
+
+            if (dialog != null)
+            {
                 var result = await dialog.Result;
-                if (result != null && !result.Canceled) { 
+
+                if (result != null && !result.Canceled && result.Data is true)
+                {
                     IsLoading = true;
-                    await Task.Delay(1000);
-                    NavigationManager.NavigateTo("/sales");
+
+                    NavigationManager.NavigateTo(
+                        $"/sales?pageskip={PageSkip}&pagetake={PageTake}&date={SelectedDate:yyyy-MM-dd}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Error occured: {ex.Message}");
+            Logger.LogError(ex, "Error occurred while deleting daily sale.");
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 
