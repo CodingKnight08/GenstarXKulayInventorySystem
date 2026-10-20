@@ -177,16 +177,26 @@ if (!isSwaggerBuild)
 
 
 // ✅ Middleware pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
+
 app.UseSwagger();
+
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Genstar XKulay Inventory API v1");
+    c.SwaggerEndpoint(
+        "/swagger/v1/swagger.json",
+        "Genstar XKulay Inventory API v1");
+
     c.RoutePrefix = "swagger";
 });
 
 //app.UseHttpsRedirection();
-app.UseStaticFiles();
+
 app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
 
 app.UseRouting();
 
@@ -198,4 +208,3 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 app.Run();
-
