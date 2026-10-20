@@ -33,12 +33,19 @@ public partial class CreateSaleItem
     protected decimal PriceItem { get; set; } = 0;
 
     protected bool IsValid =>
-     !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) &&
-     (
-         SaleItemDto.ItemName.Contains("catalyst", StringComparison.OrdinalIgnoreCase)
-         ||
-         (PriceItem > 0 && SaleItemDto.Quantity > 0)
-     );
+    !string.IsNullOrWhiteSpace(SaleItemDto.ItemName) &&
+    (
+        SaleItemDto.ItemName.Contains("catalyst", StringComparison.OrdinalIgnoreCase)
+        ||
+        (
+            PriceItem > 0 &&
+            SaleItemDto.Quantity > 0
+        )
+    ) &&
+    (
+        SaleItemDto.PaintCategory != PaintCategory.Mix ||
+        Paints.Any()
+    );
     protected override async Task OnInitializedAsync()
     {
         await LoadBrands();
@@ -452,4 +459,5 @@ public partial class CreateSaleItem
 
         RecalculateTotalPrice();
     } 
+
 }
