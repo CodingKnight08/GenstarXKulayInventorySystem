@@ -32,6 +32,7 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
             .AsSplitQuery()
             .Include(c => c.PurchaseOrder)
             .Include(c => c.BranchProduct)
+            .ThenInclude(gb => gb.MasterProduct)
             .Include(c => c.ProductBrand)
             .Where(e => !e.IsDeleted && e.PurchaseOrderId == purchaseOrderId && !e.IsRecieved)
             .OrderByDescending(e => e.Id).ToListAsync();
@@ -134,6 +135,7 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
         }
     }
 
+
     public async Task<bool> UpdateItemsAsync(List<PurchaseOrderItemDto> purchaseItems)
     {
         try
@@ -141,40 +143,98 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
             if (purchaseItems == null || !purchaseItems.Any())
                 return false;
 
-            var itemIds = purchaseItems.Select(i => i.Id).ToList();
-            var existingItems = await _context.PurchaseOrderItems.Include(e => e.BranchProduct)
-                .Where(x => itemIds.Contains(x.Id) && !x.IsDeleted)
-                .ToListAsync();
+            var strategy = _context.Database.CreateExecutionStrategy();
 
-            foreach (var dto in purchaseItems)
+            return await strategy.ExecuteAsync(async () =>
             {
-                var entity = existingItems.FirstOrDefault(x => x.Id == dto.Id);
-                if (entity != null)
-                {
-                    entity.ItemQuantity = dto.ItemQuantity;
-                    entity.PurchaseItemMeasurementOption = dto.PurchaseItemMeasurementOption;
-                    entity.ItemAmount = dto.ItemAmount ?? 0;
-                    entity.ItemDescription = dto.ItemDescription;
-                    entity.IsRecieved = dto.IsRecieved;
-                    entity.UpdatedBy = GetCurrentUsername();
-                    entity.UpdatedAt = DateTime.UtcNow;
-                    if (dto.IsRecieved && entity.BranchProductId.HasValue && entity.BranchProduct != null)
-                    {
-                        entity.BranchProduct.ActualQuantity += dto.ItemQuantity;
-                        entity.BranchProduct.ActualQuantity += dto.ItemQuantity;
-                    }
-                }
-            }
+                await using var transaction =
+                    await _context.Database.BeginTransactionAsync();
 
-            await _context.SaveChangesAsync();
-            return true;
+                try
+                {
+                    var itemIds = purchaseItems
+                        .Select(x => x.Id)
+                        .Distinct()
+                        .ToList();
+
+                    var existingItems = await _context.PurchaseOrderItems
+                        .Include(x => x.BranchProduct)
+                        .Where(x => itemIds.Contains(x.Id) && !x.IsDeleted)
+                        .ToListAsync();
+
+                    if (existingItems.Count != itemIds.Count)
+                    {
+                        throw new InvalidOperationException(
+                            "One or more purchase order items could not be found.");
+                    }
+
+                    foreach (var dto in purchaseItems)
+                    {
+                        var entity = existingItems.First(x => x.Id == dto.Id);
+
+                        // Prevent changing an item that has already been received.
+                        if (entity.IsRecieved && !dto.IsRecieved)
+                        {
+                            throw new InvalidOperationException(
+                                $"Item {entity.Id} has already been received and cannot be marked as unreceived.");
+                        }
+
+                        if (entity.IsRecieved &&
+                            entity.ItemQuantity != dto.ItemQuantity)
+                        {
+                            throw new InvalidOperationException(
+                                $"Cannot change the quantity of already received item {entity.Id}.");
+                        }
+
+                        // Update item details.
+                        entity.PurchaseItemMeasurementOption =
+                            dto.PurchaseItemMeasurementOption;
+
+                        entity.ItemAmount = dto.ItemAmount ?? 0;
+                        entity.ItemDescription = dto.ItemDescription;
+
+                        // Add inventory only when transitioning to received.
+                        if (!entity.IsRecieved && dto.IsRecieved)
+                        {
+                            if (entity.BranchProductId.HasValue)
+                            {
+                                if (entity.BranchProduct == null)
+                                {
+                                    throw new InvalidOperationException(
+                                        $"Branch product not found for purchase order item {entity.Id}.");
+                                }
+
+                                entity.BranchProduct.ActualQuantity += dto.ItemQuantity;
+                            }
+
+                            entity.ItemQuantity = dto.ItemQuantity;
+                            entity.IsRecieved = true;
+                        }
+
+                        entity.UpdatedBy = GetCurrentUsername();
+                        entity.UpdatedAt = DateTime.UtcNow;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return true;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating Purchase Order Items");
+            _logger.LogError(ex, "Error updating purchase order items.");
             return false;
         }
     }
+
+
 
 
 
@@ -182,31 +242,69 @@ public class PurchaseOrderItemService: IPurchaseOrderItemService
     {
         try
         {
-            var purchaseOrderIds = dtos.Select(dto => dto.Id).ToList();
-
-            var itemsToUpdate = await _context.PurchaseOrderItems
-                .Where(item => purchaseOrderIds.Contains(item.PurchaseOrderId.Value) && !item.IsDeleted)
-                .ToListAsync();
-
-            if (!itemsToUpdate.Any())
+            if (dtos == null || !dtos.Any())
                 return false;
 
-            foreach (var item in itemsToUpdate)
-            {
-                item.IsRecieved = true;
-                item.UpdatedBy = GetCurrentUsername();
-                item.UpdatedAt = DateTime.UtcNow;
-            }
+            var purchaseOrderIds = dtos
+                .Select(x => x.Id)
+                .Distinct()
+                .ToList();
 
-            _context.PurchaseOrderItems.UpdateRange(itemsToUpdate);
-            return await _context.SaveChangesAsync() > 0;
+            var strategy = _context.Database.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction =
+                    await _context.Database.BeginTransactionAsync();
+
+                try
+                {
+                    var itemsToUpdate = await _context.PurchaseOrderItems
+                        .Include(x => x.BranchProduct)
+                        .Where(item =>
+                            item.PurchaseOrderId.HasValue &&
+                            purchaseOrderIds.Contains(item.PurchaseOrderId.Value) &&
+                            !item.IsDeleted &&
+                            !item.IsRecieved)
+                        .ToListAsync();
+
+                    foreach (var item in itemsToUpdate)
+                    {
+                        if (item.BranchProductId.HasValue)
+                        {
+                            if (item.BranchProduct == null)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Branch product not found for purchase order item {item.Id}.");
+                            }
+
+                            item.BranchProduct.ActualQuantity += item.ItemQuantity;
+                        }
+
+                        item.IsRecieved = true;
+                        item.UpdatedBy = GetCurrentUsername();
+                        item.UpdatedAt = DateTime.UtcNow;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return true;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error marking Purchase Order Items as received");
+            _logger.LogError(ex, "Error marking purchase order items as received.");
             return false;
         }
     }
+
 
     public async Task<bool> DeleteAsync(int id)
     {
