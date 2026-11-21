@@ -72,7 +72,7 @@ public partial class EditPurchaseOrders
                 Snackbar.Add(
                     "Purchase order updated successfully.",
                     Severity.Success);
-
+                await UpdatePurchaseOrderItems();
                 await OnUpdate.InvokeAsync(PurchaseOrder);
             }
             else
@@ -97,46 +97,43 @@ public partial class EditPurchaseOrders
     {
         try
         {
-            if (PurchaseOrder.PurchaseOrderItems == null ||
+            if (PurchaseOrder?.PurchaseOrderItems == null ||
                 !PurchaseOrder.PurchaseOrderItems.Any())
             {
-                Snackbar.Add(
-                    "No items to update.",
-                    Severity.Warning);
-
+                Snackbar.Add("No items to update.", Severity.Warning);
                 return;
             }
 
-
+            // Save purchase order items and update inventory stock
             var response = await HttpClient.PutAsJsonAsync(
                 "api/purchaseorderitem/update-items",
                 PurchaseOrder.PurchaseOrderItems);
 
-
-            if (response.IsSuccessStatusCode)
-            {
-                Snackbar.Add(
-                    "Purchase order items updated successfully.",
-                    Severity.Success);
-
-                await OnUpdate.InvokeAsync(PurchaseOrder);
-            }
-            else
+            if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
 
                 Snackbar.Add(
-                    $"Error updating items: {error}",
+                    $"Failed to update purchase order items. {error}",
                     Severity.Error);
+
+                return;
             }
+
+            Snackbar.Add(
+                "Purchase order items and inventory stock updated successfully.",
+                Severity.Success);
+
+            // Refresh parent purchase order data
+            await OnUpdate.InvokeAsync(PurchaseOrder);
         }
         catch (Exception ex)
         {
-            Snackbar.Add(
-                $"Error updating items: {ex.Message}",
-                Severity.Error);
-
             Logger.LogError(ex, "Update purchase order items failed");
+
+            Snackbar.Add(
+                $"An unexpected error occurred: {ex.Message}",
+                Severity.Error);
         }
     }
     private void UpdateReceiveStatus()
