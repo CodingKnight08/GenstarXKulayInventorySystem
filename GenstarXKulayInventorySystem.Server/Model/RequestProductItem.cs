@@ -24,4 +24,5 @@ public class RequestProductItem:BaseEntity
     public string Remarks { get; set; } = string.Empty;
     public decimal ItemCost { get; set; } = 0;
     public decimal TotalCost { get; set; } = 0;
+    public bool IsApproved { get; set; } = false;
 }
